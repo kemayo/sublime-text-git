@@ -168,6 +168,8 @@ class GitLogAllCommand(GitLogCommand):
 
 class GitDiffCommand(GitCommand):
     def run(self, edit):
+        if self.view.is_dirty():
+            self.view.run_command('save')
         self.run_command(['git', 'diff', '--no-color', self.get_file_name()], self.diff_done)
     
     def diff_done(self, result):
