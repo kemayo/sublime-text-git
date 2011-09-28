@@ -127,3 +127,10 @@ class GitDiffCommand(GitCommand):
 class GitDiffAllCommand(GitDiffCommand):
     def get_file_name(self):
         return ''
+
+class GitStatusCommand(GitCommand):
+    def run(self, edit):
+        self.run_command(['git', 'status'], self.status_done)
+    
+    def status_done(self, success, result):
+        scratch(self.view.window(), result, title = "Git Status")
