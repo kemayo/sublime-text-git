@@ -306,9 +306,17 @@ class GitStatusCommand(GitCommand):
         self.scratch(result, title = "Git Diff")
 
 class GitAddChoiceCommand(GitStatusCommand):
+    def status_done(self, result):
+        files = result.rstrip().split('\n')
+        self.results = filter(self.status_filter, files)
+        if len(self.results) != 0:
+            self.results = ([" + All Files"] + self.results)
+        self.view.window().show_quick_panel(self.results, self.panel_done, sublime.MONOSPACE_FONT)
     def status_filter(self, item):
         return not item[1].isspace()
     def panel_followup(self, picked_file):
+        if picked_file == "All Files":
+            picked_file = "."
         self.run_command(['git', 'add', picked_file], working_dir = git_root(self.get_file_location()))
 
 class GitAdd(GitCommand):
