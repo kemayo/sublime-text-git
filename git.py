@@ -48,12 +48,13 @@ def _make_text_safeish(text):
     # The unicode decode here is because sublime converts to unicode inside
     # insert in such a way that unknown characters will cause errors, which is
     # distinctly non-ideal... and there's no way to tell what's coming out of
-    # git in output. So...
-    return text.decode('utf-8')
+    # git in output. So use 'replace' directive to ignore errors and replace
+    # these characters with suitable replacement character
+    return text.decode('utf-8', 'replace')
 
 
 class CommandThread(threading.Thread):
-    def __init__(self, command, on_done, working_dir = "", ):
+    def __init__(self, command, on_done, working_dir = ""):
         threading.Thread.__init__(self)
         self.command = command
         self.on_done = on_done
