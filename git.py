@@ -44,25 +44,20 @@ def plugin_file(name):
     return os.path.join(PLUGIN_DIRECTORY, name)
 
 
-def _make_text_safeish(text, fallback_encoding):
+def _make_text_safeish(text):
     # The unicode decode here is because sublime converts to unicode inside
     # insert in such a way that unknown characters will cause errors, which is
     # distinctly non-ideal... and there's no way to tell what's coming out of
     # git in output. So...
-    try:
-        unitext = text.decode('utf-8')
-    except UnicodeDecodeError:
-        unitext = text.decode(fallback_encoding)
-    return unitext
+    return text.decode('utf-8')
 
 
 class CommandThread(threading.Thread):
-    def __init__(self, command, on_done, working_dir="", fallback_encoding=""):
+    def __init__(self, command, on_done, working_dir = "", ):
         threading.Thread.__init__(self)
         self.command = command
         self.on_done = on_done
         self.working_dir = working_dir
-        self.fallback_encoding = fallback_encoding
 
     def run(self):
         try:
@@ -79,7 +74,7 @@ class CommandThread(threading.Thread):
             # if sublime's python gets bumped to 2.7 we can just do:
             # output = subprocess.check_output(self.command)
             main_thread(self.on_done,
-                _make_text_safeish(output, self.fallback_encoding))
+                _make_text_safeish(output))
         except subprocess.CalledProcessError, e:
             main_thread(self.on_done, e.returncode)
         except OSError, e:
@@ -97,8 +92,6 @@ class GitCommand:
             command = [arg for arg in command if arg]
         if 'working_dir' not in kwargs:
             kwargs['working_dir'] = self.get_working_dir()
-        if 'fallback_encoding' not in kwargs and self.active_view() and self.active_view().settings().get('fallback_encoding'):
-            kwargs['fallback_encoding'] = self.active_view().settings().get('fallback_encoding').rpartition('(')[2].rpartition(')')[0]
 
         s = sublime.load_settings("Git.sublime-settings")
         if s.get('save_first') and self.active_view() and self.active_view().is_dirty():
