@@ -199,9 +199,12 @@ class GitLogCommand(GitCommand):
         # 9000 is a pretty arbitrarily chosen limit; picked entirely because
         # it's about the size of the largest repo I've tested this on... and
         # there's a definite hiccup when it's loading that
+        filename = self.get_file_name()
         self.run_command(
             ['git', 'log', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
-            '--date=local', '--max-count=9000', '--', self.get_file_name()],
+            '--date=local', '--max-count=9000',
+            '--follow' if filename else None,
+            '--', filename],
             self.log_done)
 
     def log_done(self, result):
@@ -232,9 +235,13 @@ class GitLogAllCommand(GitLogCommand):
 
 class GitGraphCommand(GitCommand):
     def run(self, edit):
+        filename = self.get_file_name()
         self.run_command(
-            ['git', 'log', '--graph', '--pretty=%h %aN %ci%d %s', '--abbrev-commit', '--no-color', '--decorate',
-            '--date-order', '--', self.get_file_name()],
+            ['git', 'log', '--graph',
+            '--pretty=%h %aN %ci%d %s', '--abbrev-commit',
+            '--no-color', '--decorate',
+            '--date-order', '--follow' if filename else None,
+            '--', filename],
             self.log_done
         )
 
