@@ -44,25 +44,51 @@ def plugin_file(name):
     return os.path.join(PLUGIN_DIRECTORY, name)
 
 
-def _make_text_safeish(text, fallback_encoding):
+def _make_text_safeish(text):
     # The unicode decode here is because sublime converts to unicode inside
     # insert in such a way that unknown characters will cause errors, which is
     # distinctly non-ideal... and there's no way to tell what's coming out of
-    # git in output. So...
-    try:
-        unitext = text.decode('utf-8')
-    except UnicodeDecodeError:
-        unitext = text.decode(fallback_encoding)
-    return unitext
+    # git in output. So use 'replace' directive to ignore errors and replace
+    # these characters with suitable replacement character
+    return text.decode('utf-8', 'replace')
+
+
+# A shameless copy of Will Bond marvelous code in https://github.com/wbond/sublime_package_control
+class ThreadProgress():
+    def __init__(self, thread, message, success_message):
+        self.thread = thread
+        self.message = message
+        self.success_message = success_message
+        self.addend = 1
+        self.size = 8
+        sublime.set_timeout(lambda: self.run(0), 100)
+
+    def run(self, i):
+        if not self.thread.is_alive():
+            if hasattr(self.thread, 'result') and not self.thread.result:
+                sublime.status_message('')
+                return
+            sublime.status_message(self.success_message)
+            return
+
+        before = i % self.size
+        after = (self.size - 1) - before
+        sublime.status_message('%s [%s=%s]' % \
+            (self.message, ' ' * before, ' ' * after))
+        if not after:
+            self.addend = -1
+        if not before:
+            self.addend = 1
+        i += self.addend
+        sublime.set_timeout(lambda: self.run(i), 100)
 
 
 class CommandThread(threading.Thread):
-    def __init__(self, command, on_done, working_dir="", fallback_encoding=""):
+    def __init__(self, command, on_done, working_dir = ""):
         threading.Thread.__init__(self)
         self.command = command
         self.on_done = on_done
         self.working_dir = working_dir
-        self.fallback_encoding = fallback_encoding
 
     def run(self):
         try:
@@ -79,7 +105,7 @@ class CommandThread(threading.Thread):
             # if sublime's python gets bumped to 2.7 we can just do:
             # output = subprocess.check_output(self.command)
             main_thread(self.on_done,
-                _make_text_safeish(output, self.fallback_encoding))
+                _make_text_safeish(output))
         except subprocess.CalledProcessError, e:
             main_thread(self.on_done, e.returncode)
         except OSError, e:
@@ -97,8 +123,6 @@ class GitCommand:
             command = [arg for arg in command if arg]
         if 'working_dir' not in kwargs:
             kwargs['working_dir'] = self.get_working_dir()
-        if 'fallback_encoding' not in kwargs and self.active_view() and self.active_view().settings().get('fallback_encoding'):
-            kwargs['fallback_encoding'] = self.active_view().settings().get('fallback_encoding').rpartition('(')[2].rpartition(')')[0]
 
         s = sublime.load_settings("Git.sublime-settings")
         if s.get('save_first') and self.active_view() and self.active_view().is_dirty():
@@ -113,7 +137,10 @@ class GitCommand:
 
         if show_status:
             message = kwargs.get('status_message', False) or ' '.join(command)
-            sublime.status_message(message)
+        else:
+            message = 'Git running'
+
+        ThreadProgress(thread, message, '')
 
     def generic_done(self, result):
         if not result.strip():
