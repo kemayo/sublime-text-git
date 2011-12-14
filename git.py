@@ -105,6 +105,8 @@ class GitCommand:
             self.active_view().run_command('save')
         if command[0] == 'git' and s.get('git_command'):
             command[0] = s.get('git_command')
+        if command[0] == 'git-flow' and s.get('git_flow_command'):
+            command[0] = s.get('git_flow_command')
         if not callback:
             callback = self.generic_done
 
