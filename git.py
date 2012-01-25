@@ -1138,7 +1138,7 @@ class GitAnnotateCommand(GitTextCommand):
                 typed_diff[change_type].append(region)
 
         for change in ['x', '+']:
-            self.view.add_regions("git.changes.{0}".format(change), typed_diff[change], 'git.changes.{0}'.format(change), 'dot')
+            self.view.add_regions("git.changes.{0}".format(change), typed_diff[change], 'git.changes.{0}'.format(change), 'dot', sublime.HIDDEN)
 
         self.view.add_regions("git.changes.-", typed_diff['-'], 'git.changes.-', 'dot', sublime.DRAW_EMPTY_AS_OVERWRITE)
 
