@@ -309,7 +309,7 @@ class GitLog:
         # details to just the current file. Depends on what the user expects...
         # which I'm not sure of.
         self.run_command(
-            ['git', 'log', '-p', '-1', ref, '--', self.get_file_name()],
+            ['git', 'log', '--no-color', '-p', '-1', ref, '--', self.get_file_name()],
             self.details_done)
 
     def details_done(self, result):
