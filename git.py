@@ -791,7 +791,7 @@ class GitAnnotateCommand(GitTextCommand):
     def run(self, view):
         # If the annotations are already running, we dont have to create a new tmpfile
         # if self.active_view().settings().get('live_git_annotations'):
-        if hasattr(view, "tmp"):
+        if hasattr(self, "tmp"):
             self.compare_tmp(None)
             return
         self.tmp = tempfile.NamedTemporaryFile()
