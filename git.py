@@ -714,6 +714,11 @@ class GitCheckoutCommand(GitTextCommand):
 
     def run(self, edit):
         self.run_command(['git', 'checkout', self.get_file_name()])
+        sublime.set_timeout(self.refresh, 20)
+
+    # Refreshing the view to see the changes
+    def refresh(self):
+        self.view.run_command('revert')
 
 
 class GitPullCommand(GitWindowCommand):
@@ -760,6 +765,14 @@ class GitClearAnnotationCommand(GitTextCommand):
         self.view.erase_regions('git.changes.-')
 
 
+class GitToggleAnnotationsCommand(GitTextCommand):
+    def run(self, view):
+        if self.active_view().settings().get('live_git_annotations'):
+            self.view.run_command('git_clear_annotation')
+        else:
+            self.view.run_command('git_annotate')
+
+
 class GitAnnotationListener(sublime_plugin.EventListener):
     def on_modified(self, view):
         if not view.settings().get('live_git_annotations'):
@@ -777,7 +790,8 @@ class GitAnnotateCommand(GitTextCommand):
     #    output is then parsed and regions are set accordingly.
     def run(self, view):
         # If the annotations are already running, we dont have to create a new tmpfile
-        if self.active_view().settings().get('live_git_annotations'):
+        # if self.active_view().settings().get('live_git_annotations'):
+        if hasattr(self, "tmp"):
             self.compare_tmp(None)
             return
         self.tmp = tempfile.NamedTemporaryFile()
