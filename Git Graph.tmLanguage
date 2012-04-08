@@ -38,9 +38,14 @@
 					<key>name</key>
 					<string>variable.parameter.git-graph</string>
 				</dict>
+				<key>6</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.git-graph</string>
+				</dict>
 			</dict>
 			<key>match</key>
-			<string>^([| *\\]+)([0-9a-f]{4,40}) (.*?) (\d{4}-\d\d-\d\d \d\d:\d\d:\d\d [+-]\d{4}) (?:\(((?:[a-zA-Z0-9._\-\/]+(?:, )?)+)\) )?</string>
+			<string>^([| *\\]+)([0-9a-f]{4,40}) -( \(.*?\))? (.*) (\(.*) (&lt;.*&gt;) .*</string>
 			<key>name</key>
 			<string>log-entry.git-graph</string>
 		</dict>
