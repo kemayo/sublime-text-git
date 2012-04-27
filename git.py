@@ -800,6 +800,13 @@ class GitResetHeadCommand(GitTextCommand):
         pass
 
 
+class GitResetHardHeadCommand(GitWindowCommand):
+    may_change_files = True
+
+    def run(self):
+        self.run_command(['git', 'reset', '--hard', 'HEAD'])
+
+
 class GitClearAnnotationCommand(GitTextCommand):
     def run(self, view):
         self.active_view().settings().set('live_git_annotations', False)
