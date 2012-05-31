@@ -5,6 +5,8 @@ import threading
 import subprocess
 import functools
 import tempfile
+import os.path
+import re
 
 # when sublime loads a plugin it's cd'd into the plugin directory. Thus
 # __file__ is useless for my purposes. What I want is "Packages/Git", but
@@ -44,6 +46,12 @@ def plugin_file(name):
     return os.path.join(PLUGIN_DIRECTORY, name)
 
 
+def do_when(conditional, callback, *args, **kwargs):
+    if conditional():
+        return callback(*args, **kwargs)
+    sublime.set_timeout(functools.partial(do_when, conditional, callback, *args, **kwargs), 50)
+
+
 def _make_text_safeish(text, fallback_encoding):
     # The unicode decode here is because sublime converts to unicode inside
     # insert in such a way that unknown characters will cause errors, which is
@@ -57,12 +65,21 @@ def _make_text_safeish(text, fallback_encoding):
 
 
 class CommandThread(threading.Thread):
-    def __init__(self, command, on_done, working_dir="", fallback_encoding=""):
+    def __init__(self, command, on_done, working_dir="", fallback_encoding="", **kwargs):
         threading.Thread.__init__(self)
         self.command = command
         self.on_done = on_done
         self.working_dir = working_dir
+        if "stdin" in kwargs:
+            self.stdin = kwargs["stdin"]
+        else:
+            self.stdin = None
+        if "stdout" in kwargs:
+            self.stdout = kwargs["stdout"]
+        else:
+            self.stdout = subprocess.PIPE
         self.fallback_encoding = fallback_encoding
+        self.kwargs = kwargs
 
     def run(self):
         try:
@@ -73,13 +90,16 @@ class CommandThread(threading.Thread):
                 os.chdir(self.working_dir)
 
             proc = subprocess.Popen(self.command,
-                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                stdout=self.stdout, stderr=subprocess.STDOUT,
+                stdin=subprocess.PIPE,
                 shell=shell, universal_newlines=True)
-            output = proc.communicate()[0]
+            output = proc.communicate(self.stdin)[0]
+            if not output:
+                output = ''
             # if sublime's python gets bumped to 2.7 we can just do:
             # output = subprocess.check_output(self.command)
             main_thread(self.on_done,
-                _make_text_safeish(output, self.fallback_encoding))
+                _make_text_safeish(output, self.fallback_encoding), **self.kwargs)
         except subprocess.CalledProcessError, e:
             main_thread(self.on_done, e.returncode)
         except OSError, e:
@@ -90,9 +110,11 @@ class CommandThread(threading.Thread):
 
 
 # A base for all commands
-class GitCommand:
+class GitCommand(object):
+    may_change_files = False
+
     def run_command(self, command, callback=None, show_status=True,
-            filter_empty_args=True, **kwargs):
+            filter_empty_args=True, no_save=False, **kwargs):
         if filter_empty_args:
             command = [arg for arg in command if arg]
         if 'working_dir' not in kwargs:
@@ -101,7 +123,7 @@ class GitCommand:
             kwargs['fallback_encoding'] = self.active_view().settings().get('fallback_encoding').rpartition('(')[2].rpartition(')')[0]
 
         s = sublime.load_settings("Git.sublime-settings")
-        if s.get('save_first') and self.active_view() and self.active_view().is_dirty():
+        if s.get('save_first') and self.active_view() and self.active_view().is_dirty() and not no_save:
             self.active_view().run_command('save')
         if command[0] == 'git' and s.get('git_command'):
             command[0] = s.get('git_command')
@@ -118,6 +140,17 @@ class GitCommand:
             sublime.status_message(message)
 
     def generic_done(self, result):
+        if self.may_change_files and self.active_view() and self.active_view().file_name():
+            if self.active_view().is_dirty():
+                result = "WARNING: Current view is dirty.\n\n"
+            else:
+                # just asking the current file to be re-opened doesn't do anything
+                print "reverting"
+                position = self.active_view().viewport_position()
+                self.active_view().run_command('revert')
+                do_when(lambda: not self.active_view().is_loading(), lambda: self.active_view().set_viewport_position(position, False))
+                # self.active_view().show(position)
+
         if not result.strip():
             return
         self.panel(result)
@@ -132,13 +165,15 @@ class GitCommand:
         output_file.insert(edit, 0, output)
         output_file.end_edit(edit)
 
-    def scratch(self, output, title=False, **kwargs):
+    def scratch(self, output, title=False, position=None, **kwargs):
         scratch_file = self.get_window().new_file()
         if title:
             scratch_file.set_name(title)
         scratch_file.set_scratch(True)
         self._output_to_view(scratch_file, output, **kwargs)
         scratch_file.set_read_only(True)
+        if position:
+            sublime.set_timeout(lambda: scratch_file.set_viewport_position(position), 0)
         return scratch_file
 
     def panel(self, output, **kwargs):
@@ -225,44 +260,60 @@ class GitBlameCommand(GitTextCommand):
         # -C: retain blame when copying lines between files
         command = ['git', 'blame', '-w', '-M', '-C']
 
+        s = sublime.load_settings("Git.sublime-settings")
         selection = self.view.sel()[0]  # todo: multi-select support?
-        if not selection.empty():
+        if not selection.empty() or not s.get('blame_whole_file'):
             # just the lines we have a selection on
             begin_line, begin_column = self.view.rowcol(selection.begin())
             end_line, end_column = self.view.rowcol(selection.end())
+            # blame will fail if last line is empty and is included in the selection
+            if end_line > begin_line and end_column == 0:
+                end_line -= 1
             lines = str(begin_line + 1) + ',' + str(end_line + 1)
             command.extend(('-L', lines))
+            callback = self.blame_done
+        else:
+            callback = functools.partial(self.blame_done,
+                    position=self.view.viewport_position())
 
         command.append(self.get_file_name())
-        self.run_command(command, self.blame_done)
+        self.run_command(command, callback)
 
-    def blame_done(self, result):
-        self.scratch(result, title="Git Blame", syntax=plugin_file("Git Blame.tmLanguage"))
+    def blame_done(self, result, position=None):
+        self.scratch(result, title="Git Blame", position=position,
+                syntax=plugin_file("Git Blame.tmLanguage"))
 
 
-class GitLog:
+class GitLog(object):
     def run(self, edit=None):
+        return self.run_log('--', self.get_file_name())
+
+    def run_log(self, *args):
         # the ASCII bell (\a) is just a convenient character I'm pretty sure
         # won't ever come up in the subject of the commit (and if it does then
         # you positively deserve broken output...)
         # 9000 is a pretty arbitrarily chosen limit; picked entirely because
         # it's about the size of the largest repo I've tested this on... and
         # there's a definite hiccup when it's loading that
+        command = ['git', 'log', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
+            '--date=local', '--max-count=9000']
+        command.extend(args)
         self.run_command(
-            ['git', 'log', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
-            '--date=local', '--max-count=9000', '--', self.get_file_name()],
+            command,
             self.log_done)
 
     def log_done(self, result):
         self.results = [r.split('\a', 2) for r in result.strip().split('\n')]
-        self.quick_panel(self.results, self.panel_done)
+        self.quick_panel(self.results, self.log_panel_done)
 
-    def panel_done(self, picked):
+    def log_panel_done(self, picked):
         if 0 > picked < len(self.results):
             return
         item = self.results[picked]
         # the commit hash is the first thing on the second line
-        ref = item[1].split(' ')[0]
+        self.log_result(item[1].split(' ')[0])
+
+    def log_result(self, ref):
         # I'm not certain I should have the file name here; it restricts the
         # details to just the current file. Depends on what the user expects...
         # which I'm not sure of.
@@ -282,11 +333,52 @@ class GitLogAllCommand(GitLog, GitWindowCommand):
     pass
 
 
+class GitShow(object):
+    def run(self, edit=None):
+        # GitLog Copy-Past
+        self.run_command(
+            ['git', 'log', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
+            '--date=local', '--max-count=9000', '--', self.get_file_name()],
+            self.show_done)
+
+    def show_done(self, result):
+        # GitLog Copy-Past
+        self.results = [r.split('\a', 2) for r in result.strip().split('\n')]
+        self.quick_panel(self.results, self.panel_done)
+
+    def panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        item = self.results[picked]
+        # the commit hash is the first thing on the second line
+        ref = item[1].split(' ')[0]
+        # Make full file name
+        working_dir = self.get_working_dir()
+        file_path = working_dir.replace(git_root(working_dir), '')[1:]
+        file_name = os.path.join(file_path, self.get_file_name())
+        self.run_command(
+            ['git', 'show', '%s:%s' % (ref, file_name)],
+            self.details_done,
+            ref=ref)
+
+    def details_done(self, result, ref):
+        syntax = self.view.settings().get('syntax')
+        self.scratch(result, title="%s:%s" % (ref, self.get_file_name()), syntax=syntax)
+
+
+class GitShowCommand(GitShow, GitTextCommand):
+    pass
+
+
+class GitShowAllCommand(GitShow, GitWindowCommand):
+    pass
+
+
 class GitGraph(object):
     def run(self, edit=None):
         self.run_command(
             ['git', 'log', '--graph', '--pretty=%h %aN %ci%d %s', '--abbrev-commit', '--no-color', '--decorate',
-            '--date-order', '--', self.get_file_name()],
+            '--date-order', self.get_graph_options(), '--', self.get_file_name()],
             self.log_done
         )
 
@@ -295,16 +387,40 @@ class GitGraph(object):
 
 
 class GitGraphCommand(GitGraph, GitTextCommand):
-    pass
+    def get_graph_options(self):
+        return ""
 
 
 class GitGraphAllCommand(GitGraph, GitWindowCommand):
-    pass
+    def get_graph_options(self):
+        return "--all"
 
 
 class GitDiff (object):
     def run(self, edit=None):
-        self.run_command(['git', 'diff', '--no-color', self.get_file_name()],
+        self.run_command(['git', 'diff', '--no-color', '--', self.get_file_name()],
+            self.diff_done)
+
+    def diff_done(self, result):
+        if not result.strip():
+            self.panel("No output")
+            return
+        s = sublime.load_settings("Git.sublime-settings")
+        if s.get('diff_panel'):
+            view = self.panel(result)
+        else:
+            view = self.scratch(result, title="Git Diff")
+
+        lines_inserted = view.find_all(r'^\+[^+]{2} ')
+        lines_deleted = view.find_all(r'^-[^-]{2} ')
+
+        view.add_regions("inserted", lines_inserted, "markup.inserted.diff", "dot", sublime.HIDDEN)
+        view.add_regions("deleted", lines_deleted, "markup.deleted.diff", "dot", sublime.HIDDEN)
+
+
+class GitDiffCommit (object):
+    def run(self, edit=None):
+        self.run_command(['git', 'diff', '--cached', '--no-color'],
             self.diff_done)
 
     def diff_done(self, result):
@@ -320,6 +436,15 @@ class GitDiffCommand(GitDiff, GitTextCommand):
 
 class GitDiffAllCommand(GitDiff, GitWindowCommand):
     pass
+
+
+class GitDiffCommitCommand(GitDiffCommit, GitWindowCommand):
+    pass
+
+
+class GitDiffTool(GitWindowCommand):
+    def run(self):
+        self.run_command(['git', 'difftool'])
 
 
 class GitQuickCommitCommand(GitTextCommand):
@@ -375,21 +500,27 @@ class GitCommitCommand(GitWindowCommand):
         has_staged_files = False
         result_lines = result.rstrip().split('\n')
         for line in result_lines:
-            if not line[0].isspace():
+            if line and not line[0].isspace():
                 has_staged_files = True
                 break
         if not has_staged_files:
             self.panel("Nothing to commit")
             return
         # Okay, get the template!
-        self.run_command(['git', 'status'], self.status_done)
+        s = sublime.load_settings("Git.sublime-settings")
+        if s.get("verbose_commits"):
+            self.run_command(['git', 'diff', '--staged'], self.diff_done)
+        else:
+            self.run_command(['git', 'status'], self.diff_done)
 
-    def status_done(self, result):
+    def diff_done(self, result):
         template = "\n".join([
             "",
             "# Please enter the commit message for your changes. Lines starting",
-            "# with '#' will be ignored, and an empty message aborts the commit.",
+            "# with '#' and everything after the 'END' statement below will be ",
+            "# ignored, and an empty message aborts the commit.",
             "# Just close the window to accept your message.",
+            "# END--------------",
             result.strip()
         ])
         msg = self.window.new_file()
@@ -402,7 +533,7 @@ class GitCommitCommand(GitWindowCommand):
 
     def message_done(self, message):
         # filter out the comments (git commit doesn't do this automatically)
-        lines = [line for line in message.split("\n")
+        lines = [line for line in message.split("\n# END---")[0].split("\n")
             if not line.lstrip().startswith('#')]
         message = '\n'.join(lines)
         # write the temp file
@@ -461,8 +592,9 @@ class GitStatusCommand(GitWindowCommand):
     def panel_followup(self, picked_status, picked_file, picked_index):
         # split out solely so I can override it for laughs
 
+        s = sublime.load_settings("Git.sublime-settings")
         root = git_root(self.get_working_dir())
-        if picked_status == '??':
+        if picked_status == '??' or s.get('status_opens_file'):
             self.window.open_file(os.path.join(root, picked_file))
         else:
             self.run_command(['git', 'diff', '--no-color', '--', picked_file.strip('"')],
@@ -499,6 +631,8 @@ class GitAdd(GitTextCommand):
 
 
 class GitStashCommand(GitWindowCommand):
+    may_change_files = True
+
     def run(self):
         self.run_command(['git', 'stash'])
 
@@ -508,7 +642,89 @@ class GitStashPopCommand(GitWindowCommand):
         self.run_command(['git', 'stash', 'pop'])
 
 
+class GitStashApplyCommand(GitWindowCommand):
+    may_change_files = True
+    command_to_run_after_list = 'apply'
+
+    def run(self):
+        self.run_command(['git', 'stash', 'list'], self.stash_list_done)
+
+    def stash_list_done(self, result):
+        # No stash list at all
+        if not result:
+            self.panel('No stash found')
+            return
+            
+        self.results = result.rstrip().split('\n')
+
+        # If there is only one, apply it
+        if len(self.results) == 1:
+            self.stash_list_panel_done()
+        else:
+            self.quick_panel(self.results, self.stash_list_panel_done)
+
+    def stash_list_panel_done(self, picked=0):
+        if 0 > picked < len(self.results):
+            return
+
+        # get the stash ref (e.g. stash@{3})
+        self.stash = self.results[picked].split(':')[0]
+        self.run_command(['git', 'stash', self.command_to_run_after_list, self.stash])
+
+
+class GitStashDropCommand(GitStashApplyCommand):
+    command_to_run_after_list = 'drop'
+
+
+class GitOpenFileCommand(GitLog, GitWindowCommand):
+    def run(self):
+        self.run_command(['git', 'branch', '-a', '--no-color'], self.branch_done)
+
+    def branch_done(self, result):
+        self.results = result.rstrip().split('\n')
+        self.quick_panel(self.results, self.branch_panel_done,
+            sublime.MONOSPACE_FONT)
+
+    def branch_panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        self.branch = self.results[picked].split(' ')[-1]
+        self.run_log(self.branch)
+
+    def log_result(self, result_hash):
+        # the commit hash is the first thing on the second line
+        self.ref = result_hash
+        self.run_command(
+            ['git', 'ls-tree', '-r', '--full-tree', self.ref],
+            self.ls_done)
+
+    def ls_done(self, result):
+        # Last two items are the ref and the file name
+        # p.s. has to be a list of lists; tuples cause errors later
+        self.results = [[match.group(2), match.group(1)] for match in re.finditer(r"\S+\s(\S+)\t(.+)", result)]
+
+        self.quick_panel(self.results, self.ls_panel_done)
+
+    def ls_panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        item = self.results[picked]
+
+        self.filename = item[0]
+        self.fileRef = item[1]
+
+        self.run_command(
+            ['git', 'show', self.fileRef],
+            self.show_done)
+
+    def show_done(self, result):
+        self.scratch(result, title="%s:%s" % (self.fileRef, self.filename))
+
+
 class GitBranchCommand(GitWindowCommand):
+    may_change_files = True
+    command_to_run_after_branch = 'checkout'
+
     def run(self):
         self.run_command(['git', 'branch', '--no-color'], self.branch_done)
 
@@ -524,34 +740,85 @@ class GitBranchCommand(GitWindowCommand):
         if picked_branch.startswith("*"):
             return
         picked_branch = picked_branch.strip()
-        self.run_command(['git', 'checkout', picked_branch])
+        self.run_command(['git', self.command_to_run_after_branch, picked_branch])
+
+
+class GitMergeCommand(GitBranchCommand):
+    command_to_run_after_branch = 'merge'
+
+
+class GitNewBranchCommand(GitWindowCommand):
+    def run(self):
+        self.get_window().show_input_panel("Branch name", "",
+            self.on_input, None, None)
+
+    def on_input(self, branchname):
+        if branchname.strip() == "":
+            self.panel("No branch name provided")
+            return
+        self.run_command(['git', 'checkout', '-b', branchname])
 
 
 class GitCheckoutCommand(GitTextCommand):
-    def run(self, edit):
-        self.run_command(['git', 'checkout', self.get_file_name()], self.checkout_done)
+    may_change_files = True
 
-    def checkout_done(self, result):
-        self.view.run_command('revert')
+    def run(self, edit):
+        self.run_command(['git', 'checkout', self.get_file_name()])
+
+
+class GitFetchCommand(GitWindowCommand):
+    def run(self):
+        self.run_command(['git', 'fetch'], callback=self.panel)
 
 
 class GitPullCommand(GitWindowCommand):
     def run(self):
-        self.run_command(['git', 'pull'])
+        self.run_command(['git', 'pull'], callback=self.panel)
+
+
+class GitPullCurrentBranchCommand(GitWindowCommand):
+    command_to_run_after_describe = 'pull'
+
+    def run(self):
+        self.run_command(['git', 'describe', '--contains',  '--all', 'HEAD'], callback=self.describe_done)
+
+    def describe_done(self, result):
+        self.current_branch = result.strip()
+        self.run_command(['git', 'remote'], callback=self.remote_done)
+
+    def remote_done(self, result):
+        self.remotes = result.rstrip().split('\n')
+        if len(self.remotes) == 1:
+            self.panel_done()
+        else:
+            self.quick_panel(self.remotes, self.panel_done, sublime.MONOSPACE_FONT)
+
+    def panel_done(self, picked=0):
+        if picked < 0 or picked >= len(self.remotes):
+            return
+        self.picked_remote = self.remotes[picked]
+        self.picked_remote = self.picked_remote.strip()
+        self.run_command(['git', self.command_to_run_after_describe, self.picked_remote, self.current_branch])
 
 
 class GitPushCommand(GitWindowCommand):
     def run(self):
-        self.run_command(['git', 'push'])
+        self.run_command(['git', 'push'], callback=self.panel)
 
 
-class GitCustomCommand(GitTextCommand):
-    def run(self, edit):
+class GitPushCurrentBranchCommand(GitPullCurrentBranchCommand):
+    command_to_run_after_describe = 'push'
+
+
+class GitCustomCommand(GitWindowCommand):
+    may_change_files = True
+
+    def run(self):
         self.get_window().show_input_panel("Git command", "",
             self.on_input, None, None)
 
     def on_input(self, command):
-        command = str(command) # avoiding unicode
+        command = str(command)  # avoiding unicode
         if command.strip() == "":
             self.panel("No git command provided")
             return
@@ -559,7 +826,6 @@ class GitCustomCommand(GitTextCommand):
         command_splitted = ['git'] + shlex.split(command)
         print command_splitted
         self.run_command(command_splitted)
-
 
 class GitFlowFeatureStartCommand(GitWindowCommand):
     def run(self):
@@ -640,3 +906,199 @@ class GitFlowHotfixFinishCommand(GitWindowCommand):
             picked_hotfix = picked_hotfix.strip("*")
         picked_hotfix = picked_hotfix.strip()
         self.run_command(['git-flow', 'hotfix', 'finish', picked_hotfix])
+
+class GitResetHead(object):
+    def run(self, edit=None):
+        self.run_command(['git', 'reset', 'HEAD', self.get_file_name()])
+
+    def generic_done(self, result):
+        pass
+
+
+class GitResetHeadCommand(GitResetHead, GitTextCommand):
+    pass
+
+
+class GitResetHeadAllCommand(GitResetHead, GitWindowCommand):
+    pass
+
+
+class GitClearAnnotationCommand(GitTextCommand):
+    def run(self, view):
+        self.active_view().settings().set('live_git_annotations', False)
+        self.view.erase_regions('git.changes.x')
+        self.view.erase_regions('git.changes.+')
+        self.view.erase_regions('git.changes.-')
+
+
+class GitToggleAnnotationsCommand(GitTextCommand):
+    def run(self, view):
+        if self.active_view().settings().get('live_git_annotations'):
+            self.view.run_command('git_clear_annotation')
+        else:
+            self.view.run_command('git_annotate')
+
+
+class GitAnnotationListener(sublime_plugin.EventListener):
+    def on_modified(self, view):
+        if not view.settings().get('live_git_annotations'):
+            return
+        view.run_command('git_annotate')
+
+
+class GitAnnotateCommand(GitTextCommand):
+    # Unfortunately, git diff does not support text from stdin, making a *live* annotation
+    # difficult. Therefore I had to resort to the system diff command. (Problems on win?)
+    # This works as follows:
+    # 1. When the command is run for the first time for this file, a temporary file with the
+    #    current state of the HEAD is being pulled from git.
+    # 2. All consecutive runs will pass the current buffer into diffs stdin. The resulting
+    #    output is then parsed and regions are set accordingly.
+    def run(self, view):
+        # If the annotations are already running, we dont have to create a new tmpfile
+        if hasattr(self, "tmp"):
+            self.compare_tmp(None)
+            return
+        self.tmp = tempfile.NamedTemporaryFile()
+        self.active_view().settings().set('live_git_annotations', True)
+        root = git_root(self.get_working_dir())
+        repo_file = os.path.relpath(self.view.file_name(), root)
+        self.run_command(['git', 'show', 'HEAD:{0}'.format(repo_file)], show_status=False, no_save=True, callback=self.compare_tmp, stdout=self.tmp)
+
+    def compare_tmp(self, result, stdout=None):
+        all_text = self.view.substr(sublime.Region(0, self.view.size()))
+        self.run_command(['diff', '-u', self.tmp.name, '-'], stdin=all_text, no_save=True, show_status=False, callback=self.parse_diff)
+
+    # This is where the magic happens. At the moment, only one chunk format is supported. While
+    # the unified diff format theoritaclly supports more, I don't think git diff creates them.
+    def parse_diff(self, result, stdin=None):
+        lines = result.splitlines()
+        matcher = re.compile('^@@ -([0-9]*),([0-9]*) \+([0-9]*),([0-9]*) @@')
+        diff = []
+        for line_index in range(0, len(lines)):
+            line = lines[line_index]
+            if not line.startswith('@'):
+                continue
+            match = matcher.match(line)
+            if not match:
+                continue
+            line_before, len_before, line_after, len_after = [int(match.group(x)) for x in [1, 2, 3, 4]]
+            chunk_index = line_index + 1
+            tracked_line_index = line_after - 1
+            deletion = False
+            insertion = False
+            while True:
+                line = lines[chunk_index]
+                if line.startswith('@'):
+                    break
+                elif line.startswith('-'):
+                    if not line.strip() == '-':
+                        deletion = True
+                    tracked_line_index -= 1
+                elif line.startswith('+'):
+                    if deletion and not line.strip() == '+':
+                        diff.append(['x', tracked_line_index])
+                        insertion = True
+                    elif not deletion:
+                        insertion = True
+                        diff.append(['+', tracked_line_index])
+                else:
+                    if not insertion and deletion:
+                        diff.append(['-', tracked_line_index])
+                    insertion = deletion = False
+                tracked_line_index += 1
+                chunk_index += 1
+                if chunk_index >= len(lines):
+                    break
+
+        self.annotate(diff)
+
+    # Once we got all lines with their specific change types (either x, +, or - for
+    # modified, added, or removed) we can create our regions and do the actual annotation.
+    def annotate(self, diff):
+        self.view.erase_regions('git.changes.x')
+        self.view.erase_regions('git.changes.+')
+        self.view.erase_regions('git.changes.-')
+        typed_diff = {'x': [], '+': [], '-': []}
+        for change_type, line in diff:
+            if change_type == '-':
+                full_region = self.view.full_line(self.view.text_point(line - 1, 0))
+                position = full_region.begin()
+                for i in xrange(full_region.size()):
+                    typed_diff[change_type].append(sublime.Region(position + i))
+            else:
+                point = self.view.text_point(line, 0)
+                region = self.view.full_line(point)
+                if change_type == '-':
+                    region = sublime.Region(point, point + 5)
+                typed_diff[change_type].append(region)
+
+        for change in ['x', '+']:
+            self.view.add_regions("git.changes.{0}".format(change), typed_diff[change], 'git.changes.{0}'.format(change), 'dot')
+
+        self.view.add_regions("git.changes.-", typed_diff['-'], 'git.changes.-', 'dot', sublime.DRAW_EMPTY_AS_OVERWRITE)
+
+
+class GitAddSelectedHunkCommand(GitTextCommand):
+    def run(self, edit):
+        self.run_command(['git', 'diff', '--no-color', self.get_file_name()], self.cull_diff)
+
+    def cull_diff(self, result):
+        selection = []
+        for sel in self.view.sel():
+            selection.append({
+                "start": self.view.rowcol(sel.begin())[0] + 1,
+                "end": self.view.rowcol(sel.end())[0] + 1,
+            })
+
+        hunks = [{"diff":""}]
+        i = 0
+        matcher = re.compile('^@@ -([0-9]*)(?:,([0-9]*))? \+([0-9]*)(?:,([0-9]*))? @@')
+        for line in result.splitlines():
+            if line.startswith('@@'):
+                i += 1
+                match = matcher.match(line)
+                start = int(match.group(3))
+                end = match.group(4)
+                if end:
+                    end = start + int(end)
+                else:
+                    end = start
+                hunks.append({"diff": "", "start": start, "end": end})
+            hunks[i]["diff"] += line + "\n"
+
+        diffs = hunks[0]["diff"]
+        hunks.pop(0)
+        selection_is_hunky = False
+        for hunk in hunks:
+            for sel in selection:
+                if sel["end"] < hunk["start"]:
+                    continue
+                if sel["start"] > hunk["end"]:
+                    continue
+                diffs += hunk["diff"]  # + "\n\nEND OF HUNK\n\n"
+                selection_is_hunky = True
+
+        if selection_is_hunky:
+            self.run_command(['git', 'apply', '--cached'], stdin=diffs)
+        else:
+            sublime.status_message("No selected hunk")
+
+
+class GitCommitSelectedHunk(GitAddSelectedHunkCommand):
+    def run(self, edit):
+        self.run_command(['git', 'diff', '--no-color', self.get_file_name()], self.cull_diff)
+        self.get_window().run_command('git_commit')
+
+
+
+class GitGuiCommand(GitTextCommand):
+    def run(self, edit):
+        command = ['git', 'gui']
+        self.run_command(command)
+
+
+class GitGitkCommand(GitTextCommand):
+    def run(self, edit):
+        command = ['gitk']
+        self.run_command(command)
