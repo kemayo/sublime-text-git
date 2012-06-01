@@ -120,7 +120,6 @@
         "command": "git_custom"
     }
     ,{
-<<<<<<< HEAD
         "caption": "Git Flow: Feature Start", 
         "command": "git_flow_feature_start"
     }
