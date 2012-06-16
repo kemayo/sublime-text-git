@@ -430,9 +430,13 @@ class GitGraphAllCommand(GitGraph, GitWindowCommand):
 
 class GitDiff (object):
     def run(self, edit=None):
+        command = ['git', 'log', '--name-only', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
+            '--date=local', '--max-count=9000']
+        file_name = self.get_file_name()
+        if file_name:
+            command.extend(['--follow', '--', file_name])
         self.run_command(
-            ['git', 'log', '--follow', '--name-only', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
-            '--date=local', '--max-count=9000', '--', self.get_file_name()],
+            command,
             self.show_done)
 
     def show_done(self, result):
