@@ -293,15 +293,32 @@ class GitLog(object):
         # 9000 is a pretty arbitrarily chosen limit; picked entirely because
         # it's about the size of the largest repo I've tested this on... and
         # there's a definite hiccup when it's loading that
-        command = ['git', 'log', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
+        command = ['git', 'log', '--follow', '--name-only', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
             '--date=local', '--max-count=9000']
         command.extend(args)
+        # print ' '.join(command)
         self.run_command(
             command,
             self.log_done)
 
     def log_done(self, result):
-        self.results = [r.split('\a', 2) for r in result.strip().split('\n')]
+        import os
+        self.results = []
+        self.files = {}
+        relative = None
+        for r in result.strip().split('\n'):
+            if r:
+                _result = r.strip().split('\a', 2)
+                if len(_result) == 1:
+                    if relative is None:
+                        # Find relative path
+                        relative = os.sep.join(['..'] * (len(os.path.normpath(_result[0]).split(os.sep)) - 1))
+                        if relative:
+                            relative += os.sep
+                    self.files[result[1].split(' ')[0]] = relative + _result[0]
+                else:
+                    result = _result
+                    self.results.append(result)
         self.quick_panel(self.results, self.log_panel_done)
 
     def log_panel_done(self, picked):
@@ -309,14 +326,18 @@ class GitLog(object):
             return
         item = self.results[picked]
         # the commit hash is the first thing on the second line
-        self.log_result(item[1].split(' ')[0])
+        ref = item[1].split(' ')[0]
+        file_name = self.files.get(ref, self.get_file_name())
+        self.log_result(ref, file_name)
 
-    def log_result(self, ref):
+    def log_result(self, ref, file_name):
         # I'm not certain I should have the file name here; it restricts the
         # details to just the current file. Depends on what the user expects...
         # which I'm not sure of.
+        command = ['git', 'log', '--follow', '-p', '-1', ref]
+        command.extend(['--', file_name])
         self.run_command(
-            ['git', 'log', '-p', '-1', ref, '--', self.get_file_name()],
+            command,
             self.details_done)
 
     def details_done(self, result):
@@ -335,13 +356,29 @@ class GitShow(object):
     def run(self, edit=None):
         # GitLog Copy-Past
         self.run_command(
-            ['git', 'log', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
+            ['git', 'log', '--follow', '--name-only', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
             '--date=local', '--max-count=9000', '--', self.get_file_name()],
             self.show_done)
 
     def show_done(self, result):
         # GitLog Copy-Past
-        self.results = [r.split('\a', 2) for r in result.strip().split('\n')]
+        import os
+        self.results = []
+        self.files = {}
+        relative = None
+        for r in result.strip().split('\n'):
+            if r:
+                _result = r.strip().split('\a', 2)
+                if len(_result) == 1:
+                    if relative is None:
+                        # Find relative path
+                        relative = os.sep.join(['..'] * (len(os.path.normpath(_result[0]).split(os.sep)) - 1))
+                        if relative:
+                            relative += os.sep
+                    self.files[result[1].split(' ')[0]] = relative + _result[0]
+                else:
+                    result = _result
+                    self.results.append(result)
         self.quick_panel(self.results, self.panel_done)
 
     def panel_done(self, picked):
@@ -350,10 +387,7 @@ class GitShow(object):
         item = self.results[picked]
         # the commit hash is the first thing on the second line
         ref = item[1].split(' ')[0]
-        # Make full file name
-        working_dir = self.get_working_dir()
-        file_path = working_dir.replace(git_root(working_dir), '')[1:]
-        file_name = os.path.join(file_path, self.get_file_name())
+        file_name = self.files.get(ref, self.get_file_name())
         self.run_command(
             ['git', 'show', '%s:%s' % (ref, file_name)],
             self.details_done,
