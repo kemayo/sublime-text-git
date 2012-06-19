@@ -315,9 +315,13 @@ class GitLog(object):
                         relative = os.sep.join(['..'] * (len(os.path.normpath(_result[0]).split(os.sep)) - 1))
                         if relative:
                             relative += os.sep
-                    self.files[result[1].split(' ')[0]] = relative + _result[0]
+                    ref = result[1].split(' ', 1)[0]
+                    self.files[ref] = relative + _result[0]
                 else:
                     result = _result
+                    ref = result[1].split(' ', 1)
+                    result[0] = u"%s - %s" % (ref[0], result[0])
+                    result[1] = ref[1]
                     self.results.append(result)
         self.quick_panel(self.results, self.log_panel_done)
 
@@ -326,7 +330,7 @@ class GitLog(object):
             return
         item = self.results[picked]
         # the commit hash is the first thing on the second line
-        ref = item[1].split(' ')[0]
+        ref = item[1].split(' ', 1)[0]
         file_name = self.files.get(ref, self.get_file_name())
         self.log_result(ref, file_name)
 
@@ -375,9 +379,13 @@ class GitShow(object):
                         relative = os.sep.join(['..'] * (len(os.path.normpath(_result[0]).split(os.sep)) - 1))
                         if relative:
                             relative += os.sep
-                    self.files[result[1].split(' ')[0]] = relative + _result[0]
+                    ref = result[1].split(' ', 1)[0]
+                    self.files[ref] = relative + _result[0]
                 else:
                     result = _result
+                    ref = result[1].split(' ', 1)
+                    result[0] = u"%s - %s" % (ref[0], result[0])
+                    result[1] = ref[1]
                     self.results.append(result)
         self.quick_panel(self.results, self.panel_done)
 
@@ -386,7 +394,7 @@ class GitShow(object):
             return
         item = self.results[picked]
         # the commit hash is the first thing on the second line
-        ref = item[1].split(' ')[0]
+        ref = item[1].split(' ', 1)[0]
         file_name = self.files.get(ref, self.get_file_name())
         self.run_command(
             ['git', 'show', '%s:%s' % (ref, file_name)],
@@ -454,9 +462,13 @@ class GitDiff (object):
                         relative = os.sep.join(['..'] * (len(os.path.normpath(_result[0]).split(os.sep)) - 1))
                         if relative:
                             relative += os.sep
-                    self.files[result[1].split(' ')[0]] = relative + _result[0]
+                    ref = result[1].split(' ', 1)[0]
+                    self.files[ref] = relative + _result[0]
                 else:
                     result = _result
+                    ref = result[1].split(' ', 1)
+                    result[0] = u"%s - %s" % (ref[0], result[0])
+                    result[1] = ref[1]
                     self.results.append(result)
         self.quick_panel(self.results, self.panel_done)
 
@@ -465,7 +477,7 @@ class GitDiff (object):
             return
         item = self.results[picked]
         # the commit hash is the first thing on the second line
-        ref = item[1].split(' ')[0]
+        ref = item[1].split(' ', 1)[0]
         command = ['git', 'diff', '-C', '--no-color', ref, '--']
         command.extend(set(self.files.values() + [self.get_file_name()]))
         self.run_command(
@@ -779,7 +791,7 @@ class GitOpenFileCommand(GitLog, GitWindowCommand):
     def branch_panel_done(self, picked):
         if 0 > picked < len(self.results):
             return
-        self.branch = self.results[picked].split(' ')[-1]
+        self.branch = self.results[picked].rsplit(' ', 1)[-1]
         self.run_log(self.branch)
 
     def log_result(self, result_hash):
