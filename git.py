@@ -375,7 +375,7 @@ class GitShowAllCommand(GitShow, GitWindowCommand):
 class GitGraph(object):
     def run(self, edit=None):
         self.run_command(
-            ['git', 'log', '--all', '--graph', '--pretty=%h -%d (%cr) (%ci) <%an> %s', '--abbrev-commit', '--no-color', '--decorate', '--date=relative', '--', self.get_file_name()],
+            ['git', 'log', '--graph', '--pretty=%h -%d (%cr) (%ci) <%an> %s', '--abbrev-commit', '--no-color', '--decorate', '--date=relative', '--', self.get_file_name()],
             self.log_done
         )
 
