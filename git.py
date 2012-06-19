@@ -559,6 +559,8 @@ class GitCommitMessageListener(sublime_plugin.EventListener):
 
 
 class GitStatusCommand(GitWindowCommand):
+    force_open = False
+
     def run(self):
         self.run_command(['git', 'status', '--porcelain'], self.status_done)
 
