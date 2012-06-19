@@ -330,7 +330,7 @@ class GitLog(object):
             return
         item = self.results[picked]
         # the commit hash is the first thing on the second line
-        ref = item[1].split(' ', 1)[0]
+        ref = item[0].split(' ', 1)[0]
         file_name = self.files.get(ref, self.get_file_name())
         self.log_result(ref, file_name)
 
@@ -394,7 +394,7 @@ class GitShow(object):
             return
         item = self.results[picked]
         # the commit hash is the first thing on the second line
-        ref = item[1].split(' ', 1)[0]
+        ref = item[0].split(' ', 1)[0]
         file_name = self.files.get(ref, self.get_file_name())
         self.run_command(
             ['git', 'show', '%s:%s' % (ref, file_name)],
@@ -477,7 +477,7 @@ class GitDiff (object):
             return
         item = self.results[picked]
         # the commit hash is the first thing on the second line
-        ref = item[1].split(' ', 1)[0]
+        ref = item[0].split(' ', 1)[0]
         command = ['git', 'diff', '-C', '--no-color', ref, '--']
         command.extend(set(self.files.values() + [self.get_file_name()]))
         self.run_command(
