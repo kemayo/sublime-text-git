@@ -483,6 +483,7 @@ class GitQuickCommitCommand(GitTextCommand):
 # 6. `commit -F [tempfile]`
 class GitCommitCommand(GitWindowCommand):
     active_message = False
+    history = []
 
     def run(self):
         self.working_dir = self.get_working_dir()
@@ -510,15 +511,19 @@ class GitCommitCommand(GitWindowCommand):
             self.run_command(['git', 'status'], self.diff_done)
 
     def diff_done(self, result):
-        template = "\n".join([
-            "",
-            "# Please enter the commit message for your changes. Lines starting",
-            "# with '#' and everything after the 'END' statement below will be ",
-            "# ignored, and an empty message aborts the commit.",
+        settings = sublime.load_settings("Git.sublime-settings")
+        historySize = settings.get('history_size')
+        self.history = self.history[:historySize]
+        lines = [""]
+        lines.extend(self.history)
+        lines.extend([
+            "# --------------",
+            "# Please enter the commit message for your changes. Everything below",
+            "# this paragraph is ignored, and an empty message aborts the commit.",
             "# Just close the window to accept your message.",
-            "# END--------------",
             result.strip()
         ])
+        template = "\n".join(lines)
         msg = self.window.new_file()
         msg.set_scratch(True)
         msg.set_name("COMMIT_EDITMSG")
@@ -529,9 +534,14 @@ class GitCommitCommand(GitWindowCommand):
 
     def message_done(self, message):
         # filter out the comments (git commit doesn't do this automatically)
-        lines = [line for line in message.split("\n# END---")[0].split("\n")
+        settings = sublime.load_settings("Git.sublime-settings")
+        historySize = settings.get('history_size')
+        lines = [line for line in message.split("\n# --------------")[0].split("\n")
             if not line.lstrip().startswith('#')]
-        message = '\n'.join(lines)
+        message = '\n'.join(lines).strip()
+
+        if len(message) and historySize:
+            self.history.insert(0, '# ' + message.replace("\n", " "))
         # write the temp file
         message_file = tempfile.NamedTemporaryFile(delete=False)
         message_file.write(message)
@@ -960,7 +970,6 @@ class GitCommitSelectedHunk(GitAddSelectedHunkCommand):
         self.run_command(['git', 'diff', '--no-color', self.get_file_name()], self.cull_diff)
         self.get_window().run_command('git_commit')
 
-        
 
 class GitGuiCommand(GitTextCommand):
     def run(self, edit):
@@ -972,6 +981,3 @@ class GitGitkCommand(GitTextCommand):
     def run(self, edit):
         command = ['gitk']
         self.run_command(command)
-            
-                        
-    
