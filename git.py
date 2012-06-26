@@ -513,6 +513,7 @@ class GitCommitCommand(GitWindowCommand):
     def diff_done(self, result):
         template = "\n".join([
             "",
+            "",
             "# Please enter the commit message for your changes. Lines starting",
             "# with '#' and everything after the 'END' statement below will be ",
             "# ignored, and an empty message aborts the commit.",
