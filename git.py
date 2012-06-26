@@ -375,8 +375,7 @@ class GitShowAllCommand(GitShow, GitWindowCommand):
 class GitGraph(object):
     def run(self, edit=None):
         self.run_command(
-            ['git', 'log', '--graph', '--pretty=%h %aN %ci%d %s', '--abbrev-commit', '--no-color', '--decorate',
-            '--date-order', '--', self.get_file_name()],
+            ['git', 'log', '--graph', '--pretty=%h -%d (%cr) (%ci) <%an> %s', '--abbrev-commit', '--no-color', '--decorate', '--date=relative', '--', self.get_file_name()],
             self.log_done
         )
 
@@ -385,11 +384,13 @@ class GitGraph(object):
 
 
 class GitGraphCommand(GitGraph, GitTextCommand):
-    pass
+    def get_graph_options(self):
+        return ""
 
 
 class GitGraphAllCommand(GitGraph, GitWindowCommand):
-    pass
+    def get_graph_options(self):
+        return "--all"
 
 
 class GitDiff (object):
@@ -496,7 +497,7 @@ class GitCommitCommand(GitWindowCommand):
         has_staged_files = False
         result_lines = result.rstrip().split('\n')
         for line in result_lines:
-            if not line[0].isspace():
+            if line and not line[0].isspace():
                 has_staged_files = True
                 break
         if not has_staged_files:
@@ -509,9 +510,9 @@ class GitCommitCommand(GitWindowCommand):
         else:
             self.run_command(['git', 'status'], self.diff_done)
 
-
     def diff_done(self, result):
         template = "\n".join([
+            "",
             "",
             "# Please enter the commit message for your changes. Lines starting",
             "# with '#' and everything after the 'END' statement below will be ",
@@ -527,7 +528,6 @@ class GitCommitCommand(GitWindowCommand):
         msg.sel().clear()
         msg.sel().add(sublime.Region(0, 0))
         GitCommitCommand.active_message = self
-
 
     def message_done(self, message):
         # filter out the comments (git commit doesn't do this automatically)
@@ -560,6 +560,8 @@ class GitCommitMessageListener(sublime_plugin.EventListener):
 
 
 class GitStatusCommand(GitWindowCommand):
+    force_open = False
+
     def run(self):
         self.run_command(['git', 'status', '--porcelain'], self.status_done)
 
@@ -592,8 +594,8 @@ class GitStatusCommand(GitWindowCommand):
 
         s = sublime.load_settings("Git.sublime-settings")
         root = git_root(self.get_working_dir())
-        if picked_status == '??' or s.get('status_opens_file'):
-            self.window.open_file(os.path.join(root, picked_file))
+        if picked_status == '??' or s.get('status_opens_file') or self.force_open:
+            if(os.path.isfile(picked_file)): self.window.open_file(os.path.join(root, picked_file))
         else:
             self.run_command(['git', 'diff', '--no-color', '--', picked_file.strip('"')],
                 self.diff_done, working_dir=root)
@@ -603,6 +605,12 @@ class GitStatusCommand(GitWindowCommand):
             return
         self.scratch(result, title="Git Diff")
 
+class GitOpenModifiedFilesCommand(GitStatusCommand):
+    force_open = True
+
+    def show_status_list(self):
+        for line_index in range(0, len(self.results)):
+            self.panel_done(line_index)
 
 class GitAddChoiceCommand(GitStatusCommand):
     def status_filter(self, item):
@@ -619,8 +627,11 @@ class GitAddChoiceCommand(GitStatusCommand):
         else:
             args = ["--", picked_file.strip('"')]
 
-        self.run_command(['git', 'add'] + args,
+        self.run_command(['git', 'add'] + args, self.rerun,
             working_dir=git_root(self.get_working_dir()))
+
+    def rerun(self, result):
+        self.run()
 
 
 class GitAdd(GitTextCommand):
@@ -638,6 +649,40 @@ class GitStashCommand(GitWindowCommand):
 class GitStashPopCommand(GitWindowCommand):
     def run(self):
         self.run_command(['git', 'stash', 'pop'])
+
+
+class GitStashApplyCommand(GitWindowCommand):
+    may_change_files = True
+    command_to_run_after_list = 'apply'
+
+    def run(self):
+        self.run_command(['git', 'stash', 'list'], self.stash_list_done)
+
+    def stash_list_done(self, result):
+        # No stash list at all
+        if not result:
+            self.panel('No stash found')
+            return
+
+        self.results = result.rstrip().split('\n')
+
+        # If there is only one, apply it
+        if len(self.results) == 1:
+            self.stash_list_panel_done()
+        else:
+            self.quick_panel(self.results, self.stash_list_panel_done)
+
+    def stash_list_panel_done(self, picked=0):
+        if 0 > picked < len(self.results):
+            return
+
+        # get the stash ref (e.g. stash@{3})
+        self.stash = self.results[picked].split(':')[0]
+        self.run_command(['git', 'stash', self.command_to_run_after_list, self.stash])
+
+
+class GitStashDropCommand(GitStashApplyCommand):
+    command_to_run_after_list = 'drop'
 
 
 class GitOpenFileCommand(GitLog, GitWindowCommand):
@@ -774,10 +819,10 @@ class GitPushCurrentBranchCommand(GitPullCurrentBranchCommand):
     command_to_run_after_describe = 'push'
 
 
-class GitCustomCommand(GitTextCommand):
+class GitCustomCommand(GitWindowCommand):
     may_change_files = True
 
-    def run(self, edit):
+    def run(self):
         self.get_window().show_input_panel("Git command", "",
             self.on_input, None, None)
 
@@ -792,12 +837,20 @@ class GitCustomCommand(GitTextCommand):
         self.run_command(command_splitted)
 
 
-class GitResetHeadCommand(GitTextCommand):
-    def run(self, edit):
+class GitResetHead(object):
+    def run(self, edit=None):
         self.run_command(['git', 'reset', 'HEAD', self.get_file_name()])
 
     def generic_done(self, result):
         pass
+
+
+class GitResetHeadCommand(GitResetHead, GitTextCommand):
+    pass
+
+
+class GitResetHeadAllCommand(GitResetHead, GitWindowCommand):
+    pass
 
 
 class GitResetHardHeadCommand(GitWindowCommand):
@@ -850,7 +903,7 @@ class GitAnnotateCommand(GitTextCommand):
         self.run_command(['git', 'show', 'HEAD:{0}'.format(repo_file)], show_status=False, no_save=True, callback=self.compare_tmp, stdout=self.tmp)
 
     def compare_tmp(self, result, stdout=None):
-        all_text = self.view.substr(sublime.Region(0, self.view.size()))
+        all_text = self.view.substr(sublime.Region(0, self.view.size())).encode("utf-8")
         self.run_command(['diff', '-u', self.tmp.name, '-'], stdin=all_text, no_save=True, show_status=False, callback=self.parse_diff)
 
     # This is where the magic happens. At the moment, only one chunk format is supported. While

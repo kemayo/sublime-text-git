@@ -48,6 +48,10 @@
         "command": "git_status"
     }
     ,{
+        "caption": "Git: Open Modified Files",
+        "command": "git_open_modified_files"
+    }
+    ,{
         "caption": "Git: New Branch",
         "command": "git_new_branch"
     }
@@ -66,6 +70,14 @@
     ,{
         "caption": "Git: Stash Pop",
         "command": "git_stash_pop"
+    }
+    ,{
+        "caption": "Git: Stash Apply",
+        "command": "git_stash_apply"
+    }
+    ,{
+        "caption": "Git: Stash Drop",
+        "command": "git_stash_drop"
     }
     ,{
         "caption": "Git: Add Current File",
@@ -115,10 +127,14 @@
         "caption": "Git: Open...",
         "command": "git_open_file"
     }
-	,{
-		"caption": "Git: Reset (unstage) Current File",
-		"command": "git_reset_head"
-	}
+    ,{
+        "caption": "Git: Reset (unstage) Current File",
+        "command": "git_reset_head"
+    }
+    ,{
+        "caption": "Git: Reset (unstage) All",
+        "command": "git_reset_head_all"
+    }
     ,{
         "caption": "Git: Reset (hard) HEAD",
         "command": "git_reset_hard_head"
