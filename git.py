@@ -857,7 +857,8 @@ class GitResetHardHeadCommand(GitWindowCommand):
     may_change_files = True
 
     def run(self):
-        self.run_command(['git', 'reset', '--hard', 'HEAD'])
+        if sublime.ok_cancel_dialog("Warning: this will reset your index and revert all files.", "Continue"):
+            self.run_command(['git', 'reset', '--hard', 'HEAD'])
 
 
 class GitClearAnnotationCommand(GitTextCommand):
