@@ -1,5 +1,8 @@
 [
-    {
+    {   "caption": "Git: Init",
+        "command": "git_init"
+    }
+    ,{
         "caption": "Git: Blame",
         "command": "git_blame"
     }
