@@ -7,6 +7,7 @@ import functools
 import tempfile
 import os.path
 import re
+import time
 
 # when sublime loads a plugin it's cd'd into the plugin directory. Thus
 # __file__ is useless for my purposes. What I want is "Packages/Git", but
@@ -25,16 +26,30 @@ def open_url(url):
     sublime.active_window().run_command('open_url', {"url": url})
 
 
+git_root_cache = {}
 def git_root(directory):
+    global git_root_cache
+
+    retval = False
+    leaf_dir = directory
+
+    if leaf_dir in git_root_cache and git_root_cache[leaf_dir]['expires'] > time.time():
+        return git_root_cache[leaf_dir]['retval']
+
     while directory:
         if os.path.exists(os.path.join(directory, '.git')):
-            return directory
+            retval = directory
+            break
         parent = os.path.realpath(os.path.join(directory, os.path.pardir))
         if parent == directory:
             # /.. == /
-            return False
+            retval = False
+            break
         directory = parent
-    return False
+
+    git_root_cache[leaf_dir] = { 'retval': retval, 'expires': time.time() + 5 }
+
+    return retval
 
 
 def view_contents(view):
