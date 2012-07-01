@@ -36,9 +36,11 @@ def git_root(directory):
         directory = parent
     return False
 
+
 # for readability code
 def git_root_exist(directory):
     return git_root(directory)
+
 
 def view_contents(view):
     region = sublime.Region(0, view.size())
@@ -252,6 +254,7 @@ class GitTextCommand(GitCommand, sublime_plugin.TextCommand):
         # So, this is not necessarily ideal, but it does work.
         return self.view.window() or sublime.active_window()
 
+
 class GitInit(object):
     def git_init(self, directory):
         if os.path.exists(directory):
@@ -260,7 +263,7 @@ class GitInit(object):
             sublime.status_message("Directory does not exist.")
 
     def git_inited(self, result):
-        sublime.status_message("Git successfully inited on %s" % self.get_working_dir())
+        sublime.status_message(result)
 
 
 class GitInitCommand(GitInit, GitWindowCommand):
@@ -272,6 +275,7 @@ class GitInitCommand(GitInit, GitWindowCommand):
             return True
         else:
             return False
+
 
 class GitBlameCommand(GitTextCommand):
     def run(self, edit):
