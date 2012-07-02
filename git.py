@@ -14,6 +14,8 @@ import re
 # Fun discovery: Sublime on windows still requires posix path separators.
 PLUGIN_DIRECTORY = os.getcwd().replace(os.path.normpath(os.path.join(os.getcwd(), '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
 
+history = []
+
 
 def main_thread(callback, *args, **kwargs):
     # sublime.set_timeout gets used to send things onto the main thread
@@ -483,7 +485,6 @@ class GitQuickCommitCommand(GitTextCommand):
 # 6. `commit -F [tempfile]`
 class GitCommitCommand(GitWindowCommand):
     active_message = False
-    history = []
 
     def run(self):
         self.working_dir = self.get_working_dir()
@@ -513,9 +514,12 @@ class GitCommitCommand(GitWindowCommand):
     def diff_done(self, result):
         settings = sublime.load_settings("Git.sublime-settings")
         historySize = settings.get('history_size')
-        self.history = self.history[:historySize]
+
+        def format(line):
+            return '# ' + line.replace("\n", " ")
+
         lines = [""]
-        lines.extend(self.history)
+        lines.extend(map(format, history[:historySize]))
         lines.extend([
             "# --------------",
             "# Please enter the commit message for your changes. Everything below",
@@ -541,7 +545,7 @@ class GitCommitCommand(GitWindowCommand):
         message = '\n'.join(lines).strip()
 
         if len(message) and historySize:
-            self.history.insert(0, '# ' + message.replace("\n", " "))
+            history.insert(0, message)
         # write the temp file
         message_file = tempfile.NamedTemporaryFile(delete=False)
         message_file.write(message)
@@ -565,6 +569,16 @@ class GitCommitMessageListener(sublime_plugin.EventListener):
             return
         message = view_contents(view)
         command.message_done(message)
+
+
+class GitCommitHistoryCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        self.edit = edit
+        self.view.window().show_quick_panel(history, self.panel_done, sublime.MONOSPACE_FONT)
+
+    def panel_done(self, index):
+        if index > -1:
+            self.view.replace(self.edit, self.view.sel()[0], history[index] + '\n')
 
 
 class GitStatusCommand(GitWindowCommand):
