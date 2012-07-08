@@ -748,9 +748,10 @@ class GitOpenFileCommand(GitLog, GitWindowCommand):
 class GitBranchCommand(GitWindowCommand):
     may_change_files = True
     command_to_run_after_branch = 'checkout'
+    extra_flags = []
 
     def run(self):
-        self.run_command(['git', 'branch', '--no-color'], self.branch_done)
+        self.run_command(['git', 'branch', '--no-color'] + self.extra_flags, self.branch_done)
 
     def branch_done(self, result):
         self.results = result.rstrip().split('\n')
@@ -769,6 +770,7 @@ class GitBranchCommand(GitWindowCommand):
 
 class GitMergeCommand(GitBranchCommand):
     command_to_run_after_branch = 'merge'
+    extra_flags = ['--no-merge']
 
 
 class GitNewBranchCommand(GitWindowCommand):
