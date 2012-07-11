@@ -904,10 +904,13 @@ class GitAnnotateCommand(GitTextCommand):
         if hasattr(self, "tmp"):
             self.compare_tmp(None)
             return
-        self.tmp = tempfile.NamedTemporaryFile()
+        # Don't set autodelete the file on windows, because if we set it, diff doesn't
+        # have permission to read the file (http://bugs.python.org/issue14243).
+        # As they are not deleted, we are leaking these temporary files on Windows.
+        self.tmp = tempfile.NamedTemporaryFile(delete=(os.name != 'nt'))
         self.active_view().settings().set('live_git_annotations', True)
         root = git_root(self.get_working_dir())
-        repo_file = os.path.relpath(self.view.file_name(), root)
+        repo_file = '/'.join(os.path.relpath(self.view.file_name(), root).split(os.path.sep))
         self.run_command(['git', 'show', 'HEAD:{0}'.format(repo_file)], show_status=False, no_save=True, callback=self.compare_tmp, stdout=self.tmp)
 
     def compare_tmp(self, result, stdout=None):
