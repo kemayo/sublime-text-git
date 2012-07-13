@@ -67,6 +67,10 @@
         "command": "git_merge"
     }
     ,{
+        "caption": "Git: Delete Branch",
+        "command": "git_delete_branch"
+    }
+    ,{
         "caption": "Git: Stash Changes",
         "command": "git_stash"
     }

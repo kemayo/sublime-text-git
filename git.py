@@ -822,6 +822,8 @@ class GitMergeCommand(GitBranchCommand):
     command_to_run_after_branch = 'merge'
     extra_flags = ['--no-merge']
 
+class GitDeleteBranchCommand(GitBranchCommand):
+    command_to_run_after_branch = ['branch', ' -d']
 
 class GitNewBranchCommand(GitWindowCommand):
     def run(self):
