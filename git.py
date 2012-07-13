@@ -770,23 +770,8 @@ class GitBranchCommand(GitWindowCommand):
 class GitMergeCommand(GitBranchCommand):
     command_to_run_after_branch = 'merge'
 
-class GitDeleteBranchCommand(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'branch', '--no-color'], self.branch_done)
-    
-    def branch_done(self, result):
-        self.results = result.rstrip().split('\n')
-        self.quick_panel(self.results, self.panel_done,
-            sublime.MONOSPACE_FONT)
-
-    def panel_done(self, picked):
-        if 0 > picked < len(self.results):
-            return
-        picked_branch = self.results[picked]
-        if picked_branch.startswith("*"):
-            return
-        picked_branch = picked_branch.strip()
-        self.run_command(['git', 'branch', '-d', picked_branch])
+class GitDeleteBranchCommand(GitBranchCommand):
+    command_to_run_after_branch = ['branch', ' -d']
 
 class GitNewBranchCommand(GitWindowCommand):
     def run(self):
