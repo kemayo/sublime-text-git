@@ -926,7 +926,7 @@ class GitResetHardHeadCommand(GitWindowCommand):
     may_change_files = True
 
     def run(self):
-        if sublime.ok_cancel_dialog("Warning: this will reset your index and revert all files.", "Continue"):
+        if sublime.ok_cancel_dialog("Warning: this will reset your index and revert all files, throwing away all your uncommitted changes with no way to recover. Consider stashing your changes instead if you'd like to set them aside safely.", "Continue"):
             self.run_command(['git', 'reset', '--hard', 'HEAD'])
 
 
