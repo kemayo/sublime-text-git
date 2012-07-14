@@ -135,6 +135,30 @@
         "command": "git_custom"
     }
     ,{
+        "caption": "Git Flow: Feature Start", 
+        "command": "git_flow_feature_start"
+    }
+    ,{
+        "caption": "Git Flow: Feature Finish",
+        "command": "git_flow_feature_finish"
+    }
+    ,{
+        "caption": "Git Flow: Release Start",
+        "command": "git_flow_release_start"
+    }
+    ,{
+        "caption": "Git Flow: Release Finish",
+        "command": "git_flow_release_finish"
+    }
+    ,{
+        "caption": "Git Flow: Hotfix Start",
+        "command": "git_flow_hotfix_start"
+    }
+    ,{
+        "caption": "Git Flow: Hotfix Finish",
+        "command": "git_flow_hotfix_finish"
+    }
+    ,{
         "caption": "Git: Open...",
         "command": "git_open_file"
     }

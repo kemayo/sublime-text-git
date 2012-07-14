@@ -63,6 +63,21 @@
                         ]
                     }
                     ,{ "caption": "-" }
+                    ,{
+                        "caption": "Flow",
+                        "children":
+                        [
+                            { "caption": "Feature Start", "command": "git_flow_feature_start"}
+                            ,{ "caption": "Feature Finish", "command": "git_flow_feature_finish"}
+                            ,{ "caption": "-"}
+                            ,{ "caption": "Release Start", "command": "git_flow_release_start"}
+                            ,{ "caption": "Release Finish", "command": "git_flow_release_finish"}
+                            ,{ "caption": "-"}
+                            ,{ "caption": "Hotfix Start", "command": "git_flow_hotfix_start"}
+                            ,{ "caption": "Hotfix Finish", "command": "git_flow_hotfix_finish"}
+                        ]
+                    }
+                    ,{ "caption": "-" }
                     ,{ "caption": "Init", "command": "git_init"}
                     ,{ "caption": "Status...", "command": "git_status" }
                     ,{ "caption": "Branches...", "command": "git_branch" }
