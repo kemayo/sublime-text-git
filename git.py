@@ -15,6 +15,8 @@ import time
 # Fun discovery: Sublime on windows still requires posix path separators.
 PLUGIN_DIRECTORY = os.getcwd().replace(os.path.normpath(os.path.join(os.getcwd(), '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
 
+history = []
+
 
 def main_thread(callback, *args, **kwargs):
     # sublime.set_timeout gets used to send things onto the main thread
@@ -535,7 +537,7 @@ class GitCommitCommand(GitWindowCommand):
             )
 
     def porcelain_status_done(self, result):
-        # todo: split out these status-parsing things...
+        # todo: split out these status-parsing things... asdf
         has_staged_files = False
         result_lines = result.rstrip().split('\n')
         for line in result_lines:
@@ -553,16 +555,22 @@ class GitCommitCommand(GitWindowCommand):
             self.run_command(['git', 'status'], self.diff_done)
 
     def diff_done(self, result):
-        template = "\n".join([
-            "",
-            "",
-            "# Please enter the commit message for your changes. Lines starting",
-            "# with '#' and everything after the 'END' statement below will be ",
-            "# ignored, and an empty message aborts the commit.",
+        settings = sublime.load_settings("Git.sublime-settings")
+        historySize = settings.get('history_size')
+
+        def format(line):
+            return '# ' + line.replace("\n", " ")
+
+        lines = ["", ""]
+        lines.extend(map(format, history[:historySize]))
+        lines.extend([
+            "# --------------",
+            "# Please enter the commit message for your changes. Everything below",
+            "# this paragraph is ignored, and an empty message aborts the commit.",
             "# Just close the window to accept your message.",
-            "# END--------------",
             result.strip()
         ])
+        template = "\n".join(lines)
         msg = self.window.new_file()
         msg.set_scratch(True)
         msg.set_name("COMMIT_EDITMSG")
@@ -573,9 +581,14 @@ class GitCommitCommand(GitWindowCommand):
 
     def message_done(self, message):
         # filter out the comments (git commit doesn't do this automatically)
-        lines = [line for line in message.split("\n# END---")[0].split("\n")
+        settings = sublime.load_settings("Git.sublime-settings")
+        historySize = settings.get('history_size')
+        lines = [line for line in message.split("\n# --------------")[0].split("\n")
             if not line.lstrip().startswith('#')]
-        message = '\n'.join(lines)
+        message = '\n'.join(lines).strip()
+
+        if len(message) and historySize:
+            history.insert(0, message)
         # write the temp file
         message_file = tempfile.NamedTemporaryFile(delete=False)
         message_file.write(message)
@@ -599,6 +612,16 @@ class GitCommitMessageListener(sublime_plugin.EventListener):
             return
         message = view_contents(view)
         command.message_done(message)
+
+
+class GitCommitHistoryCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        self.edit = edit
+        self.view.window().show_quick_panel(history, self.panel_done, sublime.MONOSPACE_FONT)
+
+    def panel_done(self, index):
+        if index > -1:
+            self.view.replace(self.edit, self.view.sel()[0], history[index] + '\n')
 
 
 class GitStatusCommand(GitWindowCommand):
@@ -1076,6 +1099,3 @@ class GitGitkCommand(GitTextCommand):
     def run(self, edit):
         command = ['gitk']
         self.run_command(command)
-
-
-

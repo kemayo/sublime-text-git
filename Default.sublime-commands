@@ -154,4 +154,8 @@
         "caption": "Git: Gitk",
         "command": "git_gitk"
     }
+    ,{
+        "caption": "Git: Commit history",
+        "command": "git_commit_history"
+    }
 ]

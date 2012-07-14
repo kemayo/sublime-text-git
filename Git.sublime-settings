@@ -21,4 +21,7 @@
 
 	// Use --verbose flag for commit messages
 	,"verbose_commits": true
+
+	// How many commit messages to store in the history. Set to 0 to disable.
+	,"history_size": 5
 }
