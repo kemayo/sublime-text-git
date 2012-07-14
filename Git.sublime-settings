@@ -27,4 +27,7 @@
 
 	// How many commit messages to store in the history. Set to 0 to disable.
 	,"history_size": 5
+
+	// Show git flow commands
+	,"flow": false
 }

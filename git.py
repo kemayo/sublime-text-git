@@ -917,7 +917,13 @@ class GitCustomCommand(GitWindowCommand):
         print command_splitted
         self.run_command(command_splitted)
 
-class GitFlowFeatureStartCommand(GitWindowCommand):
+class GitFlowCommand(GitWindowCommand):
+    def is_visible(self):
+        s = sublime.load_settings("Git.sublime-settings")
+        if s.get('flow'):
+            return True
+
+class GitFlowFeatureStartCommand(GitFlowCommand):
     def run(self):
         self.get_window().show_input_panel('Enter Feature Name:', '', self.on_done, None, None)
     
@@ -925,7 +931,7 @@ class GitFlowFeatureStartCommand(GitWindowCommand):
         self.run_command(['git-flow', 'feature', 'start', feature_name])
 
 
-class GitFlowFeatureFinishCommand(GitWindowCommand):
+class GitFlowFeatureFinishCommand(GitFlowCommand):
     def run(self):
         self.run_command(['git-flow', 'feature'], self.feature_done)
     
@@ -944,7 +950,7 @@ class GitFlowFeatureFinishCommand(GitWindowCommand):
         self.run_command(['git-flow', 'feature', 'finish', picked_feature])
 
 
-class GitFlowReleaseStartCommand(GitWindowCommand):
+class GitFlowReleaseStartCommand(GitFlowCommand):
     def run(self):
         self.get_window().show_input_panel('Enter Version Number:', '', self.on_done, None, None)
     
@@ -952,7 +958,7 @@ class GitFlowReleaseStartCommand(GitWindowCommand):
         self.run_command(['git-flow', 'release', 'start', release_name])
 
 
-class GitFlowReleaseFinishCommand(GitWindowCommand):
+class GitFlowReleaseFinishCommand(GitFlowCommand):
     def run(self):
         self.run_command(['git-flow', 'release'], self.release_done)
     
@@ -971,7 +977,7 @@ class GitFlowReleaseFinishCommand(GitWindowCommand):
         self.run_command(['git-flow', 'release', 'finish', picked_release])
 
 
-class GitFlowHotfixStartCommand(GitWindowCommand):
+class GitFlowHotfixStartCommand(GitFlowCommand):
     def run(self):
         self.get_window().show_input_panel('Enter hotfix name:', '', self.on_done, None, None)
     
@@ -979,7 +985,7 @@ class GitFlowHotfixStartCommand(GitWindowCommand):
         self.run_command(['git-flow', 'hotfix', 'start', hotfix_name])
 
 
-class GitFlowHotfixFinishCommand(GitWindowCommand):
+class GitFlowHotfixFinishCommand(GitFlowCommand):
     def run(self):
         self.run_command(['git-flow', 'hotfix'], self.hotfix_done)
     
