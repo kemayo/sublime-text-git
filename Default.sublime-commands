@@ -1,5 +1,8 @@
 [
-    {
+    {   "caption": "Git: Init",
+        "command": "git_init"
+    }
+    ,{
         "caption": "Git: Blame",
         "command": "git_blame"
     }
@@ -140,6 +143,10 @@
         "command": "git_reset_head_all"
     }
     ,{
+        "caption": "Git: Reset (hard) HEAD",
+        "command": "git_reset_hard_head"
+    }
+    ,{
         "caption": "Git: Add Selected Hunk",
         "command": "git_add_selected_hunk"
     }
@@ -154,5 +161,9 @@
     ,{
         "caption": "Git: Gitk",
         "command": "git_gitk"
+    }
+    ,{
+        "caption": "Git: Commit history",
+        "command": "git_commit_history"
     }
 ]
