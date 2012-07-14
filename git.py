@@ -338,7 +338,7 @@ class GitLog(object):
         # it's about the size of the largest repo I've tested this on... and
         # there's a definite hiccup when it's loading that
         command = ['git', 'log', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
-            '--date=local', '--max-count=9000']
+            '--date=local', '--max-count=9000', '--follow' if args[1] else None]
         command.extend(args)
         self.run_command(
             command,
@@ -419,7 +419,8 @@ class GitShowAllCommand(GitShow, GitWindowCommand):
 class GitGraph(object):
     def run(self, edit=None):
         self.run_command(
-            ['git', 'log', '--graph', '--pretty=%h -%d (%cr) (%ci) <%an> %s', '--abbrev-commit', '--no-color', '--decorate', '--date=relative', '--', self.get_file_name()],
+            filename = self.get_file_name()
+            ['git', 'log', '--graph', '--pretty=%h -%d (%cr) (%ci) <%an> %s', '--abbrev-commit', '--no-color', '--decorate', '--date=relative', '--follow' if filename else None, '--', filename],
             self.log_done
         )
 
