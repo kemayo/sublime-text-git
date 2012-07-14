@@ -47,6 +47,7 @@
                             ,{ "caption": "Reset", "command": "git_reset_head_all" }
                             ,{ "caption": "-" }
                             ,{ "caption": "Commit", "command": "git_commit" }
+                            ,{ "caption": "Amend Last Commit", "command": "git_commit_amend" }
                             ,{ "caption": "-" }
                             ,{ "caption": "Open...", "command": "git_open_file" }
                         ]

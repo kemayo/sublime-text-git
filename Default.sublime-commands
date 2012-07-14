@@ -43,6 +43,10 @@
         "command": "git_commit"
     }
     ,{
+        "caption": "Git: Amend Commit",
+        "command": "git_commit_amend"
+    }
+    ,{
         "caption": "Git: Quick Commit",
         "command": "git_quick_commit"
     }

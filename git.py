@@ -525,6 +525,7 @@ class GitQuickCommitCommand(GitTextCommand):
 # 6. `commit -F [tempfile]`
 class GitCommitCommand(GitWindowCommand):
     active_message = False
+    extra_options = ""
 
     def run(self):
         self.working_dir = self.get_working_dir()
@@ -558,16 +559,18 @@ class GitCommitCommand(GitWindowCommand):
         def format(line):
             return '# ' + line.replace("\n", " ")
 
-        lines = ["", ""]
-        lines.extend(map(format, history[:historySize]))
-        lines.extend([
+        if not hasattr(self, "lines"):
+            self.lines = ["", ""]
+
+        self.lines.extend(map(format, history[:historySize]))
+        self.lines.extend([
             "# --------------",
             "# Please enter the commit message for your changes. Everything below",
             "# this paragraph is ignored, and an empty message aborts the commit.",
             "# Just close the window to accept your message.",
             result.strip()
         ])
-        template = "\n".join(lines)
+        template = "\n".join(self.lines)
         msg = self.window.new_file()
         msg.set_scratch(True)
         msg.set_name("COMMIT_EDITMSG")
@@ -592,13 +595,23 @@ class GitCommitCommand(GitWindowCommand):
         message_file.close()
         self.message_file = message_file
         # and actually commit
-        self.run_command(['git', 'commit', '-F', message_file.name],
+        self.run_command(['git', 'commit', '-F', message_file.name, self.extra_options],
             self.commit_done, working_dir=self.working_dir)
 
     def commit_done(self, result):
         os.remove(self.message_file.name)
         self.panel(result)
 
+class GitCommitAmendCommand(GitCommitCommand):
+    extra_options = "--amend"
+
+    def diff_done(self, result):
+        self.after_show = result
+        self.run_command(['git','log','-n','1','--format=format:%B'], self.amend_diff_done)
+
+    def amend_diff_done(self, result):
+        self.lines = result.split("\n")
+        super(GitCommitAmendCommand, self).diff_done(self.after_show)
 
 class GitCommitMessageListener(sublime_plugin.EventListener):
     def on_close(self, view):
