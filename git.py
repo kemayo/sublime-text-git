@@ -152,6 +152,11 @@ class GitCommand(object):
         if not callback:
             callback = self.generic_done
 
+        if not isinstance(self, GitAnnotateCommand):
+            for view in self.get_window().views():
+               if view.settings().get('live_git_annotations'):
+                   view.run_command('git_annotate', {"reset":True})
+
         thread = CommandThread(command, callback, **kwargs)
         thread.start()
 
@@ -958,9 +963,9 @@ class GitAnnotateCommand(GitTextCommand):
     #    current state of the HEAD is being pulled from git.
     # 2. All consecutive runs will pass the current buffer into diffs stdin. The resulting
     #    output is then parsed and regions are set accordingly.
-    def run(self, view):
+    def run(self, view, reset=None):
         # If the annotations are already running, we dont have to create a new tmpfile
-        if hasattr(self, "tmp"):
+        if hasattr(self, "tmp") and not reset:
             self.compare_tmp(None)
             return
         self.tmp = tempfile.NamedTemporaryFile()
