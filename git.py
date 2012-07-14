@@ -428,14 +428,8 @@ class GitGraph(object):
 
 
 class GitGraphCommand(GitGraph, GitTextCommand):
-    def get_graph_options(self):
-        return ""
-
 
 class GitGraphAllCommand(GitGraph, GitWindowCommand):
-    def get_graph_options(self):
-        return "--all"
-
 
 class GitDiff (object):
     def run(self, edit=None):
