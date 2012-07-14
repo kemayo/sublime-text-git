@@ -41,7 +41,6 @@
                             ,{ "caption": "Diff Staged", "command": "git_diff_commit" }
                             ,{ "caption": "Diff Tool", "command": "git_diff_tool" }
                             ,{ "caption": "Reset Hard", "command": "git_reset_hard_head" }
-                            ,{ "caption": "Graph", "command": "git_graph_all" }
                             ,{ "caption": "-" }
                             ,{ "caption": "Add...", "command": "git_add_choice" }
                             ,{ "caption": "-" }
