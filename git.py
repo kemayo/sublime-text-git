@@ -728,7 +728,7 @@ class GitStashApplyCommand(GitWindowCommand):
         if not result:
             self.panel('No stash found')
             return
-            
+
         self.results = result.rstrip().split('\n')
 
         # If there is only one, apply it
@@ -920,6 +920,14 @@ class GitResetHeadCommand(GitResetHead, GitTextCommand):
 
 class GitResetHeadAllCommand(GitResetHead, GitWindowCommand):
     pass
+
+
+class GitResetHardHeadCommand(GitWindowCommand):
+    may_change_files = True
+
+    def run(self):
+        if sublime.ok_cancel_dialog("Warning: this will reset your index and revert all files.", "Continue"):
+            self.run_command(['git', 'reset', '--hard', 'HEAD'])
 
 
 class GitClearAnnotationCommand(GitTextCommand):
