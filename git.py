@@ -52,6 +52,11 @@ def git_root(directory):
     return retval
 
 
+# for readability code
+def git_root_exist(directory):
+    return git_root(directory)
+
+
 def view_contents(view):
     region = sublime.Region(0, view.size())
     return view.substr(region)
@@ -263,6 +268,28 @@ class GitTextCommand(GitCommand, sublime_plugin.TextCommand):
         # the case of the quick panel.
         # So, this is not necessarily ideal, but it does work.
         return self.view.window() or sublime.active_window()
+
+
+class GitInit(object):
+    def git_init(self, directory):
+        if os.path.exists(directory):
+            self.run_command(['git', 'init'], self.git_inited, working_dir = directory)
+        else:
+            sublime.status_message("Directory does not exist.")
+
+    def git_inited(self, result):
+        sublime.status_message(result)
+
+
+class GitInitCommand(GitInit, GitWindowCommand):
+    def run(self):
+        self.get_window().show_input_panel("Git directory", self.get_working_dir(), self.git_init, None, None)
+
+    def is_enabled(self):
+        if not git_root_exist(self.get_working_dir()):
+            return True
+        else:
+            return False
 
 
 class GitBlameCommand(GitTextCommand):
