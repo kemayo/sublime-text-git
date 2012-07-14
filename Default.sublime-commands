@@ -143,6 +143,10 @@
         "command": "git_reset_head_all"
     }
     ,{
+        "caption": "Git: Reset (hard) HEAD",
+        "command": "git_reset_hard_head"
+    }
+    ,{
         "caption": "Git: Add Selected Hunk",
         "command": "git_add_selected_hunk"
     }
