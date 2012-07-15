@@ -6,6 +6,9 @@
 	// e.g. "/Users/kemayo/bin/git" or "C:\bin\git.exe"
 	,"git_command": false
 
+	// point this the installation location of git-flow
+	,"git_flow_command": "/usr/local/bin/git-flow"
+
 	// use the panel for diff output, rather than a new scratch window (new tab)
 	,"diff_panel": false
 
@@ -24,4 +27,7 @@
 
 	// How many commit messages to store in the history. Set to 0 to disable.
 	,"history_size": 5
+
+	// Show git flow commands
+	,"flow": false
 }
