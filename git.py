@@ -810,7 +810,7 @@ class GitOpenFileCommand(GitLog, GitWindowCommand):
 
 class GitBranchCommand(GitWindowCommand):
     may_change_files = True
-    command_to_run_after_branch = 'checkout'
+    command_to_run_after_branch = ['checkout']
     extra_flags = []
 
     def run(self):
