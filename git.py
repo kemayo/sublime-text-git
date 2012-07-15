@@ -695,13 +695,15 @@ class GitAddChoiceCommand(GitStatusCommand):
         return not item[1].isspace()
 
     def show_status_list(self):
-        self.results.insert(0, [" + All Files", "apart from untracked files"])
+        self.results = [[" + All Files", "apart from untracked files"], [" + All Files", "including untracked files"]] + self.results
         self.quick_panel(self.results, self.panel_done,
             sublime.MONOSPACE_FONT)
 
     def panel_followup(self, picked_status, picked_file, picked_index):
         if picked_index == 0:
             args = ["--update"]
+        elif picked_index == 1:
+            args = ["--all"]
         else:
             args = ["--", picked_file.strip('"')]
 
