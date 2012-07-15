@@ -827,15 +827,15 @@ class GitBranchCommand(GitWindowCommand):
         if picked_branch.startswith("*"):
             return
         picked_branch = picked_branch.strip()
-        self.run_command(['git', self.command_to_run_after_branch, picked_branch])
+        self.run_command(['git'] + self.command_to_run_after_branch + [picked_branch])
 
 
 class GitMergeCommand(GitBranchCommand):
-    command_to_run_after_branch = 'merge'
+    command_to_run_after_branch = ['merge']
     extra_flags = ['--no-merge']
 
 class GitDeleteBranchCommand(GitBranchCommand):
-    command_to_run_after_branch = ['branch', ' -d']
+    command_to_run_after_branch = ['branch', '-d']
 
 class GitNewBranchCommand(GitWindowCommand):
     def run(self):
