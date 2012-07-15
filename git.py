@@ -701,13 +701,19 @@ class GitAddChoiceCommand(GitStatusCommand):
 
     def panel_followup(self, picked_status, picked_file, picked_index):
         if picked_index == 0:
-            args = ["--update"]
+            command = ['git', 'add', '--update']
         elif picked_index == 1:
-            args = ["--all"]
+            command = ['git', 'add', '--all']
         else:
-            args = ["--", picked_file.strip('"')]
+            command = ['git']
+            picked_file = picked_file.strip('"')
+            if os.path.isfile(picked_file):
+                command += ['add']
+            else:
+                command += ['rm']
+            command += ['--', picked_file]
 
-        self.run_command(['git', 'add'] + args, self.rerun,
+        self.run_command(command, self.rerun,
             working_dir=git_root(self.get_working_dir()))
 
     def rerun(self, result):
