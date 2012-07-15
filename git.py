@@ -834,11 +834,7 @@ class GitNewBranchCommand(GitWindowCommand):
         self.run_command(['git', 'checkout', '-b', branchname])
 
 
-class GitTag(GitTextCommand):
-    def run(self, edit):
-        self.run_command(['git', 'tag'])
-
-class GitNewTag(GitWindowCommand):
+class GitNewTagCommand(GitWindowCommand):
     def run(self):
         self.get_window().show_input_panel("Tag name", "", self.on_input, None, None)
 
@@ -848,7 +844,7 @@ class GitNewTag(GitWindowCommand):
             return
         self.run_command(['git', 'tag', tagname])
 
-class GitShowTag(GitWindowCommand):
+class GitShowTagsCommand(GitWindowCommand):
     def run(self):
         self.run_command(['git', 'tag'], self.fetch_tag)
 
