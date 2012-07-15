@@ -530,6 +530,7 @@ class GitCommitCommand(GitWindowCommand):
     extra_options = ""
 
     def run(self):
+        self.lines = []
         self.working_dir = self.get_working_dir()
         self.run_command(
             ['git', 'status', '--untracked-files=no', '--porcelain'],
@@ -561,7 +562,7 @@ class GitCommitCommand(GitWindowCommand):
         def format(line):
             return '# ' + line.replace("\n", " ")
 
-        if not hasattr(self, "lines"):
+        if not len(self.lines):
             self.lines = ["", ""]
 
         self.lines.extend(map(format, history[:historySize]))
