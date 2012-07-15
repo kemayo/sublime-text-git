@@ -834,6 +834,40 @@ class GitNewBranchCommand(GitWindowCommand):
         self.run_command(['git', 'checkout', '-b', branchname])
 
 
+class GitTag(GitTextCommand):
+    def run(self, edit):
+        self.run_command(['git', 'tag'])
+
+class GitNewTag(GitWindowCommand):
+    def run(self):
+        self.get_window().show_input_panel("Tag name", "", self.on_input, None, None)
+
+    def on_input(self, tagname):
+        if not tagname.strip():
+            self.panel("No branch name provided")
+            return
+        self.run_command(['git', 'tag', tagname])
+
+class GitShowTag(GitWindowCommand):
+    def run(self):
+        self.run_command(['git', 'tag'], self.fetch_tag)
+
+    def fetch_tag(self, result):
+        self.results = result.rstrip().split('\n')
+        self.quick_panel(self.results, self.panel_done)
+
+    def panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        picked_tag = self.results[picked]
+        picked_tag = picked_tag.strip()
+        self.run_command(['git', 'show', picked_tag])
+
+class GitPushTagsCommand(GitWindowCommand):
+    def run(self):
+        self.run_command(['git', 'push', '--tags'])
+
+
 class GitCheckoutCommand(GitTextCommand):
     may_change_files = True
 
