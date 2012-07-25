@@ -703,6 +703,8 @@ class GitAddChoiceCommand(GitStatusCommand):
             sublime.MONOSPACE_FONT)
 
     def panel_followup(self, picked_status, picked_file, picked_index):
+        working_dir=git_root(self.get_working_dir())
+
         if picked_index == 0:
             command = ['git', 'add', '--update']
         elif picked_index == 1:
@@ -710,14 +712,14 @@ class GitAddChoiceCommand(GitStatusCommand):
         else:
             command = ['git']
             picked_file = picked_file.strip('"')
-            if os.path.isfile(picked_file):
+            if os.path.isfile(working_dir+"/"+picked_file):
                 command += ['add']
             else:
                 command += ['rm']
             command += ['--', picked_file]
 
         self.run_command(command, self.rerun,
-            working_dir=git_root(self.get_working_dir()))
+            working_dir=working_dir)
 
     def rerun(self, result):
         self.run()
