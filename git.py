@@ -74,15 +74,15 @@ def do_when(conditional, callback, *args, **kwargs):
     sublime.set_timeout(functools.partial(do_when, conditional, callback, *args, **kwargs), 50)
 
 
-def _make_text_safeish(text, fallback_encoding):
+def _make_text_safeish(text, fallback_encoding, method='decode'):
     # The unicode decode here is because sublime converts to unicode inside
     # insert in such a way that unknown characters will cause errors, which is
     # distinctly non-ideal... and there's no way to tell what's coming out of
     # git in output. So...
     try:
-        unitext = text.decode('utf-8')
-    except UnicodeDecodeError:
-        unitext = text.decode(fallback_encoding)
+        unitext = getattr(text, method)('utf-8')
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        unitext = getattr(text, method)(fallback_encoding)
     return unitext
 
 
@@ -222,6 +222,11 @@ class GitWindowCommand(GitCommand, sublime_plugin.WindowCommand):
         view = self.active_view()
         if view and view.file_name() and len(view.file_name()) > 0:
             return view.file_name()
+
+    @property
+    def fallback_encoding(self):
+        if self.active_view() and self.active_view().settings().get('fallback_encoding'):
+            return self.active_view().settings().get('fallback_encoding').rpartition('(')[2].rpartition(')')[0]
 
     # If there's no active view or the active view is not a file on the
     # filesystem (e.g. a search results view), we can infer the folder
@@ -597,7 +602,7 @@ class GitCommitCommand(GitWindowCommand):
             history.insert(0, message)
         # write the temp file
         message_file = tempfile.NamedTemporaryFile(delete=False)
-        message_file.write(message)
+        message_file.write(_make_text_safeish(message, self.fallback_encoding, 'encode'))
         message_file.close()
         self.message_file = message_file
         # and actually commit
