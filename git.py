@@ -247,7 +247,10 @@ class GitWindowCommand(GitCommand, sublime_plugin.WindowCommand):
         if file_name:
             return os.path.dirname(file_name)
         else:
-            return self.window.folders()[0]
+            try:
+                return self.window.folders()[0]
+            except IndexError: #handle no open folder, just return a sane default
+                return PLUGIN_DIRECTORY #seems sane enough
 
     def get_window(self):
         return self.window
