@@ -7,6 +7,18 @@
         "command": "git_blame"
     }
     ,{
+        "caption": "Git: New Tag",
+        "command": "git_new_tag"
+    }
+    ,{
+        "caption": "Git: Show Tags",
+        "command": "git_show_tags"
+    }
+    ,{
+        "caption": "Git Push Tags",
+        "command": "git_push_tags"
+    }
+    ,{
         "caption": "Git: Log Current File",
         "command": "git_log"
     }
