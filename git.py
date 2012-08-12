@@ -86,6 +86,20 @@ def _make_text_safeish(text, fallback_encoding, method='decode'):
     return unitext
 
 
+def cmd_exists(cmd_args, shell=True):
+    """
+    Tells if the command given in `cmd_args` returns exit code 0 when executed.
+    If `shell==False`, it takes a subprocess argument list instead of a shell invocation string.
+    Examples:
+        cmd_exists('diff --version')
+        cmd_exists(['diff.exe', '--version'], shell=False)
+    """
+    try:
+        return 0 == subprocess.check_call(cmd_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell)
+    except subprocess.CalledProcessError:
+        return False
+
+
 class CommandThread(threading.Thread):
     def __init__(self, command, on_done, working_dir="", fallback_encoding="", **kwargs):
         threading.Thread.__init__(self)
@@ -126,7 +140,7 @@ class CommandThread(threading.Thread):
             main_thread(self.on_done, e.returncode)
         except OSError, e:
             if e.errno == 2:
-                main_thread(sublime.error_message, "Git binary could not be found in PATH\n\nConsider using the git_command setting for the Git plugin\n\nPATH is: %s" % os.environ['PATH'])
+                main_thread(sublime.error_message, "Git binary (%s) could not be found in PATH\n\nConsider using the git_command setting for the Git plugin\n\nPATH is: %s" % (self.command[0], os.environ['PATH']))
             else:
                 raise e
 
@@ -1125,15 +1139,30 @@ class GitAnnotateCommand(GitTextCommand):
         if hasattr(self, "tmp"):
             self.compare_tmp(None)
             return
-        self.tmp = tempfile.NamedTemporaryFile()
+        # Don't set autodelete the file on windows, because if we set it, diff doesn't
+        # have permission to read the file (http://bugs.python.org/issue14243).
+        # As they are not deleted, we are leaking these temporary files on Windows.
+        self.tmp = tempfile.NamedTemporaryFile(delete=(os.name != 'nt'))
         self.active_view().settings().set('live_git_annotations', True)
         root = git_root(self.get_working_dir())
-        repo_file = os.path.relpath(self.view.file_name(), root)
+        repo_file = '/'.join(os.path.relpath(self.view.file_name(), root).split(os.path.sep))
         self.run_command(['git', 'show', 'HEAD:{0}'.format(repo_file)], show_status=False, no_save=True, callback=self.compare_tmp, stdout=self.tmp)
 
     def compare_tmp(self, result, stdout=None):
         all_text = self.view.substr(sublime.Region(0, self.view.size())).encode("utf-8")
-        self.run_command(['diff', '-u', self.tmp.name, '-'], stdin=all_text, no_save=True, show_status=False, callback=self.parse_diff)
+        # Only diff when diff is available.
+        if not self.detect_diff_cached():
+            main_thread(sublime.error_message, "diff could not be found in PATH\n\nPATH is: %s" % os.environ['PATH'])
+        else:
+            self.run_command(['diff', '-u', self.tmp.name, '-'], stdin=all_text, no_save=True, show_status=False, callback=self.parse_diff)
+
+    # Checks if diff exists. Only executed on first invocation, checked otherwise.
+    # The caching is necessary as this is called on every keystroke if live annotations are on.
+    # TODO It would be nicer to check if `git` and `diff` exist when the plugin is loaded.
+    def detect_diff_cached(self):
+        if not hasattr(self, 'diff_command_available'):
+            self.diff_command_available = cmd_exists('diff --version')
+        return self.diff_command_available
 
     # This is where the magic happens. At the moment, only one chunk format is supported. While
     # the unified diff format theoritaclly supports more, I don't think git diff creates them.
