@@ -173,7 +173,8 @@ class GitCommand(object):
                 do_when(lambda: not self.active_view().is_loading(), lambda: self.active_view().set_viewport_position(position, False))
                 # self.active_view().show(position)
 
-        if self.active_view().settings().get('live_git_annotations'):
+        view = self.active_view()
+        if view and view.settings().get('live_git_annotations'):
             self.view.run_command('git_annotate')
 
         if not result.strip():
