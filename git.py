@@ -852,6 +852,8 @@ class GitBranchCommand(GitWindowCommand):
         self.run_command(['git'] + self.command_to_run_after_branch + [picked_branch], self.update_status)
 
     def update_status(self, result):
+        global branch
+        branch = ""
         for view in self.window.views():
             view.run_command("git_branch_status")
 
@@ -1266,13 +1268,24 @@ class GitGitkCommand(GitTextCommand):
         command = ['gitk']
         self.run_command(command)
 
-
 class GitBranchStatusListener(sublime_plugin.EventListener):
     def on_load(self, view):
         view.run_command("git_branch_status")
 
+branch = ""
 class GitBranchStatusCommand(GitTextCommand):
     def run(self, view):
-        self.run_command(['git','rev-parse','--abbrev-ref','HEAD'], self.branch_done, show_status=False)
+        global branch
+
+        if branch:
+            self.set_status(branch)
+        else:
+            self.run_command(['git','rev-parse','--abbrev-ref','HEAD'], self.branch_done, show_status=False)
+
     def branch_done(self, result):
-        self.view.set_status("git-branch", "git branch: " + result.strip())
+        global branch
+        branch = result.strip()
+        self.set_status(branch)
+
+    def set_status(self, branch):
+        self.view.set_status("git-branch", "git branch: " + branch)
