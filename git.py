@@ -246,7 +246,7 @@ class GitWindowCommand(GitCommand, sublime_plugin.WindowCommand):
     def get_working_dir(self):
         file_name = self._active_file_name()
         if file_name:
-            return os.path.dirname(file_name)
+            return os.path.realpath(os.path.dirname(file_name))
         else:
             try: # handle case with no open folder
                 return self.window.folders()[0]
@@ -271,7 +271,7 @@ class GitTextCommand(GitCommand, sublime_plugin.TextCommand):
         return os.path.basename(self.view.file_name())
 
     def get_working_dir(self):
-        return os.path.dirname(self.view.file_name())
+        return os.path.realpath(os.path.dirname(self.view.file_name()))
 
     def get_window(self):
         # Fun discovery: if you switch tabs while a command is working,
