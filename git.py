@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import sublime
 import sublime_plugin
@@ -1272,21 +1273,57 @@ class GitGitkCommand(GitTextCommand):
 class GitBranchStatusListener(sublime_plugin.EventListener):
     def on_load(self, view):
         view.run_command("git_branch_status")
+    def on_post_save(self, view):
+        view.run_command("git_branch_status")
 
 branch = ""
 class GitBranchStatusCommand(GitTextCommand):
     def run(self, view):
-        global branch
+        global branch, modified, added, deleted, untracked, conflicts, clean
+
+        self.run_command(['git','status','-s'], self.changed_done, show_status=False)
 
         if branch:
-            self.set_status(branch)
+            self.set_status(branch, modified, added, deleted, untracked, conflicts, clean)
         else:
             self.run_command(['git','rev-parse','--abbrev-ref','HEAD'], self.branch_done, show_status=False)
+            self.run_command(['git','status','-s'], self.changed_done, show_status=False)
 
     def branch_done(self, result):
         global branch
         branch = result.strip()
-        self.set_status(branch)
 
-    def set_status(self, branch):
-        self.view.set_status("git-branch", "git branch: " + branch)
+    def changed_done(self, result):
+        global branch, modified, added, deleted, untracked, conflicts, clean
+        lines = [namestat.strip()[0] for namestat in result.splitlines()]
+        modified = lines.count('M')
+        added = lines.count('A')
+        deleted = lines.count('D')
+        untracked = lines.count('?')
+        conflicts = lines.count('U')
+        if len(lines) == 0:
+            clean = True
+        else:
+            clean = False
+
+        self.set_status(branch, modified, added, deleted, untracked, conflicts, clean)
+
+    def set_status(self, branch, modified, added, deleted, untracked, conflicts, clean):
+        s = sublime.load_settings("Git.sublime-settings")
+        smbs = s.get('status_symbols')
+
+        status = ""
+        if modified > 0:
+            status += str(modified) + smbs['modified'] + smbs['separator']
+        if added > 0:
+            status += str(added) + smbs['added'] + smbs['separator']
+        if deleted > 0:
+            status += str(deleted) + smbs['deleted'] + smbs['separator']
+        if untracked > 0:
+            status += str(untracked) + smbs['untracked'] + smbs['separator']
+        if conflicts > 0:
+            status += str(conflicts) + smbs['conflicts'] + smbs['separator']
+        if clean:
+            status = smbs['clean']
+
+        self.view.set_status("git-branch", "git branch: " + branch + ' ' + status)
