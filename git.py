@@ -494,7 +494,11 @@ class GitDiffCommitCommand(GitDiffCommit, GitWindowCommand):
     pass
 
 
-class GitDiffTool(GitWindowCommand):
+class GitDiffTool(GitTextCommand):
+    def run(self, edit=None):
+        self.run_command(['git', 'difftool', '--', self.get_file_name()], None)
+
+class GitDiffToolAll(GitWindowCommand):
     def run(self):
         self.run_command(['git', 'difftool'])
 

@@ -47,8 +47,12 @@
         "command": "git_diff_commit"
     }
     ,{
-        "caption": "Git: Diff Tool",
+        "caption": "Git: Diff Tool Current File",
         "command": "git_diff_tool"
+    }
+    ,{
+        "caption": "Git: Diff Tool All",
+        "command": "git_diff_tool_all"
     }
     ,{
         "caption": "Git: Commit",
