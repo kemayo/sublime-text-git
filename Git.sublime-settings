@@ -33,4 +33,7 @@
 
 	// Annotations default to being on for all files. Can be slow in some cases.
 	,"annotations": false
+
+	// Symbols for quick git status in status bar
+	,"status_symbols" : {"modified": "≠", "added": "+", "deleted": "×", "untracked": "?", "conflicts": "‼", "clean": "√", "separator": " "}
 }
