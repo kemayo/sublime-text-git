@@ -412,6 +412,7 @@ class GitShow(object):
         working_dir = self.get_working_dir()
         file_path = working_dir.replace(git_root(working_dir), '')[1:]
         file_name = os.path.join(file_path, self.get_file_name())
+        file_name = file_name.replace('\\','/')
         self.run_command(
             ['git', 'show', '%s:%s' % (ref, file_name)],
             self.details_done,
