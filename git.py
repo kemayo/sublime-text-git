@@ -16,6 +16,7 @@ import time
 PLUGIN_DIRECTORY = os.getcwd().replace(os.path.normpath(os.path.join(os.getcwd(), '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
 
 history = []
+git_root_cache = {}
 
 
 def main_thread(callback, *args, **kwargs):
@@ -28,7 +29,6 @@ def open_url(url):
     sublime.active_window().run_command('open_url', {"url": url})
 
 
-git_root_cache = {}
 def git_root(directory):
     global git_root_cache
 
@@ -49,7 +49,10 @@ def git_root(directory):
             break
         directory = parent
 
-    git_root_cache[leaf_dir] = { 'retval': retval, 'expires': time.time() + 5 }
+    git_root_cache[leaf_dir] = {
+        'retval': retval,
+        'expires': time.time() + 5
+    }
 
     return retval
 
@@ -248,7 +251,7 @@ class GitWindowCommand(GitCommand, sublime_plugin.WindowCommand):
         if file_name:
             return os.path.realpath(os.path.dirname(file_name))
         else:
-            try: # handle case with no open folder
+            try:  # handle case with no open folder
                 return self.window.folders()[0]
             except IndexError:
                 return ''
@@ -445,8 +448,10 @@ class GitGraph(object):
 class GitGraphCommand(GitGraph, GitTextCommand):
     pass
 
+
 class GitGraphAllCommand(GitGraph, GitWindowCommand):
     pass
+
 
 class GitDiff (object):
     def run(self, edit=None):
@@ -617,16 +622,18 @@ class GitCommitCommand(GitWindowCommand):
         os.remove(self.message_file.name)
         self.panel(result)
 
+
 class GitCommitAmendCommand(GitCommitCommand):
     extra_options = "--amend"
 
     def diff_done(self, result):
         self.after_show = result
-        self.run_command(['git','log','-n','1','--format=format:%B'], self.amend_diff_done)
+        self.run_command(['git', 'log', '-n', '1', '--format=format:%B'], self.amend_diff_done)
 
     def amend_diff_done(self, result):
         self.lines = result.split("\n")
         super(GitCommitAmendCommand, self).diff_done(self.after_show)
+
 
 class GitCommitMessageListener(sublime_plugin.EventListener):
     def on_close(self, view):
@@ -685,7 +692,8 @@ class GitStatusCommand(GitWindowCommand):
         s = sublime.load_settings("Git.sublime-settings")
         root = git_root(self.get_working_dir())
         if picked_status == '??' or s.get('status_opens_file') or self.force_open:
-            if(os.path.isfile(os.path.join(root, picked_file))): self.window.open_file(os.path.join(root, picked_file))
+            if(os.path.isfile(os.path.join(root, picked_file))):
+                self.window.open_file(os.path.join(root, picked_file))
         else:
             self.run_command(['git', 'diff', '--no-color', '--', picked_file.strip('"')],
                 self.diff_done, working_dir=root)
@@ -695,12 +703,14 @@ class GitStatusCommand(GitWindowCommand):
             return
         self.scratch(result, title="Git Diff")
 
+
 class GitOpenModifiedFilesCommand(GitStatusCommand):
     force_open = True
 
     def show_status_list(self):
         for line_index in range(0, len(self.results)):
             self.panel_done(line_index)
+
 
 class GitAddChoiceCommand(GitStatusCommand):
     def status_filter(self, item):
@@ -712,7 +722,7 @@ class GitAddChoiceCommand(GitStatusCommand):
             sublime.MONOSPACE_FONT)
 
     def panel_followup(self, picked_status, picked_file, picked_index):
-        working_dir=git_root(self.get_working_dir())
+        working_dir = git_root(self.get_working_dir())
 
         if picked_index == 0:
             command = ['git', 'add', '--update']
@@ -721,7 +731,7 @@ class GitAddChoiceCommand(GitStatusCommand):
         else:
             command = ['git']
             picked_file = picked_file.strip('"')
-            if os.path.isfile(working_dir+"/"+picked_file):
+            if os.path.isfile(working_dir + "/" + picked_file):
                 command += ['add']
             else:
                 command += ['rm']
@@ -858,12 +868,15 @@ class GitBranchCommand(GitWindowCommand):
         for view in self.window.views():
             view.run_command("git_branch_status")
 
+
 class GitMergeCommand(GitBranchCommand):
     command_to_run_after_branch = ['merge']
     extra_flags = ['--no-merge']
 
+
 class GitDeleteBranchCommand(GitBranchCommand):
     command_to_run_after_branch = ['branch', '-d']
+
 
 class GitNewBranchCommand(GitWindowCommand):
     def run(self):
@@ -887,6 +900,7 @@ class GitNewTagCommand(GitWindowCommand):
             return
         self.run_command(['git', 'tag', tagname])
 
+
 class GitShowTagsCommand(GitWindowCommand):
     def run(self):
         self.run_command(['git', 'tag'], self.fetch_tag)
@@ -901,6 +915,7 @@ class GitShowTagsCommand(GitWindowCommand):
         picked_tag = self.results[picked]
         picked_tag = picked_tag.strip()
         self.run_command(['git', 'show', picked_tag])
+
 
 class GitPushTagsCommand(GitWindowCommand):
     def run(self):
@@ -975,16 +990,18 @@ class GitCustomCommand(GitWindowCommand):
         print command_splitted
         self.run_command(command_splitted)
 
+
 class GitFlowCommand(GitWindowCommand):
     def is_visible(self):
         s = sublime.load_settings("Git.sublime-settings")
         if s.get('flow'):
             return True
 
+
 class GitFlowFeatureStartCommand(GitFlowCommand):
     def run(self):
         self.get_window().show_input_panel('Enter Feature Name:', '', self.on_done, None, None)
-    
+
     def on_done(self, feature_name):
         self.run_command(['git-flow', 'feature', 'start', feature_name])
 
@@ -992,12 +1009,12 @@ class GitFlowFeatureStartCommand(GitFlowCommand):
 class GitFlowFeatureFinishCommand(GitFlowCommand):
     def run(self):
         self.run_command(['git-flow', 'feature'], self.feature_done)
-    
+
     def feature_done(self, result):
         self.results = result.rstrip().split('\n')
         self.quick_panel(self.results, self.panel_done,
             sublime.MONOSPACE_FONT)
-    
+
     def panel_done(self, picked):
         if 0 > picked < len(self.results):
             return
@@ -1011,7 +1028,7 @@ class GitFlowFeatureFinishCommand(GitFlowCommand):
 class GitFlowReleaseStartCommand(GitFlowCommand):
     def run(self):
         self.get_window().show_input_panel('Enter Version Number:', '', self.on_done, None, None)
-    
+
     def on_done(self, release_name):
         self.run_command(['git-flow', 'release', 'start', release_name])
 
@@ -1019,12 +1036,12 @@ class GitFlowReleaseStartCommand(GitFlowCommand):
 class GitFlowReleaseFinishCommand(GitFlowCommand):
     def run(self):
         self.run_command(['git-flow', 'release'], self.release_done)
-    
+
     def release_done(self, result):
         self.results = result.rstrip().split('\n')
         self.quick_panel(self.results, self.panel_done,
             sublime.MONOSPACE_FONT)
-    
+
     def panel_done(self, picked):
         if 0 > picked < len(self.results):
             return
@@ -1038,7 +1055,7 @@ class GitFlowReleaseFinishCommand(GitFlowCommand):
 class GitFlowHotfixStartCommand(GitFlowCommand):
     def run(self):
         self.get_window().show_input_panel('Enter hotfix name:', '', self.on_done, None, None)
-    
+
     def on_done(self, hotfix_name):
         self.run_command(['git-flow', 'hotfix', 'start', hotfix_name])
 
@@ -1046,12 +1063,12 @@ class GitFlowHotfixStartCommand(GitFlowCommand):
 class GitFlowHotfixFinishCommand(GitFlowCommand):
     def run(self):
         self.run_command(['git-flow', 'hotfix'], self.hotfix_done)
-    
+
     def hotfix_done(self, result):
         self.results = result.rstrip().split('\n')
         self.quick_panel(self.results, self.panel_done,
             sublime.MONOSPACE_FONT)
-    
+
     def panel_done(self, picked):
         if 0 > picked < len(self.results):
             return
@@ -1060,6 +1077,7 @@ class GitFlowHotfixFinishCommand(GitFlowCommand):
             picked_hotfix = picked_hotfix.strip("*")
         picked_hotfix = picked_hotfix.strip()
         self.run_command(['git-flow', 'hotfix', 'finish', picked_hotfix])
+
 
 class GitResetHead(object):
     def run(self, edit=None):
@@ -1106,6 +1124,7 @@ class GitAnnotationListener(sublime_plugin.EventListener):
         if not view.settings().get('live_git_annotations'):
             return
         view.run_command('git_annotate')
+
     def on_load(self, view):
         s = sublime.load_settings("Git.sublime-settings")
         if s.get('annotations'):
@@ -1257,7 +1276,6 @@ class GitCommitSelectedHunk(GitAddSelectedHunkCommand):
         self.get_window().run_command('git_commit')
 
 
-
 class GitGuiCommand(GitTextCommand):
     def run(self, edit):
         command = ['git', 'gui']
@@ -1269,24 +1287,24 @@ class GitGitkCommand(GitTextCommand):
         command = ['gitk']
         self.run_command(command)
 
+
 class GitBranchStatusListener(sublime_plugin.EventListener):
     def on_load(self, view):
         view.run_command("git_branch_status")
 
-branch = ""
-class GitBranchStatusCommand(GitTextCommand):
-    def run(self, view):
-        global branch
 
-        if branch:
-            self.set_status(branch)
+class GitBranchStatusCommand(GitTextCommand):
+    branch = ""
+
+    def run(self, view):
+        if self.__class__.branch:
+            self.set_status(self.__class__.branch)
         else:
-            self.run_command(['git','rev-parse','--abbrev-ref','HEAD'], self.branch_done, show_status=False)
+            self.run_command(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], self.branch_done, show_status=False)
 
     def branch_done(self, result):
-        global branch
-        branch = result.strip()
-        self.set_status(branch)
+        self.__class__.branch = result.strip()
+        self.set_status(self.__class__.branch)
 
     def set_status(self, branch):
         self.view.set_status("git-branch", "git branch: " + branch)
