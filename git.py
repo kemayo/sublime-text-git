@@ -5,7 +5,6 @@ import threading
 import subprocess
 import functools
 import os.path
-import re
 import time
 
 # when sublime loads a plugin it's cd'd into the plugin directory. Thus

@@ -1,7 +1,6 @@
 import functools
 
 import sublime
-import sublime_plugin
 from git import GitTextCommand, GitWindowCommand, plugin_file
 
 
@@ -34,7 +33,7 @@ class GitBlameCommand(GitTextCommand):
 
     def blame_done(self, result, position=None):
         self.scratch(result, title="Git Blame", position=position,
-                syntax=plugin_file("Git Blame.tmLanguage"))
+                syntax=plugin_file("syntax/Git Blame.tmLanguage"))
 
 
 class GitLog(object):
@@ -75,7 +74,7 @@ class GitLog(object):
             self.details_done)
 
     def details_done(self, result):
-        self.scratch(result, title="Git Commit Details", syntax=plugin_file("Git Commit Message.tmLanguage"))
+        self.scratch(result, title="Git Commit Details", syntax=plugin_file("syntax/Git Commit Message.tmLanguage"))
 
 
 class GitLogCommand(GitLog, GitTextCommand):
@@ -132,7 +131,7 @@ class GitGraph(object):
         )
 
     def log_done(self, result):
-        self.scratch(result, title="Git Log Graph", syntax=plugin_file("Git Graph.tmLanguage"))
+        self.scratch(result, title="Git Log Graph", syntax=plugin_file("syntax/Git Graph.tmLanguage"))
 
 
 class GitGraphCommand(GitGraph, GitTextCommand):

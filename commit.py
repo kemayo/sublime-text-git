@@ -100,7 +100,7 @@ class GitCommitCommand(GitWindowCommand):
         msg = self.window.new_file()
         msg.set_scratch(True)
         msg.set_name("COMMIT_EDITMSG")
-        self._output_to_view(msg, template, syntax=plugin_file("Git Commit Message.tmLanguage"))
+        self._output_to_view(msg, template, syntax=plugin_file("syntax/Git Commit Message.tmLanguage"))
         msg.sel().clear()
         msg.sel().add(sublime.Region(0, 0))
         GitCommitCommand.active_message = self
