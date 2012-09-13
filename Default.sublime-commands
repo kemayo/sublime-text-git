@@ -15,7 +15,7 @@
         "command": "git_show_tags"
     }
     ,{
-        "caption": "Git Push Tags",
+        "caption": "Git: Push Tags",
         "command": "git_push_tags"
     }
     ,{
