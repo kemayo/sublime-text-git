@@ -243,6 +243,9 @@ class GitWindowCommand(GitCommand, sublime_plugin.WindowCommand):
     def get_file_name(self):
         return ''
 
+    def get_relative_file_name(self):
+        return ''
+
     # If there is a file in the active view use that file's directory to
     # search for the Git root.  Otherwise, use the only folder that is
     # open.
@@ -273,6 +276,12 @@ class GitTextCommand(GitCommand, sublime_plugin.TextCommand):
     def get_file_name(self):
         return os.path.basename(self.view.file_name())
 
+    def get_relative_file_name(self):
+        working_dir = self.get_working_dir()
+        file_path = working_dir.replace(git_root(working_dir), '')[1:]
+        file_name = os.path.join(file_path, self.get_file_name())
+        return file_name.replace('\\', '/')  # windows issues
+
     def get_working_dir(self):
         return os.path.realpath(os.path.dirname(self.view.file_name()))
 
@@ -292,7 +301,7 @@ class GitTextCommand(GitCommand, sublime_plugin.TextCommand):
 class GitInit(object):
     def git_init(self, directory):
         if os.path.exists(directory):
-            self.run_command(['git', 'init'], self.git_inited, working_dir = directory)
+            self.run_command(['git', 'init'], self.git_inited, working_dir=directory)
         else:
             sublime.status_message("Directory does not exist.")
 
@@ -411,13 +420,8 @@ class GitShow(object):
         item = self.results[picked]
         # the commit hash is the first thing on the second line
         ref = item[1].split(' ')[0]
-        # Make full file name
-        working_dir = self.get_working_dir()
-        file_path = working_dir.replace(git_root(working_dir), '')[1:]
-        file_name = os.path.join(file_path, self.get_file_name())
-        file_name = file_name.replace('\\','/')
         self.run_command(
-            ['git', 'show', '%s:%s' % (ref, file_name)],
+            ['git', 'show', '%s:%s' % (ref, self.get_relative_file_name())],
             self.details_done,
             ref=ref)
 
