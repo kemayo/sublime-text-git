@@ -345,7 +345,7 @@ class GitBlameCommand(GitTextCommand):
 
 class GitLog(object):
     def run(self, edit=None):
-        return self.run_log('--', self.get_file_name())
+        return self.run_log('--', os.path.join(file_path, self.get_file_name()))
 
     def run_log(self, *args):
         # the ASCII bell (\a) is just a convenient character I'm pretty sure
@@ -354,8 +354,9 @@ class GitLog(object):
         # 9000 is a pretty arbitrarily chosen limit; picked entirely because
         # it's about the size of the largest repo I've tested this on... and
         # there's a definite hiccup when it's loading that
-        command = ['git', 'log', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
-            '--date=local', '--max-count=9000', '--follow' if args[1] else None]
+        #command = ['git', 'log', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
+        #    '--date=local', '--max-count=9000', '--follow' if args[1] else None]
+        command = ['git', 'log']
         command.extend(args)
         self.run_command(
             command,
@@ -389,7 +390,11 @@ class GitLogCommand(GitLog, GitTextCommand):
 
 
 class GitLogAllCommand(GitLog, GitWindowCommand):
-    pass
+    self.run_command(['git', 'log'], self.log_done)
+    
+    def log_done(self, result):
+        self.results = [r.split('\a', 2) for r in result.strip().split('\n')]
+        self.quick_panel(self.results, self.log_panel_done)
 
 
 class GitShow(object):
