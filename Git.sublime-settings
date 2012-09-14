@@ -33,4 +33,7 @@
 
 	// Annotations default to being on for all files. Can be slow in some cases.
 	,"annotations": false
+
+	// statusbar
+	,"statusbar_branch": true
 }
