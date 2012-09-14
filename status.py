@@ -1,4 +1,5 @@
 import os
+import re
 
 import sublime
 from git import GitWindowCommand, git_root
@@ -23,6 +24,8 @@ class GitStatusCommand(GitWindowCommand):
 
     def status_filter(self, item):
         # for this class we don't actually care
+        if not re.match(r'^[ MADRCU?!]{1,2}\s+.*', item):
+            return False
         return len(item) > 0
 
     def panel_done(self, picked):

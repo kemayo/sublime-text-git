@@ -8,12 +8,11 @@ import status
 
 class GitAddChoiceCommand(status.GitStatusCommand):
     def status_filter(self, item):
-        return not item[1].isspace()
+        return super(GitAddChoiceCommand, self).status_filter(item) and not item[1].isspace()
 
     def show_status_list(self):
         self.results = [[" + All Files", "apart from untracked files"], [" + All Files", "including untracked files"]] + self.results
-        self.quick_panel(self.results, self.panel_done,
-            sublime.MONOSPACE_FONT)
+        return super(GitAddChoiceCommand, self).show_status_list()
 
     def panel_followup(self, picked_status, picked_file, picked_index):
         working_dir = git_root(self.get_working_dir())

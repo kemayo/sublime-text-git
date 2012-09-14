@@ -1,3 +1,5 @@
+import re
+
 import sublime
 import sublime_plugin
 from git import GitTextCommand
@@ -27,7 +29,7 @@ class GitBranchStatusCommand(GitTextCommand):
         self.view.set_status("git-branch", "git branch: " + result.strip())
 
     def status_done(self, result):
-        lines = [line for line in result.splitlines() if not (line.startswith("warning:") or line.startswith("The file"))]
+        lines = [line for line in result.splitlines() if re.match(r'^[ MADRCU?!]{1,2}\s+.*', line)]
         index = [line[0] for line in lines if not line[0].isspace()]
         working = [line[1] for line in lines if not line[1].isspace()]
         self.view.set_status("git-status-index", "index: " + self.status_string(index))
