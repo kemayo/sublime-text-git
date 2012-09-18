@@ -5,7 +5,7 @@ from git import GitTextCommand, GitWindowCommand
 class GitDiff (object):
     def run(self, edit=None):
         self.run_command(['git', 'diff', '--no-color', '--', self.get_file_name()],
-            self.diff_done)
+                         self.diff_done)
 
     def diff_done(self, result):
         if not result.strip():
@@ -48,6 +48,15 @@ class GitDiffCommitCommand(GitDiffCommit, GitWindowCommand):
     pass
 
 
-class GitDiffTool(GitWindowCommand):
+class GitDiffTool(object):
+    def run(self, edit=None):
+        self.run_command(['git', 'difftool', '--', self.get_file_name()])
+
+
+class GitDiffToolCommand(GitDiffTool, GitTextCommand):
+    pass
+
+
+class GitDiffToolAll(GitWindowCommand):
     def run(self):
         self.run_command(['git', 'difftool'])
