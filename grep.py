@@ -25,7 +25,7 @@ class GitGrepCommand(GitWindowCommand):
 
     os.chdir(path)
     # getstatusoutput - http://docs.python.org/library/commands.html
-    status, out = commands.getstatusoutput('pwd')
+    status, out = commands.getstatusoutput('pwd')    
     sublime.status_message("git grep in %s ..." % out)
     # -i ignore case, -n return numbers
     status, out = commands.getstatusoutput('git grep -in "%s"' % query)    
@@ -59,6 +59,12 @@ class GitGrepCommand(GitWindowCommand):
           return
       # out list we already parsed in on_done
       line = self.out_list[index]
-      filename, lineno, match = line.split(":", 2)
-      filename = os.path.abspath(filename)
+      filename, lineno, match = line.split(":", 2)      
+
+      # need to change dirs again, otherwise it doesn't work
+      path = git_root(self.get_working_dir())    
+      os.chdir(path)
+      
+      filename = os.path.abspath(filename)      
+      status, out = commands.getstatusoutput('pwd')      
       self.window.open_file(filename + ':' + lineno, sublime.ENCODED_POSITION)
