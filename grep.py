@@ -28,10 +28,10 @@ class GitGrepCommand(GitWindowCommand):
     status, out = commands.getstatusoutput('pwd')    
     sublime.status_message("git grep in %s ..." % out)
     # -i ignore case, -n return numbers
-    status, out = commands.getstatusoutput('git grep -in "%s"' % query)    
+    status, out = commands.getstatusoutput('git grep -Iin "%s"' % query)    
 
     # decod utf 8 and split to line array
-    self.out_list = out.decode('utf8', 'ignore').split("\n")
+    self.out_list = out.decode('ascii', 'ignore').split("\n")
     print self.out_list
     if(self.out_list==[""]):
       sublime.message_dialog("""Can't find "%s" \n in git repo based in:\n %s""" % (query, path))
