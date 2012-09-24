@@ -17,11 +17,11 @@ class GitBranchStatusCommand(GitTextCommand):
     def run(self, view):
         s = sublime.load_settings("Git.sublime-settings")
         if s.get("statusbar_branch"):
-            self.run_command(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], self.branch_done, show_status=False)
+            self.run_command(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], self.branch_done, show_status=False, no_save=True)
         else:
             self.view.set_status("git-branch", "")
         if (s.get("statusbar_status")):
-            self.run_command(['git', 'status', '--porcelain'], self.status_done, show_status=False)
+            self.run_command(['git', 'status', '--porcelain'], self.status_done, show_status=False, no_save=True)
         else:
             self.view.set_status("git-status", "")
 
