@@ -1,4 +1,5 @@
 import functools
+import re
 
 import sublime
 from git import GitTextCommand, GitWindowCommand, plugin_file
@@ -38,9 +39,10 @@ class GitBlameCommand(GitTextCommand):
 
 class GitLog(object):
     def run(self, edit=None):
-        return self.run_log('--', self.get_file_name())
+        fn = self.get_file_name()
+        return self.run_log(fn != '', '--', fn)
 
-    def run_log(self, *args):
+    def run_log(self, follow, *args):
         # the ASCII bell (\a) is just a convenient character I'm pretty sure
         # won't ever come up in the subject of the commit (and if it does then
         # you positively deserve broken output...)
@@ -48,7 +50,7 @@ class GitLog(object):
         # it's about the size of the largest repo I've tested this on... and
         # there's a definite hiccup when it's loading that
         command = ['git', 'log', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
-            '--date=local', '--max-count=9000', '--follow' if args[1] else None]
+            '--date=local', '--max-count=9000', '--follow' if follow else None]
         command.extend(args)
         self.run_command(
             command,
@@ -155,7 +157,7 @@ class GitOpenFileCommand(GitLog, GitWindowCommand):
         if 0 > picked < len(self.results):
             return
         self.branch = self.results[picked].split(' ')[-1]
-        self.run_log(self.branch)
+        self.run_log(False, self.branch)
 
     def log_result(self, result_hash):
         # the commit hash is the first thing on the second line
