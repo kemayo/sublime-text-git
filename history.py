@@ -37,6 +37,16 @@ class GitBlameCommand(GitTextCommand):
                 syntax=plugin_file("syntax/Git Blame.tmLanguage"))
 
 
+class GitGuiBlameCommand(GitTextCommand):
+    def run(self, edit):
+        command = ['git', 'gui', 'blame'];
+        # get the cursor's line number
+        line, column = self.view.rowcol(self.view.sel()[0].begin())
+        command.append('--line=%s' % line)
+        command.append(self.get_file_name())
+        self.run_command(command)
+
+
 class GitLog(object):
     def run(self, edit=None):
         fn = self.get_file_name()

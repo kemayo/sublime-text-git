@@ -7,6 +7,10 @@
         "command": "git_blame"
     }
     ,{
+        "caption": "Git: Blame (GUI)",
+        "command": "git_gui_blame"
+    }
+    ,{
         "caption": "Git: New Tag",
         "command": "git_new_tag"
     }
