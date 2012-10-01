@@ -14,21 +14,14 @@ class GitGrepCommand(GitWindowCommand):
 
   # this is first executed with window.run_command("git_grep") or key shortcut
   def run(self):    
-    self.window.show_input_panel('rubycut git grep', self.last_query, self.on_done, self.on_change, self.on_cancel)
+    self.window.show_input_panel('git grep', self.last_query, self.on_done, self.on_change, self.on_cancel)
 
   def on_done(self, query):
 
     self.last_query = query
-    # get_working_dir is method in GitWindowCommand
-    # git_root is in git.py outside of any class      
-    path = git_root(self.get_working_dir())    
 
-    os.chdir(path)
-    # getstatusoutput - http://docs.python.org/library/commands.html
-    status, out = commands.getstatusoutput('pwd')    
-    sublime.status_message("git grep in %s ..." % out)
-    # -i ignore case, -n return numbers
-    status, out = commands.getstatusoutput('git grep -Iin "%s"' % query)    
+    # -i ignore case, -n return numbers, -I skip binary files
+    status, out = commands.getstatusoutput('git grep --full-name -Iin "%s"' % query)    
 
     # decod utf 8 and split to line array
     self.out_list = out.decode('ascii', 'ignore').split("\n")
@@ -62,9 +55,5 @@ class GitGrepCommand(GitWindowCommand):
       filename, lineno, match = line.split(":", 2)      
 
       # need to change dirs again, otherwise it doesn't work
-      path = git_root(self.get_working_dir())    
-      os.chdir(path)
-      
-      filename = os.path.abspath(filename)      
-      status, out = commands.getstatusoutput('pwd')      
-      self.window.open_file(filename + ':' + lineno, sublime.ENCODED_POSITION)
+      path = git_root(self.get_working_dir())              
+      self.window.open_file(os.path.join(path, filename) + ':' + lineno, sublime.ENCODED_POSITION)
