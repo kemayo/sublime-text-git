@@ -21,13 +21,14 @@ class GitGrepCommand(GitWindowCommand):
     self.last_query = query
 
     # -i ignore case, -n return numbers, -I skip binary files
-    status, out = commands.getstatusoutput('git grep --full-name -Iin "%s"' % query)    
+    
+    status, out = commands.getstatusoutput('git grep --full-name -Iin "%s" "%s"' % (query, git_root(self.get_working_dir())) )    
 
     # decod utf 8 and split to line array
     self.out_list = out.decode('ascii', 'ignore').split("\n")
     print self.out_list
-    if(self.out_list==[""]):
-      sublime.message_dialog("""Can't find "%s" \n in git repo based in:\n %s""" % (query, path))
+    if(self.out_list==[""]):      
+      sublime.message_dialog("""Can't find "%s" \n in git repo based in: %s\n """ % (query, git_root(self.get_working_dir()) ))
       return
 
     def split(l):
@@ -53,7 +54,6 @@ class GitGrepCommand(GitWindowCommand):
       # out list we already parsed in on_done
       line = self.out_list[index]
       filename, lineno, match = line.split(":", 2)      
-
-      # need to change dirs again, otherwise it doesn't work
+      
       path = git_root(self.get_working_dir())              
       self.window.open_file(os.path.join(path, filename) + ':' + lineno, sublime.ENCODED_POSITION)
