@@ -105,23 +105,28 @@ class CommandThread(threading.Thread):
 
     def run(self):
         try:
-            # Per http://bugs.python.org/issue8557 shell=True is required to
-            # get $PATH on Windows. Yay portable code.
-            shell = os.name == 'nt'
-            if self.working_dir != "":
-                os.chdir(self.working_dir)
 
-            proc = subprocess.Popen(self.command,
-                stdout=self.stdout, stderr=subprocess.STDOUT,
-                stdin=subprocess.PIPE,
-                shell=shell, universal_newlines=True)
-            output = proc.communicate(self.stdin)[0]
-            if not output:
-                output = ''
-            # if sublime's python gets bumped to 2.7 we can just do:
-            # output = subprocess.check_output(self.command)
-            main_thread(self.on_done,
-                _make_text_safeish(output, self.fallback_encoding), **self.kwargs)
+            # Ignore directories that no longer exist
+            if os.path.isdir(self.working_dir):
+
+                # Per http://bugs.python.org/issue8557 shell=True is required to
+                # get $PATH on Windows. Yay portable code.
+                shell = os.name == 'nt'
+                if self.working_dir != "":
+                    os.chdir(self.working_dir)
+
+                proc = subprocess.Popen(self.command,
+                    stdout=self.stdout, stderr=subprocess.STDOUT,
+                    stdin=subprocess.PIPE,
+                    shell=shell, universal_newlines=True)
+                output = proc.communicate(self.stdin)[0]
+                if not output:
+                    output = ''
+                # if sublime's python gets bumped to 2.7 we can just do:
+                # output = subprocess.check_output(self.command)
+                main_thread(self.on_done,
+                    _make_text_safeish(output, self.fallback_encoding), **self.kwargs)
+
         except subprocess.CalledProcessError, e:
             main_thread(self.on_done, e.returncode)
         except OSError, e:
