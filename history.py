@@ -39,8 +39,10 @@ class GitBlameCommand(GitTextCommand):
         return begin_line + 1, end_line + 1
 
     def blame_done(self, result, position=None):
-        self.scratch(result, title="Git Blame", position=position,
-                syntax=plugin_file("syntax/Git Blame.tmLanguage"))
+        view = self.scratch(result, title="Git Blame", position=position,
+                            syntax=plugin_file("syntax/Git Blame.tmLanguage"))
+        # store working dir to be potentially used by the GitGotoCommit command
+        view.settings().set("git_working_dir", self.get_working_dir())
 
 
 class GitLog(object):
@@ -83,7 +85,8 @@ class GitLog(object):
             self.details_done)
 
     def details_done(self, result):
-        self.scratch(result, title="Git Commit Details", syntax=plugin_file("syntax/Git Commit Message.tmLanguage"))
+        self.scratch(result, title="Git Commit Details",
+                     syntax=plugin_file("syntax/Git Commit View.tmLanguage"))
 
 
 class GitLogCommand(GitLog, GitTextCommand):
@@ -223,13 +226,23 @@ class GitDocumentCommand(GitBlameCommand):
         commits.sort(reverse=True)
         commits = [commit for d, commit in commits]
 
-        self.scratch('\n\n'.join(commits), title="Git Commit Documentation")
+        self.scratch('\n\n'.join(commits), title="Git Commit Documentation",
+                     syntax=plugin_file("syntax/Git Commit View.tmLanguage"))
 
 
-class GitGotoBlame(sublime_plugin.TextCommand):
+class GitGotoCommit(GitTextCommand):
     def run(self, edit):
-        line = self.view.substr(self.view.line(self.view.sel()[0].a))
+        view = self.view
+        line = view.substr(view.line(view.sel()[0].a))
         commit = line.split(" ")[0]
         if not commit or commit == "00000000":
             return
-        self.view.window().run_command("git_raw", {"command": "git show %s" % commit, "show_in": "new_tab", "may_change_files": False})
+        working_dir = view.settings().get("git_working_dir")
+        self.run_command(['git', 'show', commit], self.show_done, working_dir=working_dir)
+
+    def show_done(self, result):
+        self.scratch(result, title="Git Commit View",
+                     syntax=plugin_file("syntax/Git Commit View.tmLanguage"))
+
+    def is_enabled(self):
+        return True

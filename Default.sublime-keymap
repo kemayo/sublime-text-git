@@ -3,6 +3,6 @@
 	 "context": [{"key": "selector", "operand": "markup.inserted.diff"}]},
 	{"keys": ["enter"], "command": "git_goto_diff",
 	 "context": [{"key": "selector", "operand": "markup.deleted.diff"}]},
-	{"keys": ["enter"], "command": "git_goto_blame",
+	{"keys": ["enter"], "command": "git_goto_commit",
 	 "context": [{"key": "selector", "operand": "text.git-blame"}]}
 ]
