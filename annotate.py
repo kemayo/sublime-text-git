@@ -58,7 +58,7 @@ class GitAnnotateCommand(GitTextCommand):
 
     def compare_tmp(self, result, stdout=None):
         all_text = self.view.substr(sublime.Region(0, self.view.size())).encode("utf-8")
-        self.run_command(['diff', '--no-color', '-u', self.tmp.name, '-'], stdin=all_text, no_save=True, show_status=False, callback=self.parse_diff)
+        self.run_command(['diff', '-u', self.tmp.name, '-'], stdin=all_text, no_save=True, show_status=False, callback=self.parse_diff)
 
     # This is where the magic happens. At the moment, only one chunk format is supported. While
     # the unified diff format theoritaclly supports more, I don't think git diff creates them.
