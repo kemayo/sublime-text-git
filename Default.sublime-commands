@@ -210,4 +210,8 @@
         "caption": "Git: Commit history",
         "command": "git_commit_history"
     }
+    ,{
+        "caption": "Git: Show Commit",
+        "command": "git_show_commit"
+    }
 ]
