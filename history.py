@@ -123,6 +123,20 @@ class GitShowCommand(GitShow, GitTextCommand):
 class GitShowAllCommand(GitShow, GitWindowCommand):
     pass
 
+class GitShowCommitCommand(GitWindowCommand):
+    def run(self, edit=None):
+        view = self.active_view();
+        line = view.line(view.sel()[0])
+        ref  = view.substr(view.word(sublime.Region(line.a, line.a+1)))
+
+        self.run_command(
+            ['git', 'show', '%s' % ref],
+            self.show_done,
+            ref=ref)
+
+    def show_done(self, result, ref):
+        self.scratch(result, title="Git Show: %s" % ref, syntax=plugin_file("syntax/Git Commit Message.tmLanguage"));
+
 
 class GitGraph(object):
     def run(self, edit=None):
