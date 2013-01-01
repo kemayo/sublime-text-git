@@ -14,6 +14,8 @@ class GitDiff (object):
         s = sublime.load_settings("Git.sublime-settings")
         if s.get('diff_panel'):
             view = self.panel(result)
+        elif s.get('diff_new_window'):
+            view = self.scratch(result, title="Git Diff", new_window=True)
         else:
             view = self.scratch(result, title="Git Diff")
 

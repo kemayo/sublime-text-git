@@ -196,8 +196,12 @@ class GitCommand(object):
         output_file.insert(edit, 0, output)
         output_file.end_edit(edit)
 
-    def scratch(self, output, title=False, position=None, **kwargs):
-        scratch_file = self.get_window().new_file()
+    def scratch(self, output, title=False, position=None, new_window=False, **kwargs):
+        window = self.get_window()
+        if(new_window):
+            sublime.run_command("new_window")
+            window = sublime.active_window()
+        scratch_file = window.new_file()
         if title:
             scratch_file.set_name(title)
         scratch_file.set_scratch(True)
