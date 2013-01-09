@@ -121,8 +121,14 @@ class GitCommitCommand(GitWindowCommand):
         message_file.close()
         self.message_file = message_file
         # and actually commit
-        self.run_command(['git', 'commit', '-F', message_file.name, self.extra_options],
-            self.commit_done, working_dir=self.working_dir)
+        cygpath = os.popen('which cygpath').read()
+        if cygpath.startswith('/usr/bin/') and os.popen('which git').read().strip() == '/usr/bin/git':
+            message_file_name = os.popen('cygpath "%s"' % message_file.name).read()
+            self.run_command(['git', 'commit', '-F', message_file_name, self.extra_options],
+                self.commit_done, working_dir=self.working_dir)
+        else:
+            self.run_command(['git', 'commit', '-F', message_file.name, self.extra_options],
+                self.commit_done, working_dir=self.working_dir)
 
     def commit_done(self, result):
         os.remove(self.message_file.name)
