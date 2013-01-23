@@ -11,7 +11,7 @@ import time
 # __file__ is useless for my purposes. What I want is "Packages/Git", but
 # allowing for the possibility that someone has renamed the file.
 # Fun discovery: Sublime on windows still requires posix path separators.
-PLUGIN_DIRECTORY = os.getcwd().replace(os.path.normpath(os.path.join(os.getcwd(), '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
+PLUGIN_DIRECTORY = os.getcwd().replace(os.path.sep, '/')
 
 git_root_cache = {}
 
