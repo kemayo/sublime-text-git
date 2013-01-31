@@ -1,4 +1,4 @@
-from git import GitWindowCommand
+from .git import GitWindowCommand
 
 
 class GitStashCommand(GitWindowCommand):

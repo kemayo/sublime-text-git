@@ -1,5 +1,5 @@
 import sublime
-from git import GitTextCommand, GitWindowCommand
+from .git import GitTextCommand, GitWindowCommand
 
 
 class GitDiff (object):

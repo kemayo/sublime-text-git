@@ -1,7 +1,7 @@
 import os
 
 import sublime
-from git import GitTextCommand, GitWindowCommand, git_root_exist
+from .git import GitTextCommand, GitWindowCommand, git_root_exist
 
 
 class GitInit(object):

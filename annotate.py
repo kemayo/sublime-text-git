@@ -4,7 +4,7 @@ import os
 
 import sublime
 import sublime_plugin
-from git import git_root, GitTextCommand
+from .git import git_root, GitTextCommand
 
 
 class GitClearAnnotationCommand(GitTextCommand):

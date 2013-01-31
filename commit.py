@@ -4,8 +4,8 @@ import os
 
 import sublime
 import sublime_plugin
-from git import GitTextCommand, GitWindowCommand, plugin_file, view_contents, _make_text_safeish
-import add
+from .git import GitTextCommand, GitWindowCommand, plugin_file, view_contents, _make_text_safeish
+from .add import GitAddSelectedHunkCommand
 
 history = []
 
@@ -163,7 +163,7 @@ class GitCommitHistoryCommand(sublime_plugin.TextCommand):
             self.view.replace(self.edit, self.view.sel()[0], history[index] + '\n')
 
 
-class GitCommitSelectedHunk(add.GitAddSelectedHunkCommand):
+class GitCommitSelectedHunk(GitAddSelectedHunkCommand):
     def run(self, edit):
         self.run_command(['git', 'diff', '--no-color', self.get_file_name()], self.cull_diff)
         self.get_window().run_command('git_commit')

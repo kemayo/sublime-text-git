@@ -2,7 +2,7 @@ import os
 import re
 
 import sublime
-from git import GitWindowCommand, git_root
+from .git import GitWindowCommand, git_root
 
 
 class GitStatusCommand(GitWindowCommand):
@@ -12,7 +12,7 @@ class GitStatusCommand(GitWindowCommand):
         self.run_command(['git', 'status', '--porcelain'], self.status_done)
 
     def status_done(self, result):
-        self.results = filter(self.status_filter, result.rstrip().split('\n'))
+        self.results = list(filter(self.status_filter, result.rstrip().split('\n')))
         if len(self.results):
             self.show_status_list()
         else:
@@ -32,6 +32,8 @@ class GitStatusCommand(GitWindowCommand):
         if 0 > picked < len(self.results):
             return
         picked_file = self.results[picked]
+        if isinstance(picked_file, (list, tuple)):
+            picked_file = picked_file[0]
         # first 2 characters are status codes, the third is a space
         picked_status = picked_file[:2]
         picked_file = picked_file[3:]

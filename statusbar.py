@@ -2,7 +2,7 @@ import re
 
 import sublime
 import sublime_plugin
-from git import GitTextCommand
+from .git import GitTextCommand
 
 
 class GitBranchStatusListener(sublime_plugin.EventListener):

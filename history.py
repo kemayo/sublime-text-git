@@ -2,7 +2,7 @@ import functools
 import re
 
 import sublime
-from git import GitTextCommand, GitWindowCommand, plugin_file
+from .git import GitTextCommand, GitWindowCommand, plugin_file
 
 
 class GitBlameCommand(GitTextCommand):

@@ -1,5 +1,5 @@
 import sublime
-from git import GitWindowCommand
+from .git import GitWindowCommand
 
 
 class GitFlowCommand(GitWindowCommand):
@@ -7,6 +7,7 @@ class GitFlowCommand(GitWindowCommand):
         s = sublime.load_settings("Git.sublime-settings")
         if s.get('flow'):
             return True
+        return False
 
 
 class GitFlowFeatureStartCommand(GitFlowCommand):
