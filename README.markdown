@@ -1,4 +1,4 @@
-# Sublime Text 2 plugin: git
+# Sublime Text 3 plugin: git
 
 Git integration: it's pretty handy. Who knew, right?
 
