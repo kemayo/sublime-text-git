@@ -1,4 +1,5 @@
 import re
+import string
 
 import sublime
 import sublime_plugin
@@ -16,6 +17,12 @@ class GitBranchStatusListener(sublime_plugin.EventListener):
 class GitBranchStatusCommand(GitTextCommand):
     def run(self, view):
         s = sublime.load_settings("Git.sublime-settings")
+
+        if s.get("statusbar_directory"):
+            self.run_command(['git', 'rev-parse','--show-toplevel'], self.directory_done, show_status=False, no_save=True)
+        else:
+            self.view.set_status("statusbar_directory", "")
+
         if s.get("statusbar_branch"):
             self.run_command(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], self.branch_done, show_status=False, no_save=True)
         else:
@@ -27,6 +34,15 @@ class GitBranchStatusCommand(GitTextCommand):
 
     def branch_done(self, result):
         self.view.set_status("git-branch", "git branch: " + result.strip())
+
+    def directory_done(self, result):
+        s = sublime.load_settings("Git.sublime-settings")
+        if s.get("statusbar_directory_show_full_path"):
+            path = result
+        else:
+            path = string.split(result,'/')[-1]
+
+        self.view.set_status("git-directory", "dir: " + path)
 
     def status_done(self, result):
         lines = [line for line in result.splitlines() if re.match(r'^[ MADRCU?!]{1,2}\s+.*', line)]
