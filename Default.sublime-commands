@@ -71,6 +71,10 @@
         "command": "git_quick_all_commit"
     }
     ,{
+        "caption": "Git: Quick All Commit and Push",
+        "command": "git_quick_all_commit_push"
+    }
+    ,{
         "caption": "Git: Status",
         "command": "git_status"
     }
