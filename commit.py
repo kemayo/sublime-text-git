@@ -58,7 +58,7 @@ class GitQuickAllCommitPushCommand(GitTextCommand):
         if result.strip() == "":
             sublime.error_message("Error Commiting:\n" + result)
             return
-        self.run_command(['git', 'commit', '-m', message])
+        self.run_command(['git', 'push'])
 
 
 # Commit is complicated. It'd be easy if I just wanted to let it run
