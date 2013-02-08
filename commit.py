@@ -29,6 +29,17 @@ class GitQuickCommitCommand(GitTextCommand):
         self.run_command(['git', 'commit', '-m', message])
 
 
+class GitQuickAllCommitCommand(GitTextCommand):
+    def run(self, edit):
+        self.get_window().show_input_panel("Commit All Message", "",
+            self.on_input, None, None)
+
+    def on_input(self, message):
+        if message.strip() == "":
+            self.panel("No commit message provided")
+            return
+        self.run_command(['git', 'commit', '-am', message])
+
 # Commit is complicated. It'd be easy if I just wanted to let it run
 # on OSX, and assume that subl was in the $PATH. However... I can't do
 # that. Second choice was to set $GIT_EDITOR to sublime text for the call
