@@ -95,7 +95,7 @@ class GitResetHead(object):
     def run(self, edit=None):
         self.run_command(['git', 'reset', 'HEAD', self.get_file_name()])
 
-    def generic_done(self, result):
+    def generic_done(self, result, **kwargs):
         pass
 
 
