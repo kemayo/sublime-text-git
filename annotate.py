@@ -57,7 +57,7 @@ class GitAnnotateCommand(GitTextCommand):
         self.run_command(['git', 'show', 'HEAD:{0}'.format(repo_file)], show_status=False, no_save=True, callback=self.compare_tmp, stdout=self.tmp)
 
     def compare_tmp(self, result, stdout=None):
-        all_text = self.view.substr(sublime.Region(0, self.view.size())).encode("utf-8")
+        all_text = self.view.substr(sublime.Region(0, self.view.size()))
         self.run_command(['diff', '-u', self.tmp.name, '-'], stdin=all_text, no_save=True, show_status=False, callback=self.parse_diff)
 
     # This is where the magic happens. At the moment, only one chunk format is supported. While
