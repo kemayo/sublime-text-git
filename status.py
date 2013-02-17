@@ -54,7 +54,11 @@ class GitStatusCommand(GitWindowCommand):
     def diff_done(self, result):
         if not result.strip():
             return
-        self.scratch(result, title="Git Diff")
+        s = sublime.load_settings("Git.sublime-settings")
+        if s.get('diff_panel'):
+            self.panel(result)
+        else:
+            self.scratch(result, title="Git Diff")
 
 
 class GitOpenModifiedFilesCommand(GitStatusCommand):

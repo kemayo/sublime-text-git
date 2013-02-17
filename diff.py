@@ -53,8 +53,11 @@ class GitDiffCommit (object):
             self.panel("No output")
             return
         s = sublime.load_settings("Git.sublime-settings")
-        syntax = s.get("diff_syntax", "Packages/Diff/Diff.tmLanguage")
-        self.scratch(result, title="Git Diff", syntax=syntax)
+        if s.get('diff_panel'):
+            self.panel(result)
+        else:
+            syntax = s.get("diff_syntax", "Packages/Diff/Diff.tmLanguage")
+            self.scratch(result, title="Git Diff", syntax=syntax)
 
 
 class GitDiffCommand(GitDiff, GitTextCommand):
