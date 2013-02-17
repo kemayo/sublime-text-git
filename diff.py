@@ -33,7 +33,11 @@ class GitDiffCommit (object):
         if not result.strip():
             self.panel("No output")
             return
-        self.scratch(result, title="Git Diff")
+        s = sublime.load_settings("Git.sublime-settings")
+        if s.get('diff_panel'):
+            self.panel(result)
+        else:
+            self.scratch(result, title="Git Diff")
 
 
 class GitDiffCommand(GitDiff, GitTextCommand):
