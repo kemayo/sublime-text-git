@@ -57,7 +57,27 @@ class GitLog(object):
             self.log_done)
 
     def log_done(self, result):
-        self.results = [r.split('\a', 2) for r in result.strip().split('\n')]
+        import os
+        self.results = []
+        self.files = {}
+        relative = None
+        for r in result.strip().split('\n'):
+            if r:
+                _result = r.strip().split('\a', 2)
+                if len(_result) == 1:
+                    if relative is None:
+                        # Find relative path
+                        relative = os.sep.join(['..'] * (len(os.path.normpath(_result[0]).split(os.sep)) - 1))
+                        if relative:
+                            relative += os.sep
+                    ref = result[1].split(' ', 1)[0]
+                    self.files[ref] = relative + _result[0]
+                else:
+                    result = _result
+                    ref = result[1].split(' ', 1)
+                    result[0] = u"%s - %s" % (ref[0], result[0])
+                    result[1] = ref[1]
+                    self.results.append(result)
         self.quick_panel(self.results, self.log_panel_done)
 
     def log_panel_done(self, picked):
@@ -66,14 +86,17 @@ class GitLog(object):
         item = self.results[picked]
         # the commit hash is the first thing on the second line
         ref = item[0].split(' ', 1)[0]
-        self.log_result(ref)
+        file_name = self.files.get(ref, self.get_file_name())
+        self.log_result(ref, file_name)
 
-    def log_result(self, ref):
+    def log_result(self, ref, file_name):
         # I'm not certain I should have the file name here; it restricts the
         # details to just the current file. Depends on what the user expects...
         # which I'm not sure of.
+        command = ['git', 'log', '--follow', '-p', '-1', ref]
+        command.extend(['--', file_name])
         self.run_command(
-            ['git', 'log', '-p', '-1', ref, '--', self.get_file_name()],
+            command,
             self.details_done)
 
     def details_done(self, result):
@@ -92,13 +115,33 @@ class GitShow(object):
     def run(self, edit=None):
         # GitLog Copy-Past
         self.run_command(
-            ['git', 'log', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
+            ['git', 'log', '--follow', '--name-only', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
             '--date=local', '--max-count=9000', '--', self.get_file_name()],
             self.show_done)
 
     def show_done(self, result):
         # GitLog Copy-Past
-        self.results = [r.split('\a', 2) for r in result.strip().split('\n')]
+        import os
+        self.results = []
+        self.files = {}
+        relative = None
+        for r in result.strip().split('\n'):
+            if r:
+                _result = r.strip().split('\a', 2)
+                if len(_result) == 1:
+                    if relative is None:
+                        # Find relative path
+                        relative = os.sep.join(['..'] * (len(os.path.normpath(_result[0]).split(os.sep)) - 1))
+                        if relative:
+                            relative += os.sep
+                    ref = result[1].split(' ', 1)[0]
+                    self.files[ref] = relative + _result[0]
+                else:
+                    result = _result
+                    ref = result[1].split(' ', 1)
+                    result[0] = u"%s - %s" % (ref[0], result[0])
+                    result[1] = ref[1]
+                    self.results.append(result)
         self.quick_panel(self.results, self.panel_done)
 
     def panel_done(self, picked):
