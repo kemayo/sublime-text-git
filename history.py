@@ -65,7 +65,8 @@ class GitLog(object):
             return
         item = self.results[picked]
         # the commit hash is the first thing on the second line
-        self.log_result(item[1].split(' ')[0])
+        ref = item[0].split(' ', 1)[0]
+        self.log_result(ref)
 
     def log_result(self, ref):
         # I'm not certain I should have the file name here; it restricts the
@@ -105,7 +106,7 @@ class GitShow(object):
             return
         item = self.results[picked]
         # the commit hash is the first thing on the second line
-        ref = item[1].split(' ')[0]
+        ref = item[1].split(' ', 1)[0]
         self.run_command(
             ['git', 'show', '%s:%s' % (ref, self.get_relative_file_name())],
             self.details_done,
@@ -156,7 +157,7 @@ class GitOpenFileCommand(GitLog, GitWindowCommand):
     def branch_panel_done(self, picked):
         if 0 > picked < len(self.results):
             return
-        self.branch = self.results[picked].split(' ')[-1]
+        self.branch = self.results[picked].rsplit(' ', 1)[-1]
         self.run_log(False, self.branch)
 
     def log_result(self, result_hash):
