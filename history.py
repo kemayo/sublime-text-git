@@ -86,14 +86,15 @@ class GitLog(object):
         item = self.results[picked]
         # the commit hash is the first thing on the second line
         ref = item[0].split(' ', 1)[0]
-        file_name = self.files.get(ref, self.get_file_name())
-        self.log_result(ref, file_name)
+        fn = self.get_file_name()
+        file_name = self.files.get(ref, fn)
+        self.log_result(ref, file_name, fn != '')
 
-    def log_result(self, ref, file_name):
+    def log_result(self, ref, file_name, follow):
         # I'm not certain I should have the file name here; it restricts the
         # details to just the current file. Depends on what the user expects...
         # which I'm not sure of.
-        command = ['git', 'log', '--follow', '-p', '-1', ref]
+        command = ['git', 'log', '--follow' if follow else None, '-p', '-1', ref]
         command.extend(['--', file_name])
         self.run_command(
             command,
