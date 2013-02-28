@@ -152,10 +152,16 @@ class CommandThread(threading.Thread):
             if self.working_dir != "":
                 os.chdir(self.working_dir)
 
+            # Windows needs startupinfo in order to start process in background
+            startupinfo = None
+            if os.name == 'nt':
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+
             # universal_newlines seems to break `log` in python3
             proc = subprocess.Popen(self.command,
                 stdout=self.stdout, stderr=subprocess.STDOUT,
-                stdin=subprocess.PIPE,
+                stdin=subprocess.PIPE, startupinfo=startupinfo,
                 shell=False, universal_newlines=False)
             output = proc.communicate(self.stdin)[0]
             if not output:
