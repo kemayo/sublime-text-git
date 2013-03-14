@@ -34,6 +34,10 @@ class GitAnnotationListener(sublime_plugin.EventListener):
         if s.get('annotations'):
             view.run_command('git_annotate')
 
+    def on_activated(self, view):
+        s = sublime.load_settings("Git.sublime-settings")
+        if s.get('annotations'):
+            view.run_command('git_annotate', {"reload_file": True})
 
 class GitAnnotateCommand(GitTextCommand):
     # Unfortunately, git diff does not support text from stdin, making a *live*
@@ -44,12 +48,18 @@ class GitAnnotateCommand(GitTextCommand):
     #    file with the current state of the HEAD is being pulled from git.
     # 2. All consecutive runs will pass the current buffer into diffs stdin.
     #    The resulting output is then parsed and regions are set accordingly.
-    def run(self, view):
+    def run(self, view, reload_file = False):
         # If the annotations are already running, we dont have to create a new
         # tmpfile
+        if reload_file:
+            if hasattr(self, "tmp"):
+                self.tmp.close()
+                delattr(self, "tmp")
+
         if hasattr(self, "tmp"):
             self.compare_tmp(None)
             return
+
         self.tmp = tempfile.NamedTemporaryFile()
         self.active_view().settings().set('live_git_annotations', True)
         root = git_root(self.get_working_dir())
@@ -124,7 +134,6 @@ class GitAnnotateCommand(GitTextCommand):
                     region = sublime.Region(point, point + 5)
                 typed_diff[change_type].append(region)
 
-        for change in ['x', '+']:
-            self.view.add_regions("git.changes.{0}".format(change), typed_diff[change], 'git.changes.{0}'.format(change), 'dot', sublime.HIDDEN)
-
-        self.view.add_regions("git.changes.-", typed_diff['-'], 'git.changes.-', 'dot', sublime.DRAW_EMPTY_AS_OVERWRITE)
+        self.view.add_regions("git.changes.+", typed_diff['+'], 'git.changes.+', 'dot', sublime.HIDDEN)
+        self.view.add_regions("git.changes.x", typed_diff['x'], 'git.changes.x', 'dot', sublime.HIDDEN)
+        self.view.add_regions("git.changes.-", typed_diff['-'], 'git.changes.-', 'bookmark', sublime.HIDDEN)

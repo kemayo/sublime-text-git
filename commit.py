@@ -128,7 +128,7 @@ class GitCommitCommand(GitWindowCommand):
     def commit_done(self, result, **kwargs):
         os.remove(self.message_file.name)
         self.panel(result)
-
+        sublime.active_window().active_view().run_command('git_annotate', {"reload_file": True})
 
 class GitCommitAmendCommand(GitCommitCommand):
     extra_options = "--amend"
