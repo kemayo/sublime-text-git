@@ -1,6 +1,6 @@
 import sublime
 import re
-from git import GitTextCommand, GitWindowCommand
+from git import git_root, GitTextCommand, GitWindowCommand
 import functools
 
 
@@ -37,9 +37,9 @@ class GitDiff (object):
         view.add_regions("inserted", lines_inserted, "markup.inserted.diff", "dot", sublime.HIDDEN)
         view.add_regions("deleted", lines_deleted, "markup.deleted.diff", "dot", sublime.HIDDEN)
 
-        # Store the working directory in the view so we can resolve relative paths
+        # Store the git root directory in the view so we can resolve relative paths
         # when the user presses Enter key.
-        view.settings().set("git_working_dir", self.get_working_dir())
+        view.settings().set("git_root_dir", git_root(self.get_working_dir()))
 
 
 class GitDiffCommit (object):
@@ -116,7 +116,7 @@ class GitGotoDiff(sublime_plugin.TextCommand):
         hunk_start_line = hunk.group(3)
         goto_line = int(hunk_start_line) + line_offset - 1
 
-        file_name = os.path.join(v.settings().get("git_working_dir"), file_name)
+        file_name = os.path.join(v.settings().get("git_root_dir"), file_name)
 
         new_view = self.view.window().open_file(file_name)
         do_when(lambda: not new_view.is_loading(),
