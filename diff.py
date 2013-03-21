@@ -93,11 +93,11 @@ class GitGotoDiff(sublime_plugin.TextCommand):
         if not scope_markup_inserted and not scope_markup_deleted:
             return
 
-        beg = v.sel()[0].a     # Current position in selection
-        pt = v.line(beg).a     # First position in the current diff line
-        column = beg - pt - 1  # The current column (-1 because the first char in diff file)
+        beg = v.sel()[0].a          # Current position in selection
+        pt = v.line(beg).a          # First position in the current diff line
+        self.column = beg - pt - 1  # The current column (-1 because the first char in diff file)
 
-        file_name = None
+        self.file_name = None
         hunk_line = None
         line_offset = 0
 
@@ -108,7 +108,7 @@ class GitGotoDiff(sublime_plugin.TextCommand):
                 if not hunk_line:
                     hunk_line = lineContent
             elif lineContent.startswith("+++ b/"):
-                file_name = v.substr(sublime.Region(line.a+6, line.b))
+                self.file_name = v.substr(sublime.Region(line.a+6, line.b))
                 break
             elif not hunk_line and not lineContent.startswith("-"):
                 line_offset = line_offset+1
@@ -121,12 +121,40 @@ class GitGotoDiff(sublime_plugin.TextCommand):
             return
 
         hunk_start_line = hunk.group(3)
-        goto_line = int(hunk_start_line) + line_offset - 1
+        self.goto_line = int(hunk_start_line) + line_offset - 1
 
         git_root_dir = v.settings().get("git_root_dir")
-        if git_root_dir:
-            file_name = os.path.join(git_root_dir, file_name)
 
-        new_view = self.view.window().open_file(file_name)
+        # Sanity check and see if the file we're going to try to open even
+        # exists. If it does not, prompt the user for the correct base directory
+        # to use for their diff.
+        full_path_file_name = self.file_name
+        if git_root_dir:
+            full_path_file_name = os.path.join(git_root_dir, self.file_name)
+        else:
+            git_root_dir = ""
+
+        if not os.path.isfile(full_path_file_name):
+            caption = "Enter base directory for file '%s':" % self.file_name
+            v.window().show_input_panel(caption,
+                                        git_root_dir,
+                                        self.on_path_confirmed,
+                                        None,
+                                        None)
+        else:
+            self.on_path_confirmed(git_root_dir)
+
+    def on_path_confirmed(self, git_root_dir):
+        v = self.view
+        old_git_root_dir = v.settings().get("git_root_dir")
+
+        # If the user provided a new git_root_dir, save it in the view settings
+        # so they only have to fix it once
+        if old_git_root_dir != git_root_dir:
+            v.settings().set("git_root_dir", git_root_dir)
+
+        full_path_file_name = os.path.join(git_root_dir, self.file_name)
+
+        new_view = v.window().open_file(full_path_file_name)
         do_when(lambda: not new_view.is_loading(),
-                lambda: goto_xy(new_view, goto_line, column))
+                lambda: goto_xy(new_view, self.goto_line, self.column))
