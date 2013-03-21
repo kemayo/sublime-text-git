@@ -83,7 +83,11 @@ class GitDiffToolAll(GitWindowCommand):
 class GitGotoDiff(sublime_plugin.TextCommand):
     def run(self, edit):
         v = self.view
-        if v.name() != "Git Diff":
+        view_scope_name = v.scope_name(v.sel()[0].a)
+        scope_markup_inserted = ("markup.inserted.diff" in view_scope_name)
+        scope_markup_deleted = ("markup.deleted.diff" in view_scope_name)
+
+        if not scope_markup_inserted and not scope_markup_deleted:
             return
 
         beg = v.sel()[0].a     # Current position in selection
@@ -116,7 +120,9 @@ class GitGotoDiff(sublime_plugin.TextCommand):
         hunk_start_line = hunk.group(3)
         goto_line = int(hunk_start_line) + line_offset - 1
 
-        file_name = os.path.join(v.settings().get("git_root_dir"), file_name)
+        git_root_dir = v.settings().get("git_root_dir")
+        if git_root_dir:
+            file_name = os.path.join(git_root_dir, file_name)
 
         new_view = self.view.window().open_file(file_name)
         do_when(lambda: not new_view.is_loading(),
