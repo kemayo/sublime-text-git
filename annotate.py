@@ -115,7 +115,7 @@ class GitAnnotateCommand(GitTextCommand):
             if change_type == '-':
                 full_region = self.view.full_line(self.view.text_point(line - 1, 0))
                 position = full_region.begin()
-                for i in xrange(full_region.size()):
+                for i in range(full_region.size()):
                     typed_diff[change_type].append(sublime.Region(position + i))
             else:
                 point = self.view.text_point(line, 0)
