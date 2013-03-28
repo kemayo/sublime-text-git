@@ -105,7 +105,7 @@ class GitGotoDiff(sublime_plugin.TextCommand):
                 if not hunk_line:
                     hunk_line = lineContent
             elif lineContent.startswith("+++ b/"):
-                self.file_name = v.substr(sublime.Region(line.a+6, line.b))
+                self.file_name = v.substr(sublime.Region(line.a+6, line.b)).strip()
                 break
             elif not hunk_line and not lineContent.startswith("-"):
                 line_offset = line_offset+1
