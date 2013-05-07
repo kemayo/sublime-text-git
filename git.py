@@ -207,6 +207,8 @@ class GitCommand(object):
                 command[0] = s.get('git_command')
             elif GIT:
                 command[0] = GIT
+        if command[0] == 'gitk' and s.get('gitk_command'):
+            command[0] = s.get('gitk_command')
         if command[0] == 'git-flow' and s.get('git_flow_command'):
             command[0] = s.get('git_flow_command')
         if not callback:
