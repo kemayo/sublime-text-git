@@ -8,7 +8,8 @@ class GitGrepCommand(GitWindowCommand):
   # init, setup some default object properties
   def __init__(self, window):
     self.last_query = ''
-    self.last_ignore = ''
+    self.last_ignore = 'vendor'
+    self.last_subdir = '.'
     # http://docs.python.org/library/functions.html#hasattr
     if hasattr(sublime_plugin.WindowCommand, '__init__'):
             sublime_plugin.WindowCommand.__init__(self, window)
@@ -18,13 +19,16 @@ class GitGrepCommand(GitWindowCommand):
     self.window.show_input_panel('git grep', self.last_query, self.on_grep_done, self.on_change, self.on_cancel)
   def on_grep_done(self,query):
     self.last_query = query
-    self.window.show_input_panel('ignore files(use | to specify more)', self.last_ignore, self.on_done, self.on_change, self.on_cancel)
-
-  def on_done(self, ignore):
+    self.window.show_input_panel('ignore files(use | to specify more)', self.last_ignore, self.on_subdir_done, self.on_change, self.on_cancel)
+  def on_subdir_done(self,ignore):
     self.last_ignore = ignore
-    # -i ignore case, -n return numbers, -I skip binary files
+    self.window.show_input_panel('subdirs to search', self.last_subdir, self.on_done, self.on_change, self.on_cancel)
 
-    status, out = commands.getstatusoutput('git grep --full-name -Iin "%s" "%s"|grep -Ev "%s"' % (self.last_query, git_root(self.get_working_dir()), ignore))
+  def on_done(self, subdir):
+    self.last_subdir = subdir
+    # git grep options used, -I skip binary files, -i ignore case, -n return numbers
+    print 'git grep --full-name -Iin "%s" "%s/%s"|grep -Ev "%s"' % (self.last_query, git_root(self.get_working_dir()),self.last_subdir, self.last_ignore)
+    status, out = commands.getstatusoutput('git grep --full-name -Iin "%s" "%s/%s"|grep -Ev "%s"' % (self.last_query, git_root(self.get_working_dir()),self.last_subdir, self.last_ignore))
 
     # decod utf 8 and split to line array
     self.out_list = out.decode('ascii', 'ignore').split("\n")
