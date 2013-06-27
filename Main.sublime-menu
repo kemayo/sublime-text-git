@@ -15,6 +15,7 @@
                             ,{ "caption": "Graph", "command": "git_graph" }
                             ,{ "caption": "-" }
                             ,{ "caption": "Diff", "command": "git_diff" }
+                            ,{ "caption": "Diff (no whitespace)", "command": "git_diff_no_ws" }
                             ,{ "caption": "DiffTool", "command": "git_diff_tool" }
                             ,{ "caption": "-" }
                             ,{ "caption": "Add", "command": "git_add" }
@@ -39,6 +40,7 @@
                             ,{ "caption": "Graph", "command": "git_graph_all" }
                             ,{ "caption": "-" }
                             ,{ "caption": "Diff", "command": "git_diff_all" }
+                            ,{ "caption": "Diff (no whitespace)", "command": "git_diff_all_no_ws" }
                             ,{ "caption": "Diff Staged", "command": "git_diff_commit" }
                             ,{ "caption": "Diff Tool", "command": "git_diff_tool_all" }
                             ,{ "caption": "Reset Hard", "command": "git_reset_hard_head" }

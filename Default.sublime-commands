@@ -43,6 +43,14 @@
         "command": "git_diff_all"
     }
     ,{
+        "caption": "Git: Diff Current File (no whitespace)",
+        "command": "git_diff_no_ws"
+    }
+    ,{
+        "caption": "Git: Diff All (no whitespace)",
+        "command": "git_diff_all_no_ws"
+    }
+    ,{
         "caption": "Git: Diff Staged",
         "command": "git_diff_commit"
     }

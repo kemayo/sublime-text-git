@@ -3,9 +3,19 @@ from .git import GitTextCommand, GitWindowCommand
 
 
 class GitDiff (object):
+    nowhitespace = False
+
     def run(self, edit=None):
-        self.run_command(['git', 'diff', '--no-color', '--', self.get_file_name()],
-                         self.diff_done)
+        self.run_command(
+            [
+                'git',
+                'diff',
+                '--no-color',
+                '-w' if self.nowhitespace else ''
+                '--',
+                self.get_file_name()
+            ],
+            self.diff_done)
 
     def diff_done(self, result):
         if not result.strip():
@@ -45,6 +55,14 @@ class GitDiffCommand(GitDiff, GitTextCommand):
 
 class GitDiffAllCommand(GitDiff, GitWindowCommand):
     pass
+
+
+class GitDiffNoWsCommand(GitDiff, GitTextCommand):
+    nowhitespace = True
+
+
+class GitDiffAllNoWsCommand(GitDiff, GitWindowCommand):
+    nowhitespace = True
 
 
 class GitDiffCommitCommand(GitDiffCommit, GitWindowCommand):
