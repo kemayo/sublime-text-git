@@ -103,7 +103,8 @@ class GitDeleteTagCommand(GitWindowCommand):
             return
         picked_tag = self.results[picked]
         picked_tag = picked_tag.strip()
-        self.run_command(['git', 'tag', '-d', picked_tag])
+        if sublime.ok_cancel_dialog("Delete \"%s\" Tag?" % picked_tag, "Delete"):   
+            self.run_command(['git', 'tag', '-d', picked_tag])
 
 
 class GitShowTagsCommand(GitWindowCommand):
