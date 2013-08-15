@@ -7,6 +7,8 @@ import functools
 import os.path
 import time
 
+from .progress import Progress
+
 # In a complete inversion from ST2, in ST3 when a plugin is loaded we
 # actually can trust __file__.
 # Goal is to get: "Packages/Git", allowing for people who rename things
@@ -216,8 +218,9 @@ class GitCommand(object):
         thread.start()
 
         if show_status:
-            message = kwargs.get('status_message', False) or ' '.join(command)
-            sublime.status_message(message)
+            message = [kwargs.get('status_message', False) or ' '.join(command), kwargs.get('status_message', False) or ' '.join(command)]
+            Progress(thread, message[0], message[1])
+            
 
     def generic_done(self, result):
         if self.may_change_files and self.active_view() and self.active_view().file_name():
