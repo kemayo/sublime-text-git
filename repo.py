@@ -55,6 +55,28 @@ class GitBranchCommand(GitWindowCommand):
             view.run_command("git_branch_status")
 
 
+class GitPullCommand(GitWindowCommand):
+    command_to_run_after_remote = 'pull'
+    extra_flags = []
+
+    def run(self):
+        self.run_command(['git', 'remote'], callback=self.remote_done) 
+
+    def remote_done(self, result):
+        self.remotes = result.rstrip().split('\n')
+        if len(self.remotes) == 1:
+            self.panel_done()
+        else:
+            self.quick_panel(self.remotes, self.panel_done, sublime.MONOSPACE_FONT)
+    
+    def panel_done(self, picked=0):
+        if picked < 0 or picked >= len(self.remotes):
+            return
+        self.picked_remote = self.remotes[picked]
+        self.picked_remote = self.picked_remote.strip()
+        self.run_command(['git', self.command_to_run_after_remote, self.picked_remote] + self.extra_flags, callback=self.panel)
+
+
 class GitMergeCommand(GitBranchCommand):
     command_to_run_after_branch = ['merge']
     extra_flags = ['--no-merge']
@@ -119,28 +141,6 @@ class GitFetchCommand(GitPullCommand):
     command_to_run_after_remote = 'fetch'
 
 
-class GitPullCommand(GitWindowCommand):
-    command_to_run_after_remote = 'pull'
-    extra_flags = []
-
-    def run(self):
-        self.run_command(['git', 'remote'], callback=self.remote_done) 
-
-    def remote_done(self, result):
-        self.remotes = result.rstrip().split('\n')
-        if len(self.remotes) == 1:
-            self.panel_done()
-        else:
-            self.quick_panel(self.remotes, self.panel_done, sublime.MONOSPACE_FONT)
-    
-    def panel_done(self, picked=0):
-        if picked < 0 or picked >= len(self.remotes):
-            return
-        self.picked_remote = self.remotes[picked]
-        self.picked_remote = self.picked_remote.strip()
-        self.run_command(['git', self.command_to_run_after_remote, self.picked_remote] + self.extra_flags, callback=self.panel)
-
-    
 class GitPullCurrentBranchCommand(GitWindowCommand):
     command_to_run_after_describe = 'pull'
 
