@@ -122,9 +122,9 @@ class GitShowTagsCommand(GitWindowCommand):
         self.run_command(['git', 'show', picked_tag])
 
 
-class GitPushTagsCommand(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'push', '--tags'])
+class GitPushTagsCommand(GitPullCommand):
+    command_to_run_after_remote = 'push'
+    extra_flags = ['--tags']
 
 
 class GitCheckoutTagCommand(GitWindowCommand):
@@ -153,16 +153,32 @@ class GitCheckoutCommand(GitTextCommand):
         self.run_command(['git', 'checkout', self.get_file_name()])
 
 
-class GitFetchCommand(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'fetch'], callback=self.panel)
+class GitFetchCommand(GitPullCommand):
+    command_to_run_after_remote = 'fetch'
 
 
 class GitPullCommand(GitWindowCommand):
+    command_to_run_after_remote = 'pull'
+    extra_flags = []
+
     def run(self):
-        self.run_command(['git', 'pull'], callback=self.panel)
+        self.run_command(['git', 'remote'], callback=self.remote_done) 
 
+    def remote_done(self, result):
+        self.remotes = result.rstrip().split('\n')
+        if len(self.remotes) == 1:
+            self.panel_done()
+        else:
+            self.quick_panel(self.remotes, self.panel_done, sublime.MONOSPACE_FONT)
+    
+    def panel_done(self, picked=0):
+        if picked < 0 or picked >= len(self.remotes):
+            return
+        self.picked_remote = self.remotes[picked]
+        self.picked_remote = self.picked_remote.strip()
+        self.run_command(['git', self.command_to_run_after_remote, self.picked_remote] + self.extra_flags, callback=self.panel)
 
+    
 class GitPullCurrentBranchCommand(GitWindowCommand):
     command_to_run_after_describe = 'pull'
 
@@ -188,9 +204,8 @@ class GitPullCurrentBranchCommand(GitWindowCommand):
         self.run_command(['git', self.command_to_run_after_describe, self.picked_remote, self.current_branch])
 
 
-class GitPushCommand(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'push'], callback=self.panel)
+class GitPushCommand(GitPullCommand):
+    command_to_run_after_remote = 'push'
 
 
 class GitPushCurrentBranchCommand(GitPullCurrentBranchCommand):
