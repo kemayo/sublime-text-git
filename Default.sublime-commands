@@ -155,6 +155,10 @@
         "command": "git_toggle_annotations"
     }
     ,{
+        "caption": "Git: Cherry Pick",    
+        "command": "git_cherry_pick"
+    }
+    ,{
         "caption": "Git: Custom Command",
         "command": "git_custom"
     }

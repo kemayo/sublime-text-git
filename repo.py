@@ -211,3 +211,24 @@ class GitPushCommand(GitPullCommand):
 
 class GitPushCurrentBranchCommand(GitPullCurrentBranchCommand):
     command_to_run_after_describe = 'push'
+
+
+class GitCherryPickCommand(GitWindowCommand):
+    
+    def run(self):
+        command = ['git', 'log', '--all', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)', '--date=local', '--max-count=9000']
+        self.run_command(command, callback=self.log_done)
+
+    def log_done(self, result):
+        self.results = [r.split('\a', 2) for r in result.strip().split('\n')]
+        self.quick_panel(self.results, self.log_panel_done)
+
+    def log_panel_done(self, picked):
+        print(picked)
+        if 0 > picked < len(self.results):
+            return
+        item = self.results[picked]
+        self.cherry_pick(item[1].split(' ')[0])
+
+    def cherry_pick(self, ref):
+        self.run_command(['git', 'cherry-pick', ref])
