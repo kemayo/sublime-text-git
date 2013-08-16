@@ -385,3 +385,13 @@ class GitGitkCommand(GitTextCommand):
     def run(self, edit):
         command = ['gitk']
         self.run_command(command)
+
+
+class GitGitxCommand(GitTextCommand):
+
+    def is_enabled(self):
+        return sublime.platform() == "osx";
+
+    def run(self, edit):
+        command = ['gitx', '--git-dir=%s' % self.get_working_dir()]
+        self.run_command(command)
