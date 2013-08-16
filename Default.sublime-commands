@@ -75,6 +75,10 @@
         "command": "git_quick_commit"
     }
     ,{
+        "caption": "Git: Checkout Commit",
+        "command": "git_checkout_commit"
+    }
+    ,{
         "caption": "Git: Status",
         "command": "git_status"
     }
