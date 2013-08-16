@@ -49,6 +49,7 @@ class GitBranchCommand(GitWindowCommand):
         self.run_command(['git'] + self.command_to_run_after_branch + [picked_branch], self.update_status)
 
     def update_status(self, result):
+        self.panel(result)
         global branch
         branch = ""
         for view in self.window.views():
@@ -184,7 +185,7 @@ class GitPullCurrentBranchCommand(GitWindowCommand):
     command_to_run_after_describe = 'pull'
 
     def run(self):
-        self.run_command(['git', 'describe', '--contains',  '--all', 'HEAD'], callback=self.describe_done)
+        self.run_command(['git', 'rev-parse',  '--abbrev-ref', 'HEAD'], callback=self.describe_done)
 
     def describe_done(self, result):
         self.current_branch = result.strip()
