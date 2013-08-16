@@ -130,7 +130,7 @@ class GitPullCurrentBranchCommand(GitWindowCommand):
     command_to_run_after_describe = 'pull'
 
     def run(self):
-        self.run_command(['git', 'describe', '--contains',  '--all', 'HEAD'], callback=self.describe_done)
+        self.run_command(['git', 'rev-parse',  '--abbrev-ref', 'HEAD'], callback=self.describe_done)
 
     def describe_done(self, result):
         self.current_branch = result.strip()
