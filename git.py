@@ -203,8 +203,9 @@ class GitCommand(object):
         if s.get('save_first') and self.active_view() and self.active_view().is_dirty() and not no_save:
             self.active_view().run_command('save')
         if command[0] == 'git':
-            if s.get('git_command'):
-                command[0] = s.get('git_command')
+            us = sublime.load_settings('Preferences.sublime-settings')
+            if s.get('git_command') or us.get('git_binary'):
+                command[0] = s.get('git_command') or us.get('git_binary')
             elif GIT:
                 command[0] = GIT
         if command[0] == 'git-flow' and s.get('git_flow_command'):
