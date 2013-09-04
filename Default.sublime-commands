@@ -191,6 +191,42 @@
         "command": "git_flow_hotfix_finish"
     }
     ,{
+        "caption": "Git Hubflow: Feature Start",
+        "command": "git_hubflow_feature_start"
+    }
+    ,{
+        "caption": "Git Hubflow: Feature Finish",
+        "command": "git_hubflow_feature_finish"
+    }
+    ,{
+        "caption": "Git Hubflow: Release Start",
+        "command": "git_hubflow_release_start"
+    }
+    ,{
+        "caption": "Git Hubflow: Release Finish",
+        "command": "git_hubflow_release_finish"
+    }
+    ,{
+        "caption": "Git Hubflow: Hotfix Start",
+        "command": "git_hubflow_hotfix_start"
+    }
+    ,{
+        "caption": "Git Hubflow: Hotfix Finish",
+        "command": "git_hubflow_hotfix_finish"
+    }
+    ,{
+        "caption": "Git Hubflow: Push",
+        "command": "git_hubflow_push"
+    }
+    ,{
+        "caption": "Git Hubflow: Pull",
+        "command": "git_hubflow_pull"
+    }
+    ,{
+        "caption": "Git Hubflow: Update",
+        "command": "git_hubflow_update"
+    }
+    ,{
         "caption": "Git: Open...",
         "command": "git_open_file"
     }
