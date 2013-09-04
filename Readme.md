@@ -2,14 +2,14 @@
 
 This fork of [Git](https://github.com/kemayo/sublime-git) for Sublime Text supports the usual features and adds the following:
 
-	- Tag support (Create, Delete, Checkout) [pull request](https://github.com/kemayo/sublime-git/pull/288)
-	- Cherry Pick
-	- Progress bar/ Spinner while caling a command
-	- Checkout any commit you want
-	- Hubflow support [pull request](https://github.com/kemayo/sublime-git/pull/279)
-	- Right-click menu actions for "this file" [pull request](https://github.com/kemayo/sublime-git/pull/247)
-	- GitX support on OS X
-	- Bugfixes
+- Tag support (Create, Delete, Checkout) [pull request](https://github.com/kemayo/sublime-git/	pull/288)
+- Cherry Pick Support
+- Progress bar/ Spinner while caling a command
+- Checkout any commit you want
+- Hubflow support [pull request](https://github.com/kemayo/sublime-git/pull/279)
+- Right-click menu actions for "this file" [pull request](https://github.com/kemayo/sublime-git/pull/247)
+- GitX support on OS X
+- Bugfixes
 
 ## Installation
 
