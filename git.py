@@ -218,9 +218,9 @@ class GitCommand(object):
         thread.start()
 
         if show_status:
-            message = [kwargs.get('status_message', False) or ' '.join(command), kwargs.get('status_message', False) or ' '.join(command)]
+            message = [kwargs.get('status_message', False) or ' '.join(command[1:]), kwargs.get('status_message', False) or ' '.join(command[1:])]
             Progress(thread, message[0], message[1])
-            
+
 
     def generic_done(self, result):
         if self.may_change_files and self.active_view() and self.active_view().file_name():
