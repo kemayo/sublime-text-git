@@ -34,3 +34,5 @@ Using Package Control, add custom repostory `https://github.com/Chris---/Sublime
   * Windows: `%APPDATA%/Sublime Text 2|3/Packages/Git`
 
 For more information about what's supported, check the original wiki.
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/Chris---/sublimetext-git/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
