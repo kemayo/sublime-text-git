@@ -17,7 +17,7 @@ def find_plugin_directory(f):
     dirname = os.path.split(os.path.dirname(f))[-1]
     return "Packages/" + dirname.replace(".sublime-package", "")
 PLUGIN_DIRECTORY = find_plugin_directory(__file__)
-print("PLUGIN_DIRECTORY", PLUGIN_DIRECTORY)
+
 
 def main_thread(callback, *args, **kwargs):
     # sublime.set_timeout gets used to send things onto the main thread
