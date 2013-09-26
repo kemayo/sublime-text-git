@@ -10,11 +10,14 @@ import time
 # In a complete inversion from ST2, in ST3 when a plugin is loaded we
 # actually can trust __file__.
 # Goal is to get: "Packages/Git", allowing for people who rename things
-FULL_PLUGIN_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
-PLUGIN_DIRECTORY = FULL_PLUGIN_DIRECTORY.replace(os.path.normpath(os.path.join(FULL_PLUGIN_DIRECTORY, '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
 
 git_root_cache = {}
 
+def find_plugin_directory(f):
+    dirname = os.path.split(os.path.dirname(f))[-1]
+    return "Packages/" + dirname.replace(".sublime-package", "")
+PLUGIN_DIRECTORY = find_plugin_directory(__file__)
+print("PLUGIN_DIRECTORY", PLUGIN_DIRECTORY)
 
 def main_thread(callback, *args, **kwargs):
     # sublime.set_timeout gets used to send things onto the main thread
