@@ -1,4 +1,5 @@
 import functools
+import os
 import re
 
 import sublime
@@ -11,7 +12,7 @@ class GitBlameCommand(GitTextCommand):
         # -w: ignore whitespace changes
         # -M: retain blame when moving lines
         # -C: retain blame when copying lines between files
-        command = ['git', 'blame', '-w', '-M', '-C']
+        command = ['git', 'blame', '-w', '-M', '-C', '--date=short', '--abbrev=6']
 
         s = sublime.load_settings("Git.sublime-settings")
         selection = self.view.sel()[0]  # todo: multi-select support?
@@ -57,7 +58,26 @@ class GitLog(object):
             self.log_done)
 
     def log_done(self, result):
-        self.results = [r.split('\a', 2) for r in result.strip().split('\n')]
+        self.results = []
+        self.files = {}
+        relative = None
+        for r in result.strip().split('\n'):
+            if r:
+                _result = r.strip().split('\a', 2)
+                if len(_result) == 1:
+                    if relative is None:
+                        # Find relative path
+                        relative = os.sep.join(['..'] * (len(os.path.normpath(_result[0]).split(os.sep)) - 1))
+                        if relative:
+                            relative += os.sep
+                    ref = result[0].split(' ', 1)[0]
+                    self.files[ref] = relative + _result[0]
+                else:
+                    result = _result
+                    ref = result[1].split(' ', 1)
+                    result[0] = u"%s - %s" % (ref[0], result[0])
+                    result[1] = ref[1]
+                    self.results.append(result)
         self.quick_panel(self.results, self.log_panel_done)
 
     def log_panel_done(self, picked):
@@ -65,14 +85,19 @@ class GitLog(object):
             return
         item = self.results[picked]
         # the commit hash is the first thing on the second line
-        self.log_result(item[1].split(' ')[0])
+        ref = item[0].split(' ', 1)[0]
+        fn = self.get_file_name()
+        file_name = self.files.get(ref, fn)
+        self.log_result(ref, file_name, fn != '')
 
-    def log_result(self, ref):
+    def log_result(self, ref, file_name, follow):
         # I'm not certain I should have the file name here; it restricts the
         # details to just the current file. Depends on what the user expects...
         # which I'm not sure of.
+        command = ['git', 'log', '--follow' if follow else None, '-p', '-1', ref]
+        command.extend(['--', file_name])
         self.run_command(
-            ['git', 'log', '-p', '-1', ref, '--', self.get_file_name()],
+            command,
             self.details_done)
 
     def details_done(self, result):
@@ -91,13 +116,32 @@ class GitShow(object):
     def run(self, edit=None):
         # GitLog Copy-Past
         self.run_command(
-            ['git', 'log', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
+            ['git', 'log', '--follow', '--name-only', '--pretty=%s\a%h %an <%aE>\a%ad (%ar)',
             '--date=local', '--max-count=9000', '--', self.get_file_name()],
             self.show_done)
 
     def show_done(self, result):
         # GitLog Copy-Past
-        self.results = [r.split('\a', 2) for r in result.strip().split('\n')]
+        self.results = []
+        self.files = {}
+        relative = None
+        for r in result.strip().split('\n'):
+            if r:
+                _result = r.strip().split('\a', 2)
+                if len(_result) == 1:
+                    if relative is None:
+                        # Find relative path
+                        relative = os.sep.join(['..'] * (len(os.path.normpath(_result[0]).split(os.sep)) - 1))
+                        if relative:
+                            relative += os.sep
+                    ref = result[0].split(' ', 1)[0]
+                    self.files[ref] = relative + _result[0]
+                else:
+                    result = _result
+                    ref = result[1].split(' ', 1)
+                    result[0] = u"%s - %s" % (ref[0], result[0])
+                    result[1] = ref[1]
+                    self.results.append(result)
         self.quick_panel(self.results, self.panel_done)
 
     def panel_done(self, picked):
@@ -105,7 +149,7 @@ class GitShow(object):
             return
         item = self.results[picked]
         # the commit hash is the first thing on the second line
-        ref = item[1].split(' ')[0]
+        ref = item[0].split(' ', 1)[0]
         self.run_command(
             ['git', 'show', '%s:%s' % (ref, self.get_relative_file_name())],
             self.details_done,
@@ -156,7 +200,7 @@ class GitOpenFileCommand(GitLog, GitWindowCommand):
     def branch_panel_done(self, picked):
         if 0 > picked < len(self.results):
             return
-        self.branch = self.results[picked].split(' ')[-1]
+        self.branch = self.results[picked].rsplit(' ', 1)[-1]
         self.run_log(False, self.branch)
 
     def log_result(self, result_hash):
