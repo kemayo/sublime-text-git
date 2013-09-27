@@ -61,7 +61,7 @@ class GitDiff (object):
         # the commit hash is the first thing on the second line
         ref = item[0].split(' ', 1)[0]
         command = ['git', 'diff', '-C', '--no-color', ref, '--']
-        command.extend(set(self.files.values() + [self.get_file_name()]))
+        command.extend(set(list(self.files.values()) + [self.get_file_name()]))
         self.run_command(
             command,
             self.diff_done,
