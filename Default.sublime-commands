@@ -207,6 +207,10 @@
         "command": "git_gitk"
     }
     ,{
+        "caption": "Git: Gitk All",
+        "command": "git_gitk_all"
+    }
+    ,{
         "caption": "Git: Commit history",
         "command": "git_commit_history"
     }
