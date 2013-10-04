@@ -11,12 +11,20 @@
         "command": "git_new_tag"
     }
     ,{
+        "caption": "Git: Delete Tag",
+        "command": "git_delete_tag"
+    }
+    ,{
         "caption": "Git: Show Tags",
         "command": "git_show_tags"
     }
     ,{
         "caption": "Git: Push Tags",
         "command": "git_push_tags"
+    }
+    ,{
+        "caption": "Git: Checkout Tag",
+        "command": "git_checkout_tag"
     }
     ,{
         "caption": "Git: Log Current File",

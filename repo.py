@@ -87,6 +87,26 @@ class GitNewTagCommand(GitWindowCommand):
         self.run_command(['git', 'tag', tagname])
 
 
+class GitDeleteTagCommand(GitWindowCommand):
+    def run(self):
+        self.run_command(['git', 'tag'], self.fetch_tag)
+
+    def fetch_tag(self, result):
+        if result.strip() == "":
+            sublime.status_message("No Tags provided.")
+            return
+        self.results = result.rstrip().split('\n')
+        self.quick_panel(self.results, self.panel_done)
+
+    def panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        picked_tag = self.results[picked]
+        picked_tag = picked_tag.strip()
+        if sublime.ok_cancel_dialog("Delete \"%s\" Tag?" % picked_tag, "Delete"):   
+            self.run_command(['git', 'tag', '-d', picked_tag])
+
+
 class GitShowTagsCommand(GitWindowCommand):
     def run(self):
         self.run_command(['git', 'tag'], self.fetch_tag)
@@ -106,6 +126,25 @@ class GitShowTagsCommand(GitWindowCommand):
 class GitPushTagsCommand(GitWindowCommand):
     def run(self):
         self.run_command(['git', 'push', '--tags'])
+
+
+class GitCheckoutTagCommand(GitWindowCommand):
+    def run(self):
+        self.run_command(['git', 'tag'], self.fetch_tag)
+
+    def fetch_tag(self, result):
+        if result.strip() == "":
+            sublime.status_message("No Tags provided.")
+            return
+        self.results = result.rstrip().split('\n')
+        self.quick_panel(self.results, self.panel_done)
+
+    def panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        picked_tag = self.results[picked]
+        picked_tag = picked_tag.strip()
+        self.run_command(['git', 'checkout', "tags/%s" % picked_tag])
 
 
 class GitCheckoutCommand(GitTextCommand):
