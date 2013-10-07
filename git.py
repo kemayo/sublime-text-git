@@ -68,7 +68,7 @@ def view_contents(view):
 
 
 def plugin_file(name):
-    return os.path.join(PLUGIN_DIRECTORY, name)
+    return PLUGIN_DIRECTORY + '/' + name
 
 
 def do_when(conditional, callback, *args, **kwargs):
