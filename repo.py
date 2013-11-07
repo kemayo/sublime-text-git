@@ -114,16 +114,19 @@ class GitCheckoutCommand(GitTextCommand):
 
     def run(self, edit):
         self.run_command(['git', 'checkout', self.get_file_name()])
+        sublime.set_timeout(lambda: self.get_window().active_view().run_command("revert"), 5000)
 
 
 class GitFetchCommand(GitWindowCommand):
     def run(self):
         self.run_command(['git', 'fetch'], callback=self.panel)
+        sublime.set_timeout(lambda: self.get_window().active_view().run_command("revert"), 5000)
 
 
 class GitPullCommand(GitWindowCommand):
     def run(self):
         self.run_command(['git', 'pull'], callback=self.panel)
+        sublime.set_timeout(lambda: self.get_window().active_view().run_command("revert"), 5000)
 
 
 class GitPullCurrentBranchCommand(GitWindowCommand):
