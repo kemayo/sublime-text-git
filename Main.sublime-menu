@@ -13,6 +13,7 @@
                         [
                              { "caption": "Log", "command": "git_log" }
                             ,{ "caption": "Graph", "command": "git_graph" }
+                            ,{ "caption": "Graph (gitk)", "command": "git_gitk" }
                             ,{ "caption": "-" }
                             ,{ "caption": "Diff", "command": "git_diff" }
                             ,{ "caption": "DiffTool", "command": "git_diff_tool" }
@@ -37,6 +38,7 @@
                         [
                              { "caption": "Log", "command": "git_log_all" }
                             ,{ "caption": "Graph", "command": "git_graph_all" }
+                            ,{ "caption": "Graph (gitk)", "command": "git_gitk_all" }
                             ,{ "caption": "-" }
                             ,{ "caption": "Diff", "command": "git_diff_all" }
                             ,{ "caption": "Diff Staged", "command": "git_diff_commit" }
