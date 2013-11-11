@@ -331,7 +331,7 @@ class GitGuiCommand(GitTextCommand):
 
 class GitGitkCommand(GitTextCommand):
     def run(self, edit):
-        command = ['gitk']
+        command = ['gitk', '--all', self.get_file_name()]
         self.run_command(command)
 
 class GitGitkAllCommand(GitTextCommand):
