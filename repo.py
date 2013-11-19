@@ -126,6 +126,11 @@ class GitPullCommand(GitWindowCommand):
         self.run_command(['git', 'pull'], callback=self.panel)
 
 
+class GitPullRebaseCommand(GitWindowCommand):
+    def run(self):
+        self.run_command(['git', 'pull', '--rebase'], callback=self.panel)
+
+
 class GitPullCurrentBranchCommand(GitWindowCommand):
     command_to_run_after_describe = 'pull'
 
