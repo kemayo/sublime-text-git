@@ -191,6 +191,10 @@
         "command": "git_reset_hard_head"
     }
     ,{
+        "caption": "Git: Discard Changes To Current File",
+        "command": "git_discard_changes"
+    }
+    ,{
         "caption": "Git: Add Selected Hunk",
         "command": "git_add_selected_hunk"
     }
