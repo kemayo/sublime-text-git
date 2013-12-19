@@ -380,6 +380,20 @@ class GitCustomCommand(GitWindowCommand):
         print(command_splitted)
         self.run_command(command_splitted)
 
+class GitRawCommand(GitWindowCommand):
+    may_change_files = True
+
+    def run(self, **args):
+
+        command = str(args.get('command', ''))
+        if command.strip() == "":
+            self.panel("No git command provided")
+            return
+        import shlex
+        command_splitted = shlex.split(command)
+        print(command_splitted)
+        self.run_command(command_splitted)
+
 
 class GitGuiCommand(GitTextCommand):
     def run(self, edit):
