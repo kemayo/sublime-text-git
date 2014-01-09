@@ -55,6 +55,18 @@
         "command": "git_diff_commit"
     }
     ,{
+        "caption": "Git: Word Diff Current File",
+        "command": "git_word_diff"
+    }
+    ,{
+        "caption": "Git: Word Diff All",
+        "command": "git_word_diff_all"
+    }
+    ,{
+        "caption": "Git: Word Diff Staged",
+        "command": "git_word_diff_commit"
+    }
+    ,{
         "caption": "Git: Diff Tool Current File",
         "command": "git_diff_tool"
     }
@@ -159,7 +171,7 @@
         "command": "git_custom"
     }
     ,{
-        "caption": "Git Flow: Feature Start", 
+        "caption": "Git Flow: Feature Start",
         "command": "git_flow_feature_start"
     }
     ,{
