@@ -39,12 +39,24 @@
         "command": "git_diff"
     }
     ,{
+        "caption": "Git: Word Diff Current File",
+        "command": "git_word_diff"
+    }
+    ,{
         "caption": "Git: Diff All",
         "command": "git_diff_all"
     }
     ,{
+        "caption": "Git: Word Diff All",
+        "command": "git_word_diff_all"
+    }
+    ,{
         "caption": "Git: Diff Staged",
         "command": "git_diff_commit"
+    }
+    ,{
+        "caption": "Git: Word Diff Staged",
+        "command": "git_word_diff_commit"
     }
     ,{
         "caption": "Git: Diff Tool Current File",

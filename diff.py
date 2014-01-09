@@ -1,4 +1,4 @@
-import sublime
+import sublime, sublime_plugin
 import re
 from git import git_root, GitTextCommand, GitWindowCommand
 import functools
@@ -42,9 +42,43 @@ class GitDiff (object):
         view.settings().set("git_root_dir", git_root(self.get_working_dir()))
 
 
+class GitWordDiff (object):
+    def run(self, edit=None):
+        self.run_command(['git', 'diff', '--no-color', '--word-diff', '--', self.get_file_name()],
+                         self.diff_done)
+
+    def diff_done(self, result):
+        if not result.strip():
+            self.panel("No output")
+            return
+        s = sublime.load_settings("Git.sublime-settings")
+        if s.get('diff_panel'):
+            view = self.panel(result)
+        else:
+            view = self.scratch(result, title="Git Diff")
+
+        view.set_syntax_file('Packages/Git/word-diff.tmLanguage')        
+
+        # Store the git root directory in the view so we can resolve relative paths
+        # when the user wants to navigate to the source file.
+        view.settings().set("git_root_dir", git_root(self.get_working_dir()))
+
+
 class GitDiffCommit (object):
     def run(self, edit=None):
         self.run_command(['git', 'diff', '--cached', '--no-color'],
+            self.diff_done)
+
+    def diff_done(self, result):
+        if not result.strip():
+            self.panel("No output")
+            return
+        self.scratch(result, title="Git Diff")
+
+
+class GitWordDiffCommit (object):
+    def run(self, edit=None):
+        self.run_command(['git', 'diff', '--cached', '--no-color', '--word-diff'],
             self.diff_done)
 
     def diff_done(self, result):
@@ -62,7 +96,19 @@ class GitDiffAllCommand(GitDiff, GitWindowCommand):
     pass
 
 
+class GitWordDiffCommand(GitWordDiff, GitTextCommand):
+    pass
+
+
+class GitWordDiffAllCommand(GitWordDiff, GitWindowCommand):
+    pass
+
+
 class GitDiffCommitCommand(GitDiffCommit, GitWindowCommand):
+    pass
+
+
+class GitWordDiffCommitCommand(GitWordDiffCommit, GitWindowCommand):
     pass
 
 
