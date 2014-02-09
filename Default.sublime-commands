@@ -207,6 +207,10 @@
         "command": "git_gui"
     }
     ,{
+        "caption": "Git: Gitk This File",
+        "command": "git_gitk_this_file"
+    }
+    ,{
         "caption": "Git: Gitk",
         "command": "git_gitk"
     }
