@@ -380,6 +380,47 @@ class GitCustomCommand(GitWindowCommand):
         print(command_splitted)
         self.run_command(command_splitted)
 
+class GitRawCommand(GitWindowCommand):
+    may_change_files = True
+
+    def run(self, **args):
+
+        self.command = str(args.get('command', ''))
+        show_in = str(args.get('show_in', 'pane_below'))
+
+        if self.command.strip() == "":
+            self.panel("No git command provided")
+            return
+        import shlex
+        command_splitted = shlex.split(self.command)
+        print(command_splitted)
+
+        if show_in == 'pane_below':
+            self.run_command(command_splitted)
+        elif show_in == 'quick_panel':
+            self.run_command(command_splitted, self.show_in_quick_panel)
+        elif show_in == 'new_tab':
+            self.run_command(command_splitted, self.show_in_new_tab)
+
+    def show_in_quick_panel(self, result):
+        self.results = list(result.rstrip().split('\n'))
+        if len(self.results):
+            self.quick_panel(self.results,
+                self.do_nothing, sublime.MONOSPACE_FONT)
+        else:
+            sublime.status_message("Nothing to show")
+
+    def do_nothing(self, picked):
+        return
+
+    def show_in_new_tab(self, result):
+        msg = self.window.new_file()
+        msg.set_scratch(True)
+        msg.set_name(self.command)
+        self._output_to_view(msg, result)
+        msg.sel().clear()
+        msg.sel().add(sublime.Region(0, 0))
+
 
 class GitGuiCommand(GitTextCommand):
     def run(self, edit):
