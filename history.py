@@ -1,5 +1,6 @@
 import functools
 import re
+from operator import methodcaller
 
 import sublime
 from .git import GitTextCommand, GitWindowCommand, plugin_file
@@ -13,16 +14,9 @@ class GitBlameCommand(GitTextCommand):
         # -C: retain blame when copying lines between files
         command = ['git', 'blame', '-w', '-M', '-C']
 
-        selection = self.view.sel()[0]  # todo: multi-select support?
-        if not selection.empty():
-            # just the lines we have a selection on
-            begin_line, begin_column = self.view.rowcol(selection.begin())
-            end_line, end_column = self.view.rowcol(selection.end())
-            # blame will fail if last line is empty and is included in the selection
-            if end_line > begin_line and end_column == 0:
-                end_line -= 1
-            lines = str(begin_line + 1) + ',' + str(end_line + 1)
-            command.extend(('-L', lines))
+        lines = self.get_lines()
+        if lines:
+            command.extend(('-L', str(lines[0]) + ',' + str(lines[1])))
             callback = self.blame_done
         else:
             callback = functools.partial(self.blame_done,
@@ -30,6 +24,19 @@ class GitBlameCommand(GitTextCommand):
 
         command.append(self.get_file_name())
         self.run_command(command, callback)
+
+    def get_lines(self):
+        selection = self.view.sel()[0]  # todo: multi-select support?
+        if selection.empty():
+            return False
+        # just the lines we have a selection on
+        begin_line, begin_column = self.view.rowcol(selection.begin())
+        end_line, end_column = self.view.rowcol(selection.end())
+        # blame will fail if last line is empty and is included in the selection
+        if end_line > begin_line and end_column == 0:
+            end_line -= 1
+        # add one to each, to line up sublime's index with git's
+        return begin_line + 1, end_line + 1
 
     def blame_done(self, result, position=None):
         self.scratch(result, title="Git Blame", position=position,
@@ -186,3 +193,33 @@ class GitOpenFileCommand(GitLog, GitWindowCommand):
 
     def show_done(self, result):
         self.scratch(result, title="%s:%s" % (self.fileRef, self.filename))
+
+class GitDocumentCommand(GitBlameCommand):
+    def get_lines(self):
+        selection = self.view.sel()[0]  # todo: multi-select support?
+        # just the lines we have a selection on
+        begin_line, begin_column = self.view.rowcol(selection.begin())
+        end_line, end_column = self.view.rowcol(selection.end())
+        # blame will fail if last line is empty and is included in the selection
+        if end_line > begin_line and end_column == 0:
+            end_line -= 1
+        # add one to each, to line up sublime's index with git's
+        return begin_line + 1, end_line + 1
+
+    def blame_done(self, result, position=None):
+        shas = set((sha for sha in re.findall(r'^[0-9a-f]+', result, re.MULTILINE) if not re.match(r'^0+$', sha)))
+        command = ['git', 'show', '-s', '-z', '--no-color', '--date=iso']
+        command.extend(shas)
+
+        self.run_command(command, self.show_done)
+
+    def show_done(self, result):
+        commits = []
+        for commit in result.split('\0'):
+            match = re.search(r'^Date:\s+(.+)$', commit, re.MULTILINE)
+            if match:
+                commits.append((match.group(1), commit))
+        commits.sort(reverse=True)
+        commits = [commit for d, commit in commits]
+
+        self.scratch('\n\n'.join(commits), title="Git Commit Documentation")

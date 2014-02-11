@@ -7,6 +7,10 @@
         "command": "git_blame"
     }
     ,{
+        "caption": "Git: Document Selection",
+        "command": "git_document"
+    }
+    ,{
         "caption": "Git: New Tag",
         "command": "git_new_tag"
     }
