@@ -83,6 +83,10 @@
         "command": "git_branch"
     }
     ,{
+        "caption": "Git: Track Remote Branch",
+        "command": "git_track_remote_branch"
+    }
+    ,{
         "caption": "Git: Merge Branch",
         "command": "git_merge"
     }
