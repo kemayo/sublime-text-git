@@ -159,7 +159,7 @@
         "command": "git_custom"
     }
     ,{
-        "caption": "Git Flow: Feature Start", 
+        "caption": "Git Flow: Feature Start",
         "command": "git_flow_feature_start"
     }
     ,{
@@ -225,5 +225,9 @@
     ,{
         "caption": "Git: Commit history",
         "command": "git_commit_history"
+    }
+    ,{
+        "caption": "Git: Open Config url",
+        "command": "git_open_config_url", "args": {"url_param": "remote.origin.url"}
     }
 ]
