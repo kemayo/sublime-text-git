@@ -227,7 +227,7 @@
         "command": "git_commit_history"
     }
     ,{
-        "caption": "Git: Open Config url",
-        "command": "git_open_config_url", "args": {"url_param": "remote.origin.url"}
+        "caption": "Git: Open Config Url",
+        "command": "git_open_config_url", "args": { "url_param": "remote.origin.url" }
     }
 ]
