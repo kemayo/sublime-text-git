@@ -5,6 +5,16 @@ import sublime
 from git import GitWindowCommand, git_root
 
 
+class GitOpenConfigFileCommand(GitWindowCommand):
+    def run(self):
+        working_dir = git_root(self.get_working_dir())
+        config_file = os.path.join(working_dir, '.git/config')
+        if os.path.exists(config_file):
+            self.window.open_file(config_file)
+        else:
+            sublime.status_message("No config found")
+
+
 class GitOpenConfigUrlCommand(GitWindowCommand):
     def run(self, url_param):
         self.run_command(['git', 'config', url_param], self.url_done)
