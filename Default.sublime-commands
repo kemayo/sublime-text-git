@@ -55,6 +55,14 @@
         "command": "git_diff_tool_all"
     }
     ,{
+        "caption": "Git: Diff Tool Current File Staged",
+        "command": "git_diff_tool_commit"
+    }
+    ,{
+        "caption": "Git: Diff Tool Staged",
+        "command": "git_diff_tool_commit_all"
+    }
+    ,{
         "caption": "Git: Commit",
         "command": "git_commit"
     }

@@ -47,8 +47,12 @@ class GitStatusCommand(GitWindowCommand):
             if os.path.isfile(file_name):
                 self.window.open_file(file_name)
         else:
-            self.run_command(['git', 'diff', '--no-color', '--', picked_file.strip('"')],
-                self.diff_done, working_dir=root)
+            if s.get('diff_tool'):
+                self.run_command(['git', 'difftool', '--', picked_file.strip('"')],
+                    working_dir=root)
+            else:
+                self.run_command(['git', 'diff', '--no-color', '--', picked_file.strip('"')],
+                    self.diff_done, working_dir=root)
 
     def diff_done(self, result):
         if not result.strip():
