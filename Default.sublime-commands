@@ -55,6 +55,14 @@
         "command": "git_diff_tool_all"
     }
     ,{
+        "caption": "Git: Diff Tool Current File Staged",
+        "command": "git_diff_tool_commit"
+    }
+    ,{
+        "caption": "Git: Diff Tool Staged",
+        "command": "git_diff_tool_commit_all"
+    }
+    ,{
         "caption": "Git: Commit",
         "command": "git_commit"
     }
@@ -159,7 +167,7 @@
         "command": "git_custom"
     }
     ,{
-        "caption": "Git Flow: Feature Start", 
+        "caption": "Git Flow: Feature Start",
         "command": "git_flow_feature_start"
     }
     ,{
@@ -225,5 +233,13 @@
     ,{
         "caption": "Git: Commit history",
         "command": "git_commit_history"
+    }
+    ,{
+        "caption": "Git: Open Config File",
+        "command": "git_open_config_file"
+    }
+    ,{
+        "caption": "Git: Open Config Url",
+        "command": "git_open_config_url", "args": { "url_param": "remote.origin.url" }
     }
 ]

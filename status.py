@@ -43,11 +43,16 @@ class GitStatusCommand(GitWindowCommand):
         s = sublime.load_settings("Git.sublime-settings")
         root = git_root(self.get_working_dir())
         if picked_status == '??' or s.get('status_opens_file') or self.force_open:
-            if(os.path.isfile(os.path.join(root, picked_file))):
-                self.window.open_file(os.path.join(root, picked_file))
+            file_name = os.path.join(os.path.realpath(root), picked_file)
+            if os.path.isfile(file_name):
+                self.window.open_file(file_name)
         else:
-            self.run_command(['git', 'diff', '--no-color', '--', picked_file.strip('"')],
-                self.diff_done, working_dir=root)
+            if s.get('diff_tool'):
+                self.run_command(['git', 'difftool', '--', picked_file.strip('"')],
+                    working_dir=root)
+            else:
+                self.run_command(['git', 'diff', '--no-color', '--', picked_file.strip('"')],
+                    self.diff_done, working_dir=root)
 
     def diff_done(self, result):
         if not result.strip():

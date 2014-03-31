@@ -51,6 +51,8 @@
                             ,{ "caption": "Amend Last Commit", "command": "git_commit_amend" }
                             ,{ "caption": "-" }
                             ,{ "caption": "Open...", "command": "git_open_file" }
+                            ,{ "caption": "Open Config", "command": "git_open_config_file" }
+                            ,{ "caption": "Open Url", "command": "git_open_config_url", "args": { "url_param": "remote.origin.url" } }
                         ]
                     }
                     ,{

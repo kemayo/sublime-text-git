@@ -39,4 +39,7 @@
 	// Symbols for quick git status in status bar
 	,"statusbar_status": true
 	,"statusbar_status_symbols" : {"modified": "≠", "added": "+", "deleted": "×", "untracked": "?", "conflicts": "‼", "renamed":"R", "copied":"C", "clean": "√", "separator": " "}
+
+	// Use diff tool configured in Git config
+	,"diff_tool": false
 }

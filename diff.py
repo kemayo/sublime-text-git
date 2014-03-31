@@ -80,6 +80,16 @@ class GitDiffToolAll(GitWindowCommand):
         self.run_command(['git', 'difftool'])
 
 
+class GitDiffToolCommit(GitTextCommand):
+    def run(self, edit=None):
+        self.run_command(['git', 'difftool', '--cached', '--', self.get_file_name()])
+
+
+class GitDiffToolCommitAll(GitWindowCommand):
+    def run(self):
+        self.run_command(['git', 'difftool', '--cached'])
+
+
 class GitGotoDiff(sublime_plugin.TextCommand):
     def run(self, edit):
         v = self.view
