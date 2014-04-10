@@ -63,6 +63,7 @@
                             ,{ "caption": "Pop", "command": "git_stash_pop" }
                             ,{ "caption": "Apply", "command": "git_stash_apply" }
                             ,{ "caption": "Drop", "command": "git_stash_drop" }
+                            ,{ "caption": "List", "command": "git_stash_list" }
                         ]
                     }
                     ,{ "caption": "-" }
