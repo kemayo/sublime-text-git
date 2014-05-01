@@ -156,7 +156,10 @@ class GitCommitMessageListener(sublime_plugin.EventListener):
 class GitCommitHistoryCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         self.edit = edit
-        self.view.window().show_quick_panel(history, self.panel_done, sublime.MONOSPACE_FONT)
+        if history:
+            self.view.window().show_quick_panel(history, self.panel_done, sublime.MONOSPACE_FONT)
+        else:
+            sublime.message_dialog("You have no commit history.\n\nCommit history is just a quick list of messages you've used in this session.")
 
     def panel_done(self, index):
         if index > -1:
