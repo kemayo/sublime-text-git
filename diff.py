@@ -1,4 +1,5 @@
-import sublime
+import sublime, sublime_plugin
+import os
 import re
 from .git import git_root, GitTextCommand, GitWindowCommand
 import functools
@@ -83,10 +84,12 @@ class GitDiffToolAll(GitWindowCommand):
         self.run_command(['git', 'difftool'])
 
 
-class GitGotoDiff(GitTextCommand):
+class GitGotoDiff(sublime_plugin.TextCommand):
+    def __init__(self, view):
+        self.view = view
+
     def run(self, edit):
         v = self.view
-        print("got here")
         view_scope_name = v.scope_name(v.sel()[0].a)
         scope_markup_inserted = ("markup.inserted.diff" in view_scope_name)
         scope_markup_deleted = ("markup.deleted.diff" in view_scope_name)
