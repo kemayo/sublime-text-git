@@ -77,6 +77,12 @@ def do_when(conditional, callback, *args, **kwargs):
     sublime.set_timeout(functools.partial(do_when, conditional, callback, *args, **kwargs), 50)
 
 
+def goto_xy(view, line, col):
+    view.run_command("goto_line", {"line": line})
+    for i in range(col):
+        view.run_command("move", {"by": "characters", "forward": True})
+
+
 def _make_text_safeish(text, fallback_encoding, method='decode'):
     # The unicode decode here is because sublime converts to unicode inside
     # insert in such a way that unknown characters will cause errors, which is

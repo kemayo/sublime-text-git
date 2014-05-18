@@ -1,20 +1,7 @@
 import sublime, sublime_plugin
 import os
 import re
-from .git import git_root, GitTextCommand, GitWindowCommand
-import functools
-
-
-def do_when(conditional, callback, *args, **kwargs):
-    if conditional():
-        return callback(*args, **kwargs)
-    sublime.set_timeout(functools.partial(do_when, conditional, callback, *args, **kwargs), 50)
-
-
-def goto_xy(view, line, col):
-    view.run_command("goto_line", {"line": line})
-    for i in range(col):
-        view.run_command("move", {"by": "characters", "forward": True})
+from .git import git_root, GitTextCommand, GitWindowCommand, do_when, goto_xy
 
 
 class GitDiff (object):
