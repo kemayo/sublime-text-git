@@ -128,6 +128,11 @@ class GitPushTagsCommand(GitWindowCommand):
         self.run_command(['git', 'push', '--tags'])
 
 
+class GitPullRebaseCommand(GitWindowCommand):
+    def run(self):
+        self.run_command(['git', 'pull', '--rebase'], callback=self.panel)
+
+
 class GitCheckoutTagCommand(GitWindowCommand):
     def run(self):
         self.run_command(['git', 'tag'], self.fetch_tag)
