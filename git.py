@@ -167,11 +167,15 @@ class CommandThread(threading.Thread):
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
+            shell = False
+            if sublime.platform() == 'windows':
+                shell = True
+
             # universal_newlines seems to break `log` in python3
             proc = subprocess.Popen(self.command,
                 stdout=self.stdout, stderr=subprocess.STDOUT,
                 stdin=subprocess.PIPE, startupinfo=startupinfo,
-                shell=False, universal_newlines=False)
+                shell=shell, universal_newlines=False)
             output = proc.communicate(self.stdin)[0]
             if not output:
                 output = ''
