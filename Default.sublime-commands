@@ -51,12 +51,27 @@
         "command": "git_diff"
     }
     ,{
-        "caption": "Git: Diff All",
+        "caption": "Git: Diff All Files",
         "command": "git_diff_all"
     }
     ,{
-        "caption": "Git: Diff Staged",
+        "caption": "Git: Diff Staged Files",
         "command": "git_diff_commit"
+    }
+    ,{
+        "caption": "Git: Diff Current File (Ignore Whitespace)",
+        "command": "git_diff",
+        "args": { "ignore_whitespace": true }
+    }
+    ,{
+        "caption": "Git: Diff All Files (Ignore Whitespace)",
+        "command": "git_diff_all",
+        "args": { "ignore_whitespace": true }
+    }
+    ,{
+        "caption": "Git: Diff Staged Files (Ignore Whitespace)",
+        "command": "git_diff_commit",
+        "args": { "ignore_whitespace": true }
     }
     ,{
         "caption": "Git: Diff Tool Current File",
