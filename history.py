@@ -194,6 +194,7 @@ class GitOpenFileCommand(GitLog, GitWindowCommand):
     def show_done(self, result):
         self.scratch(result, title="%s:%s" % (self.fileRef, self.filename))
 
+
 class GitDocumentCommand(GitBlameCommand):
     def get_lines(self):
         selection = self.view.sel()[0]  # todo: multi-select support?

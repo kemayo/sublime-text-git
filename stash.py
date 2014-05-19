@@ -1,18 +1,6 @@
 from .git import GitWindowCommand
 
 
-class GitStashCommand(GitWindowCommand):
-    may_change_files = True
-
-    def run(self):
-        self.run_command(['git', 'stash'])
-
-
-class GitStashPopCommand(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'stash', 'pop'])
-
-
 class GitStashApplyCommand(GitWindowCommand):
     may_change_files = True
     command_to_run_after_list = 'apply'

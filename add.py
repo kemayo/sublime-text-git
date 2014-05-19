@@ -40,11 +40,6 @@ class GitAddChoiceCommand(GitStatusCommand):
         self.run()
 
 
-class GitAdd(GitTextCommand):
-    def run(self, edit):
-        self.run_command(['git', 'add', self.get_file_name()])
-
-
 class GitAddSelectedHunkCommand(GitTextCommand):
     def run(self, edit):
         self.run_command(['git', 'diff', '--no-color', '-U1', self.get_file_name()], self.cull_diff)

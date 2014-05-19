@@ -1,7 +1,7 @@
 import os
 
 import sublime
-from .git import GitTextCommand, GitWindowCommand, git_root_exist
+from .git import GitWindowCommand, git_root_exist
 
 
 class GitInit(object):
@@ -123,16 +123,6 @@ class GitShowTagsCommand(GitWindowCommand):
         self.run_command(['git', 'show', picked_tag])
 
 
-class GitPushTagsCommand(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'push', '--tags'])
-
-
-class GitPullRebaseCommand(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'pull', '--rebase'], callback=self.panel)
-
-
 class GitCheckoutTagCommand(GitWindowCommand):
     def run(self):
         self.run_command(['git', 'tag'], self.fetch_tag)
@@ -152,28 +142,11 @@ class GitCheckoutTagCommand(GitWindowCommand):
         self.run_command(['git', 'checkout', "tags/%s" % picked_tag])
 
 
-class GitCheckoutCommand(GitTextCommand):
-    may_change_files = True
-
-    def run(self, edit):
-        self.run_command(['git', 'checkout', self.get_file_name()])
-
-
-class GitFetchCommand(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'fetch'], callback=self.panel)
-
-
-class GitPullCommand(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'pull'], callback=self.panel)
-
-
 class GitPullCurrentBranchCommand(GitWindowCommand):
     command_to_run_after_describe = 'pull'
 
     def run(self):
-        self.run_command(['git', 'describe', '--contains',  '--all', 'HEAD'], callback=self.describe_done)
+        self.run_command(['git', 'describe', '--contains', '--all', 'HEAD'], callback=self.describe_done)
 
     def describe_done(self, result):
         self.current_branch = result.strip()
@@ -192,11 +165,6 @@ class GitPullCurrentBranchCommand(GitWindowCommand):
         self.picked_remote = self.remotes[picked]
         self.picked_remote = self.picked_remote.strip()
         self.run_command(['git', self.command_to_run_after_describe, self.picked_remote, self.current_branch])
-
-
-class GitPushCommand(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'push'], callback=self.panel)
 
 
 class GitPushCurrentBranchCommand(GitPullCurrentBranchCommand):

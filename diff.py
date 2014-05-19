@@ -57,20 +57,6 @@ class GitDiffCommitCommand(GitDiffCommit, GitWindowCommand):
     pass
 
 
-class GitDiffTool(object):
-    def run(self, edit=None):
-        self.run_command(['git', 'difftool', '--', self.get_file_name()])
-
-
-class GitDiffToolCommand(GitDiffTool, GitTextCommand):
-    pass
-
-
-class GitDiffToolAll(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'difftool'])
-
-
 class GitGotoDiff(sublime_plugin.TextCommand):
     def __init__(self, view):
         self.view = view

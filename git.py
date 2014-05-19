@@ -386,11 +386,11 @@ class GitCustomCommand(GitWindowCommand):
         print(command_splitted)
         self.run_command(command_splitted)
 
+
 class GitRawCommand(GitWindowCommand):
     may_change_files = True
 
     def run(self, **args):
-
         self.command = str(args.get('command', ''))
         show_in = str(args.get('show_in', 'pane_below'))
 
@@ -398,15 +398,23 @@ class GitRawCommand(GitWindowCommand):
             self.panel("No git command provided")
             return
         import shlex
-        command_splitted = shlex.split(self.command)
-        print(command_splitted)
+        command_split = shlex.split(self.command)
+
+        if args.get('append_current_file', False) and self._active_file_name():
+            command_split.extend(('--', self._active_file_name()))
+
+        print(command_split)
+
+        self.may_change_files = bool(args.get('may_change_files', True))
 
         if show_in == 'pane_below':
-            self.run_command(command_splitted)
+            self.run_command(command_split)
         elif show_in == 'quick_panel':
-            self.run_command(command_splitted, self.show_in_quick_panel)
+            self.run_command(command_split, self.show_in_quick_panel)
         elif show_in == 'new_tab':
-            self.run_command(command_splitted, self.show_in_new_tab)
+            self.run_command(command_split, self.show_in_new_tab)
+        elif show_in == 'suppress':
+            self.run_command(command_split, self.do_nothing)
 
     def show_in_quick_panel(self, result):
         self.results = list(result.rstrip().split('\n'))
