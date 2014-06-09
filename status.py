@@ -47,6 +47,9 @@ class GitStatusCommand(GitWindowCommand):
         if picked_status == '??' or s.get('status_opens_file') or self.force_open:
             file_name = os.path.join(root, picked_file)
             if(os.path.isfile(file_name)):
+                # Sublime Text 3 has a bug wherein calling open_file from within a panel
+                # callback causes the new view to not have focus. Make a deferred call via
+                # set_timeout to workaround this issue.
                 sublime.set_timeout(lambda: self.window.open_file(file_name), 0)
         else:
             self.run_command(['git', 'diff', '--no-color', '--', picked_file.strip('"')],
