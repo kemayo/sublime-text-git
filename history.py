@@ -45,6 +45,7 @@ class GitBlameCommand(GitTextCommand):
 
 class GitLog(object):
     def run(self, edit=None):
+        self.__scratch_view = None
         fn = self.get_file_name()
         return self.run_log(fn != '', '--', fn)
 
@@ -64,25 +65,39 @@ class GitLog(object):
 
     def log_done(self, result):
         self.results = [r.split('\a', 2) for r in result.strip().split('\n')]
-        self.quick_panel(self.results, self.log_panel_done)
+        self.quick_panel(self.results, self.log_panel_done, 0, 0, self.log_panel_select)
 
-    def log_panel_done(self, picked):
+    def log_panel_select(self, picked):
+        self.log_panel_done(picked, False)
+
+    def log_panel_done(self, picked, done=True):
         if 0 > picked < len(self.results):
+            if self.__scratch_view != None:
+                self.__scratch_view.run_command("close")
+                self.__scratch_view = None
             return
         item = self.results[picked]
         # the commit hash is the first thing on the second line
-        self.log_result(item[1].split(' ')[0])
+        self.log_result(item[1].split(' ')[0], done)
 
-    def log_result(self, ref):
+    def log_result(self, ref, done):
         # I'm not certain I should have the file name here; it restricts the
         # details to just the current file. Depends on what the user expects...
         # which I'm not sure of.
         self.run_command(
             ['git', 'log', '-p', '-1', ref, '--', self.get_file_name()],
-            self.details_done)
+            self.details_done, done=done)
 
-    def details_done(self, result):
-        self.scratch(result, title="Git Commit Details", syntax=plugin_file("syntax/Git Commit Message.tmLanguage"))
+    def details_done(self, result, done):
+        if self.__scratch_view == None:
+            self.__scratch_view = self.scratch(result, title="Git Commit Details", syntax=plugin_file("syntax/Git Commit Message.tmLanguage"))
+        if not done:
+            self.__scratch_view.set_read_only(False)
+            self._output_to_view(self.__scratch_view, result, True)
+            self.__scratch_view.set_read_only(True)
+        else:
+            # Contents already set by log_panel_select
+            self.__scratch_view = None
 
 
 class GitLogCommand(GitLog, GitTextCommand):
