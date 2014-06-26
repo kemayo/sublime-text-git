@@ -1,6 +1,6 @@
+import sublime_plugin
 import functools
 import re
-from operator import methodcaller
 
 import sublime
 from .git import GitTextCommand, GitWindowCommand, plugin_file
@@ -224,3 +224,12 @@ class GitDocumentCommand(GitBlameCommand):
         commits = [commit for d, commit in commits]
 
         self.scratch('\n\n'.join(commits), title="Git Commit Documentation")
+
+
+class GitGotoBlame(sublime_plugin.TextCommand):
+    def run(self, edit):
+        line = self.view.substr(self.view.line(self.view.sel()[0].a))
+        commit = line.split(" ")[0]
+        if not commit or commit == "00000000":
+            return
+        self.view.window().run_command("git_raw", {"command": "git show %s" % commit, "show_in": "new_tab", "may_change_files": False})
