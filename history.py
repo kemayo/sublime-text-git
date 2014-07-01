@@ -70,8 +70,9 @@ class GitLog(object):
         if 0 > picked < len(self.results):
             return
         item = self.results[picked]
-        # the commit hash is the first thing on the second line
-        self.log_result(item[1].split(' ')[0])
+        # the commit hash is the last thing on the first line, in brackets
+        ref = item[0].split(' ')[-1].strip('()')
+        self.log_result(ref)
 
     def log_result(self, ref):
         # I'm not certain I should have the file name here; it restricts the
@@ -110,8 +111,8 @@ class GitShow(object):
         if 0 > picked < len(self.results):
             return
         item = self.results[picked]
-        # the commit hash is the first thing on the second line
-        ref = item[1].split(' ')[0]
+        # the commit hash is the last thing on the first line, in brackets
+        ref = item[0].split(' ')[-1].strip('()')
         self.run_command(
             ['git', 'show', '%s:%s' % (ref, self.get_relative_file_name())],
             self.details_done,
@@ -166,7 +167,6 @@ class GitOpenFileCommand(GitLog, GitWindowCommand):
         self.run_log(False, self.branch)
 
     def log_result(self, result_hash):
-        # the commit hash is the first thing on the second line
         self.ref = result_hash
         self.run_command(
             ['git', 'ls-tree', '-r', '--full-tree', self.ref],
