@@ -121,10 +121,9 @@ def find_git():
     if not git_path:
         # /usr/local/bin:/usr/local/git/bin
         if os.name == 'nt':
-            extra_paths = (
-                os.path.join(os.environ["ProgramFiles"], "Git", "bin"),
-                os.path.join(os.environ["ProgramFiles(x86)"], "Git", "bin"),
-            )
+            extra_paths = [os.path.join(os.environ["ProgramFiles"], "Git", "bin"), ]
+            if os.environ.__contains__("ProgramFiles(x86)"):
+                extra_paths.append(os.path.join(os.environ["ProgramFiles(x86)"], "Git", "bin"))
         else:
             extra_paths = (
                 '/usr/local/bin',
