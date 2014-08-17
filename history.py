@@ -1,6 +1,7 @@
 import sublime_plugin
 import functools
 import re
+import shlex
 
 import sublime
 from .git import GitTextCommand, GitWindowCommand, plugin_file
@@ -133,11 +134,12 @@ class GitShowAllCommand(GitShow, GitWindowCommand):
 
 class GitGraph(object):
     def run(self, edit=None):
+        s = sublime.load_settings("Git.sublime-settings")
+        command = "git log --graph " + s.get("git_graph_options")
         filename = self.get_file_name()
-        self.run_command(
-            ['git', 'log', '--graph', '--pretty=%h -%d (%cr) (%ci) <%an> %s', '--abbrev-commit', '--no-color', '--decorate', '--date=relative', '--follow' if filename else None, '--', filename],
-            self.log_done
-        )
+        if filename:
+            command = command + " --follow -- " + filename
+        self.run_command(shlex.split(command), self.log_done)
 
     def log_done(self, result):
         self.scratch(result, title="Git Log Graph", syntax=plugin_file("syntax/Git Graph.tmLanguage"))

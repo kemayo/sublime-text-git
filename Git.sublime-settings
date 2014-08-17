@@ -9,6 +9,11 @@
 	// point this the installation location of git-flow
 	,"git_flow_command": "/usr/local/bin/git-flow"
 
+	// formatting options for the graph, these options are added to
+	// "git log --graph" command. "--follow" is added if generating a
+	// graph of a file. You'll probably want to change the syntax file.
+	,"git_graph_options": "--pretty='%h -%d (%cr) (%ci) <%an> %s' --abbrev-commit --no-color --decorate --date=relative"
+
 	// use the panel for diff output, rather than a new scratch window (new tab)
 	,"diff_panel": false
 
