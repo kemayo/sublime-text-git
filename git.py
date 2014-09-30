@@ -450,3 +450,30 @@ class GitGitkCommand(GitTextCommand):
     def run(self, edit):
         command = ['gitk']
         self.run_command(command)
+
+
+class GitUpdateIgnoreCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        data = self.view.window().project_data()
+        project_file_name = self.view.window().project_file_name()
+        for folder in data['folders']:
+            path = folder['path']
+            if project_file_name:
+                path = os.path.join(os.path.dirname(project_file_name), path)
+            gitignore = os.path.join(path, ".gitignore")
+            print("gitignore path", gitignore)
+            if (os.path.exists(gitignore)):
+                with open(gitignore) as gitignore_file:
+                    if not "folder_exclude_patterns" in folder:
+                        folder["folder_exclude_patterns"] = []
+                    if not "file_exclude_patterns" in folder:
+                        folder["file_exclude_patterns"] = []
+                    for pattern in gitignore_file:
+                        pattern = pattern.strip()
+                        if os.path.isdir(os.path.join(path, pattern)):
+                            if not pattern in folder["folder_exclude_patterns"]:
+                                folder["folder_exclude_patterns"].append(pattern)
+                        else:
+                            if not pattern in folder["file_exclude_patterns"]:
+                                folder["file_exclude_patterns"].append(pattern)
+        self.view.window().set_project_data(data)

@@ -241,4 +241,8 @@
         "caption": "Git: Commit history",
         "command": "git_commit_history"
     }
+    ,{
+        "caption": "Git: Update Project Ignored Files",
+        "command": "git_update_ignore"
+    }
 ]
