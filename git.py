@@ -175,7 +175,8 @@ class CommandThread(threading.Thread):
             proc = subprocess.Popen(self.command,
                 stdout=self.stdout, stderr=subprocess.STDOUT,
                 stdin=subprocess.PIPE, startupinfo=startupinfo,
-                shell=shell, universal_newlines=False)
+                shell=shell, universal_newlines=False,
+                env=os.environ)
             output = proc.communicate(self.stdin)[0]
             if not output:
                 output = ''
