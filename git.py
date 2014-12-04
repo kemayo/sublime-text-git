@@ -160,7 +160,6 @@ class CommandThread(threading.Thread):
 
             if self.working_dir != "":
                 os.chdir(self.working_dir)
-
             # Windows needs startupinfo in order to start process in background
             startupinfo = None
             if os.name == 'nt':
@@ -171,12 +170,16 @@ class CommandThread(threading.Thread):
             if sublime.platform() == 'windows':
                 shell = True
 
+            env = os.environ.copy()
+            if sublime.platform() == 'windows' and 'HOME' not in env:
+                env['HOME'] = env['USERPROFILE']
+
             # universal_newlines seems to break `log` in python3
             proc = subprocess.Popen(self.command,
                 stdout=self.stdout, stderr=subprocess.STDOUT,
                 stdin=subprocess.PIPE, startupinfo=startupinfo,
                 shell=shell, universal_newlines=False,
-                env=os.environ)
+                env=env)
             output = proc.communicate(self.stdin)[0]
             if not output:
                 output = ''
@@ -190,7 +193,6 @@ class CommandThread(threading.Thread):
                 main_thread(sublime.error_message, "Git binary could not be found in PATH\n\nConsider using the git_command setting for the Git plugin\n\nPATH is: %s" % os.environ['PATH'])
             else:
                 raise e
-
 
 class GitScratchOutputCommand(sublime_plugin.TextCommand):
     def run(self, edit, output = '', output_file = None, clear = False):
