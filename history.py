@@ -55,7 +55,7 @@ class GitLog(object):
         # 9000 is a pretty arbitrarily chosen limit; picked entirely because
         # it's about the size of the largest repo I've tested this on... and
         # there's a definite hiccup when it's loading that
-        command = ['git', 'log', '--pretty=%s (%h)\a%an <%aE>\a%ad (%ar)',
+        command = ['git', 'log', '--no-color', '--pretty=%s (%h)\a%an <%aE>\a%ad (%ar)',
             '--date=local', '--max-count=9000', '--follow' if follow else None]
         command.extend(args)
         self.run_command(
@@ -79,7 +79,7 @@ class GitLog(object):
         # details to just the current file. Depends on what the user expects...
         # which I'm not sure of.
         self.run_command(
-            ['git', 'log', '-p', '-1', ref, '--', self.get_file_name()],
+            ['git', 'log', '--no-color', '-p', '-1', ref, '--', self.get_file_name()],
             self.details_done)
 
     def details_done(self, result):
@@ -98,7 +98,7 @@ class GitShow(object):
     def run(self, edit=None):
         # GitLog Copy-Past
         self.run_command(
-            ['git', 'log', '--pretty=%s (%h)\a%an <%aE>\a%ad (%ar)',
+            ['git', 'log', '--no-color', '--pretty=%s (%h)\a%an <%aE>\a%ad (%ar)',
             '--date=local', '--max-count=9000', '--', self.get_file_name()],
             self.show_done)
 
