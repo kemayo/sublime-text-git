@@ -121,7 +121,7 @@ class GitCommitCommand(GitWindowCommand):
         message_file.close()
         self.message_file = message_file
         # and actually commit
-        with open(message_file.name, 'r') as fp:
+        with open(message_file.name, 'r', encoding='utf-8') as fp:
             self.run_command(['git', 'commit', '-F', '-', self.extra_options],
                 self.commit_done, working_dir=self.working_dir, stdin=fp.read())
 
