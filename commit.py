@@ -6,6 +6,7 @@ import sublime
 import sublime_plugin
 from git import GitTextCommand, GitWindowCommand, plugin_file, view_contents, _make_text_safeish
 import add
+import codecs
 
 history = []
 
@@ -121,7 +122,7 @@ class GitCommitCommand(GitWindowCommand):
         message_file.close()
         self.message_file = message_file
         # and actually commit
-        with open(message_file.name, 'r') as fp:
+        with codecs.open(message_file.name, mode = 'r', encoding = 'utf-8') as fp:
             self.run_command(['git', 'commit', '-F', '-', self.extra_options],
                 self.commit_done, working_dir=self.working_dir, stdin=fp.read())
 
