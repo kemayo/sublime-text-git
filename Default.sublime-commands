@@ -82,6 +82,10 @@
         "command": "git_raw", "args": { "command": "git difftool", "may_change_files": false }
     }
     ,{
+        "caption": "Git: Diff Branch",
+        "command": "git_diff_branch"
+    }
+    ,{
         "caption": "Git: Commit",
         "command": "git_commit"
     }
