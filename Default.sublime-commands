@@ -166,6 +166,10 @@
         "command": "git_raw", "args": { "command": "git push", "may_change_files": false }
     }
     ,{
+        "caption": "Git: Push All",
+        "command": "git_raw", "args": { "command": "git push --all", "may_change_files": false }
+    }
+    ,{
         "caption": "Git: Push Current Branch",
         "command": "git_push_current_branch"
     }
@@ -182,7 +186,7 @@
         "command": "git_custom"
     }
     ,{
-        "caption": "Git Flow: Feature Start", 
+        "caption": "Git Flow: Feature Start",
         "command": "git_flow_feature_start"
     }
     ,{
