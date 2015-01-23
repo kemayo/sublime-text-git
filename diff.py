@@ -56,7 +56,7 @@ class GitDiffCommitCommand(GitDiffCommit, GitWindowCommand):
     pass
 
 
-class GitDiffBranchCommand(GitDiffCommand, GitWindowCommand):
+class GitDiffBranchCommand(GitDiff, GitWindowCommand):
     may_change_files = False
 
     def run(self, edit=None, ignore_whitespace=False):
