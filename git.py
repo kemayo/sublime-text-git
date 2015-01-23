@@ -238,7 +238,7 @@ class GitCommand(object):
             message = kwargs.get('status_message', False) or ' '.join(command)
             sublime.status_message(message)
 
-    def generic_done(self, result):
+    def generic_done(self, result, **kw):
         if self.may_change_files and self.active_view() and self.active_view().file_name():
             if self.active_view().is_dirty():
                 result = "WARNING: Current view is dirty.\n\n"
