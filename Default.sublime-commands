@@ -86,6 +86,10 @@
         "command": "git_diff_branch"
     }
     ,{
+        "caption": "Git: Diff Current File with Branch",
+        "command": "git_diff_branch", "args": { "current_file": true }
+    }
+    ,{
         "caption": "Git: Commit",
         "command": "git_commit"
     }
