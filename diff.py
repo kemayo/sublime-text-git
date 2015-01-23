@@ -61,7 +61,7 @@ class GitDiffBranchCommand(GitDiff, GitWindowCommand):
 
     def run(self, edit=None, ignore_whitespace=False):
         self.ignore_whitespace = ignore_whitespace
-        self.run_command(['git', 'branch', '--no-color', '--no-merge'], self.branch_done)
+        self.run_command(['git', 'branch', '--no-color'], self.branch_done)
 
     def branch_done(self, result):
         self.results = result.rstrip().split('\n')
