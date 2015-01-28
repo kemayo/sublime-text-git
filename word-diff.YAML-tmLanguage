@@ -1,0 +1,17 @@
+# [PackageDev] target_format: plist, ext: tmLanguage
+---
+name: Word Diff
+scopeName: text.wdiff
+fileTypes: []
+uuid: 6c5ac663-894e-4187-bd2a-b5ea36d00625
+
+patterns:
+# Fields
+- name: comment.wdiff
+  match: ^((?!((?:\[-){1}.*?(?:-\]){1})|((?:\{\+){1}.*?(?:\+\}){1})).)*$
+
+- name: markup.deleted.wdiff
+  match: (?:\[-){1}.*?(?:-\]){1}
+
+- name: markup.inserted.wdiff
+  match: (?:\{\+){1}.*?(?:\+\}){1}
