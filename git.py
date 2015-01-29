@@ -134,6 +134,9 @@ def find_git():
     return git_path
 GIT = find_git()
 
+commands_working = 0
+def are_commands_working():
+    return commands_working != 0
 
 class CommandThread(threading.Thread):
     def __init__(self, command, on_done, working_dir="", fallback_encoding="", **kwargs):
@@ -153,11 +156,15 @@ class CommandThread(threading.Thread):
         self.kwargs = kwargs
 
     def run(self):
-        try:
-            # Ignore directories that no longer exist
-            if not os.path.isdir(self.working_dir):
-                return
+        global commands_working
+        # Ignore directories that no longer exist
+        if not os.path.isdir(self.working_dir):
+            return
 
+        commands_working = commands_working + 1
+        output = ''
+        callback = self.on_done
+        try:
             if self.working_dir != "":
                 os.chdir(self.working_dir)
             # Windows needs startupinfo in order to start process in background
@@ -183,16 +190,18 @@ class CommandThread(threading.Thread):
             output = proc.communicate(self.stdin)[0]
             if not output:
                 output = ''
-
-            main_thread(self.on_done,
-                _make_text_safeish(output, self.fallback_encoding), **self.kwargs)
+            output = _make_text_safeish(output, self.fallback_encoding)
         except subprocess.CalledProcessError as e:
-            main_thread(self.on_done, e.returncode)
+            output = e.returncode
         except OSError as e:
+            callback = sublime.error_message
             if e.errno == 2:
-                main_thread(sublime.error_message, "Git binary could not be found in PATH\n\nConsider using the git_command setting for the Git plugin\n\nPATH is: %s" % os.environ['PATH'])
+                output = "Git binary could not be found in PATH\n\nConsider using the git_command setting for the Git plugin\n\nPATH is: %s" % os.environ['PATH']
             else:
-                raise e
+                output = e.strerror
+        finally:
+            commands_working = commands_working - 1
+            main_thread(callback, output, **self.kwargs)
 
 class GitScratchOutputCommand(sublime_plugin.TextCommand):
     def run(self, edit, output = '', output_file = None, clear = False):
