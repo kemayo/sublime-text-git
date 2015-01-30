@@ -126,9 +126,8 @@ class GitShowAllCommand(GitShow, GitWindowCommand):
 
 class GitGraph(object):
     def run(self, edit=None):
-        filename = self.get_file_name()
         self.run_command(
-            ['git', 'log', '--graph', '--pretty=%h -%d (%cr) (%ci) <%an> %s', '--abbrev-commit', '--no-color', '--decorate', '--date=relative', '--follow' if filename else None, '--', filename],
+            self.git_command_segments(),
             self.log_done
         )
 
@@ -137,11 +136,14 @@ class GitGraph(object):
 
 
 class GitGraphCommand(GitGraph, GitTextCommand):
-    pass
+    def git_command_segments(self):
+        filename = self.get_file_name()
+        return ['git', 'log', '--graph', '--pretty=%h -%d (%cr) (%ci) <%an> %s', '--abbrev-commit', '--no-color', '--decorate', '--date=relative', '--follow' if filename else None, '--', filename]
 
 
 class GitGraphAllCommand(GitGraph, GitWindowCommand):
-    pass
+    def git_command_segments(self):
+        return ['git', 'log', '--graph', '--pretty=%h -%d (%cr) (%ci) <%an> %s', '--abbrev-commit', '--no-color', '--decorate', '--date=relative', '--all']
 
 
 class GitOpenFileCommand(GitLog, GitWindowCommand):
