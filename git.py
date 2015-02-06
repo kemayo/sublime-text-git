@@ -231,6 +231,7 @@ class GitCommand(object):
                     self.run_command, command, callback=callback,
                     show_status=show_status, filter_empty_args=filter_empty_args,
                     no_save=no_save, wait_for_lock=wait_for_lock, **kwargs)
+            return
 
         s = sublime.load_settings("Git.sublime-settings")
         if s.get('save_first') and self.active_view() and self.active_view().is_dirty() and not no_save:
