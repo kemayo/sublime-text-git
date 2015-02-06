@@ -71,10 +71,10 @@ def plugin_file(name):
     return PLUGIN_DIRECTORY + '/' + name
 
 
-def do_when(conditional, callback, *args, **kwargs):
+def do_when(conditional, command, *args, **kwargs):
     if conditional():
-        return callback(*args, **kwargs)
-    sublime.set_timeout(functools.partial(do_when, conditional, callback, *args, **kwargs), 50)
+        return command(*args, **kwargs)
+    sublime.set_timeout(functools.partial(do_when, conditional, command, *args, **kwargs), 50)
 
 
 def goto_xy(view, line, col):
@@ -228,7 +228,9 @@ class GitCommand(object):
         if wait_for_lock and root and os.path.exists(os.path.join(root, '.git', 'index.lock')):
             print("waiting for index.lock", command)
             do_when(lambda: not os.path.exists(os.path.join(root, '.git', 'index.lock')),
-                self.run_command, command, callback=callback, show_status=show_status, filter_empty_args=filter_empty_args, no_save=no_save, wait_for_lock=wait_for_lock, **kwargs)
+                    self.run_command, command, callback=callback,
+                    show_status=show_status, filter_empty_args=filter_empty_args,
+                    no_save=no_save, wait_for_lock=wait_for_lock, **kwargs)
 
         s = sublime.load_settings("Git.sublime-settings")
         if s.get('save_first') and self.active_view() and self.active_view().is_dirty() and not no_save:
