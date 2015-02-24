@@ -12,6 +12,9 @@
 	// use the panel for diff output, rather than a new scratch window (new tab)
 	,"diff_panel": false
 
+	// use the diff open new window
+	,"diff_new_window": false
+
 	// affects blame command when no selection is made
 	// true: blame whole file
 	// false: blame only current line
