@@ -59,21 +59,22 @@ class GitBranchCommand(GitWindowCommand):
     def manage_diffs(self, result, branch):
         if result:
             self.delfiles = result.strip().split('\n')
+            if len(self.delfiles) > 0:
+                working_dir = self.get_working_dir()
+                root = git_root(working_dir)
+                views = [v for v in self.window.views() if not v.is_dirty() and v.file_name()]
+                for f in self.delfiles:
+                    fullf = os.path.join(root, f)
+                    for v in views:
+                        if v.file_name() == fullf:
+                            v.close()
         self.do_checkout(branch)
 
     def update_status(self, result):
         if result.startswith("error: "):
             sublime.error_message(result[7:])
+            # reopen closed views if failed?
             return
-        if len(self.delfiles) > 0:
-            working_dir = self.get_working_dir()
-            root = git_root(working_dir)
-            views = self.window.views()
-            for f in self.delfiles:
-                fullf = os.path.join(root, f)
-                for v in views:
-                    if not v.is_dirty() and v.file_name() == fullf:
-                        v.close()
         global branch
         branch = ""
         for view in self.window.views():
