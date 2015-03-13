@@ -182,7 +182,7 @@
         "command": "git_custom"
     }
     ,{
-        "caption": "Git Flow: Feature Start", 
+        "caption": "Git Flow: Feature Start",
         "command": "git_flow_feature_start"
     }
     ,{
@@ -224,6 +224,14 @@
     ,{
         "caption": "Git: Add Selected Hunk",
         "command": "git_add_selected_hunk"
+    }
+    ,{
+        "caption": "Git: Checkout Selected Hunk",
+        "command": "git_checkout_selected_hunk"
+    }
+    ,{
+        "caption": "Git: Reset (unstage) Selected Hunk",
+        "command": "git_reset_selected_hunk"
     }
     ,{
         "caption": "Git: Commit Selected Hunk",
