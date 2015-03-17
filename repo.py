@@ -103,7 +103,7 @@ class GitDeleteTagCommand(GitWindowCommand):
             return
         picked_tag = self.results[picked]
         picked_tag = picked_tag.strip()
-        if sublime.ok_cancel_dialog("Delete \"%s\" Tag?" % picked_tag, "Delete"):   
+        if sublime.ok_cancel_dialog("Delete \"%s\" Tag?" % picked_tag, "Delete"):
             self.run_command(['git', 'tag', '-d', picked_tag])
 
 
@@ -159,13 +159,23 @@ class GitPullCurrentBranchCommand(GitWindowCommand):
         else:
             self.quick_panel(self.remotes, self.panel_done, sublime.MONOSPACE_FONT)
 
+    def options(self):
+        return []
+
     def panel_done(self, picked=0):
         if picked < 0 or picked >= len(self.remotes):
             return
         self.picked_remote = self.remotes[picked]
         self.picked_remote = self.picked_remote.strip()
-        self.run_command(['git', self.command_to_run_after_describe, self.picked_remote, self.current_branch])
-
+        self.run_command(['git', self.command_to_run_after_describe, self.picked_remote, self.current_branch] + self.options())
 
 class GitPushCurrentBranchCommand(GitPullCurrentBranchCommand):
     command_to_run_after_describe = 'push'
+
+    def options(self):
+        options = []
+        s = sublime.load_settings("Git.sublime-settings")
+        if s.get("set_upstream"):
+            options.extend(["--set-upstream"])
+
+        return options
