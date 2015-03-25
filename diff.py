@@ -141,7 +141,11 @@ class GitGotoDiff(sublime_plugin.TextCommand):
         else:
             git_root_dir = ""
 
-        if not os.path.isfile(full_path_file_name):
+        if full_path_file_name is None
+            # If no path exists, this is a manual hunk editing diff
+            # fall back to default "Enter" command
+            v.run_command('insert', {'characters':'\n'})
+        elif not os.path.isfile(full_path_file_name):
             caption = "Enter base directory for file '%s':" % self.file_name
             v.window().show_input_panel(caption,
                                         git_root_dir,
