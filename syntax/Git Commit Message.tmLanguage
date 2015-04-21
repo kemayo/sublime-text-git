@@ -11,19 +11,165 @@
 	<key>patterns</key>
 	<array>
 		<dict>
-			<key>captures</key>
+			<key>begin</key>
+			<string>^#</string>
+			<key>beginCaptures</key>
 			<dict>
-				<key>1</key>
+				<key>0</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.comment.git-commit</string>
+					<string>punctuation.definition.comment.git-commit-message</string>
 				</dict>
 			</dict>
-			<key>match</key>
-			<string>^\s*(#).*$
-?</string>
+			<key>end</key>
+			<string>$</string>
 			<key>name</key>
-			<string>comment.line.number-sign.git-commit</string>
+			<string>comment.line.number-sign.git-commit-message</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>captures</key>
+					<dict>
+						<key>1</key>
+						<dict>
+							<key>name</key>
+							<string>support.function.branch.git-commit-message</string>
+						</dict>
+					</dict>
+					<key>match</key>
+					<string>(?:On branch )([^ ]+)</string>
+					<key>name</key>
+					<string>comment.line.on-branch.git-commit-message</string>
+				</dict>
+				<dict>
+					<key>captures</key>
+					<dict>
+						<key>1</key>
+						<dict>
+							<key>name</key>
+							<string>support.function.branch.git-commit-message</string>
+						</dict>
+					</dict>
+					<key>match</key>
+					<string>Your branch .* '([^ ']+)'</string>
+					<key>name</key>
+					<string>comment.line.on-branch.git-commit-message</string>
+				</dict>
+				<dict>
+					<key>begin</key>
+					<string> Untracked files:</string>
+					<key>beginCaptures</key>
+					<dict>
+						<key>0</key>
+						<dict>
+							<key>name</key>
+							<string>entity.definition.untracked.git-commit-message</string>
+						</dict>
+					</dict>
+					<key>end</key>
+					<string>^#$</string>
+					<key>name</key>
+					<string>comment.line.untracked.git-commit-message</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>captures</key>
+							<dict>
+								<key>1</key>
+								<dict>
+									<key>name</key>
+									<string>support.function.file-status.git-commit-message</string>
+								</dict>
+								<key>2</key>
+								<dict>
+									<key>name</key>
+									<string>constant.character.branch.git-commit-message</string>
+								</dict>
+							</dict>
+							<key>match</key>
+							<string>	(.*)$</string>
+							<key>name</key>
+							<string>comment.line.untracked-file.git-commit-message</string>
+						</dict>
+					</array>
+				</dict>
+				<dict>
+					<key>begin</key>
+					<string> Change(?:s not staged for commit|d but not updated):</string>
+					<key>beginCaptures</key>
+					<dict>
+						<key>0</key>
+						<dict>
+							<key>name</key>
+							<string>entity.definition.discarded.git-commit-message</string>
+						</dict>
+					</dict>
+					<key>end</key>
+					<string>^#$</string>
+					<key>name</key>
+					<string>comment.line.discarded.git-commit-message</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>captures</key>
+							<dict>
+								<key>1</key>
+								<dict>
+									<key>name</key>
+									<string>support.function.file-status.git-commit-message</string>
+								</dict>
+								<key>2</key>
+								<dict>
+									<key>name</key>
+									<string>constant.character.branch.git-commit-message</string>
+								</dict>
+							</dict>
+							<key>match</key>
+							<string>	([^:]+):(.*)$</string>
+							<key>name</key>
+							<string>comment.line.discarded.git-commit-message</string>
+						</dict>
+					</array>
+				</dict>
+				<dict>
+					<key>begin</key>
+					<string> Changes to be committed:</string>
+					<key>beginCaptures</key>
+					<dict>
+						<key>0</key>
+						<dict>
+							<key>name</key>
+							<string>entity.definition.selected.git-commit-message</string>
+						</dict>
+					</dict>
+					<key>end</key>
+					<string>^#$</string>
+					<key>name</key>
+					<string>comment.line.selected.git-commit-message</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>captures</key>
+							<dict>
+								<key>1</key>
+								<dict>
+									<key>name</key>
+									<string>support.function.file-status.git-commit-message</string>
+								</dict>
+								<key>2</key>
+								<dict>
+									<key>name</key>
+									<string>constant.character.branch.git-commit-message</string>
+								</dict>
+							</dict>
+							<key>match</key>
+							<string>	([^:]+):(.*)$</string>
+							<key>name</key>
+							<string>comment.line.selected.git-commit-message</string>
+						</dict>
+					</array>
+				</dict>
+			</array>
 		</dict>
 		<dict>
 			<key>begin</key>
