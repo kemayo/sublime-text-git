@@ -26,7 +26,7 @@
 				<key>3</key>
 				<dict>
 					<key>name</key>
-					<string>support.function.git-graph</string>
+					<string>keyword.git-graph</string>
 				</dict>
 				<key>4</key>
 				<dict>
@@ -36,12 +36,12 @@
 				<key>5</key>
 				<dict>
 					<key>name</key>
-					<string>variable.parameter.git-graph</string>
+					<string>storage.type.git-graph</string>
 				</dict>
 				<key>6</key>
 				<dict>
 					<key>name</key>
-					<string>keyword.git-graph</string>
+					<string>support.function.git-graph</string>
 				</dict>
 			</dict>
 			<key>match</key>
@@ -72,7 +72,7 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>variable.parameter.git-graph</string>
+					<string>storage.type.git-graph</string>
 				</dict>
 			</dict>
 			<key>match</key>
