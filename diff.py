@@ -22,6 +22,7 @@ class GitDiff (object):
                          self.diff_done)
 
     def diff_done(self, result):
+        workdir = git_root(self.get_working_dir()) # Sim added, support goto diff
         if not result.strip():
             self.panel("No output")
             return
@@ -31,15 +32,17 @@ class GitDiff (object):
         else:
             view = self.scratch(result, title="Git Diff")
 
+        lines_files = view.find_all(r'^[-+]{3} .*') # Sim added, support highlight filename
         lines_inserted = view.find_all(r'^\+[^+]{2} ')
         lines_deleted = view.find_all(r'^-[^-]{2} ')
 
+        view.add_regions("files", lines_files, "markup.changed.diff", "dot") # Sim added, support highlight filename
         view.add_regions("inserted", lines_inserted, "markup.inserted.diff", "dot", sublime.HIDDEN)
         view.add_regions("deleted", lines_deleted, "markup.deleted.diff", "dot", sublime.HIDDEN)
 
         # Store the git root directory in the view so we can resolve relative paths
         # when the user wants to navigate to the source file.
-        view.settings().set("git_root_dir", git_root(self.get_working_dir()))
+        view.settings().set("git_root_dir", workdir) # Sim modified, support goto diff
 
 
 class GitDiffCommit (object):
@@ -48,10 +51,16 @@ class GitDiffCommit (object):
             self.diff_done)
 
     def diff_done(self, result):
+        workdir = git_root(self.get_working_dir()) # Sim added, support goto diff
         if not result.strip():
             self.panel("No output")
             return
-        self.scratch(result, title="Git Diff")
+        view = self.scratch(result, title="Git Diff")
+
+        lines_files = view.find_all(r'^[-+]{3} .*') # Sim added, support highlight filename
+        view.add_regions("files", lines_files, "markup.changed.diff", "dot") # Sim added, support highlight filename
+
+        view.settings().set("git_root_dir", workdir) # Sim added, support goto diff
 
 
 class GitDiffCommand(GitDiff, GitTextCommand):

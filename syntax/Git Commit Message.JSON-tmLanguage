@@ -13,6 +13,7 @@
       "begin": "diff\\ \\-\\-git",
       "end": "(?=xxxxxx)123457",
       "patterns": [
+        { "name": "markup.changed", "match": "^[-+]{3}.*"}
         { "include": "source.diff" }
       ]
     }
