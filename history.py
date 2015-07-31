@@ -1,8 +1,10 @@
 import functools
 import re
+import os
+import os.path
 
 import sublime
-from git import GitTextCommand, GitWindowCommand, plugin_file
+from git import GitTextCommand, GitWindowCommand, plugin_file, git_root
 
 
 class GitBlameCommand(GitTextCommand):
@@ -76,7 +78,8 @@ class GitLog(object):
             self.details_done)
 
     def details_done(self, result):
-        self.scratch(result, title="Git Commit Details", syntax=plugin_file("syntax/Git Commit Message.tmLanguage"))
+        view = self.scratch(result, title="Git Commit Details", syntax=plugin_file("syntax/Git Commit Message.tmLanguage"))
+        view.settings().set("git_root_dir", git_root(self.get_working_dir())) # Sim added, support goto commit diff
 
 
 class GitLogCommand(GitLog, GitTextCommand):
@@ -86,6 +89,43 @@ class GitLogCommand(GitLog, GitTextCommand):
 class GitLogAllCommand(GitLog, GitWindowCommand):
     pass
 
+# Sim code begin
+class GitLogMultiCommand(GitLog):
+    def log_results(self, refs):
+        for ref in refs:
+            self.log_result(ref)
+
+class GitLogMultiTextCommand(GitTextCommand):
+    def get_working_dir(self):
+        path = self.view.settings().get("git_file_path")
+        return os.path.realpath(os.path.dirname(path)) if path else None 
+    def get_file_name(self):
+        return os.path.basename(self.view.settings().get("git_file_path"))
+    def is_enabled(self):
+        return git_root(self.get_working_dir())
+
+class GitLogCurSelCommand(GitLogMultiCommand, GitLogMultiTextCommand):
+    def run(self, edit=None):
+        refs = []
+        view = self.active_view();
+        for s in view.sel():
+            if s.empty():
+                s = view.word(s)
+            refs.append(view.substr(s))
+        return self.log_results(refs)
+
+class GitLogMultiLinesCommand(GitLogMultiCommand, GitLogMultiTextCommand):
+    def run(self, edit=None):
+        refs = []
+        view = self.active_view();
+        for s in view.sel():
+            s = view.line(s)
+            text = view.substr(s)
+            mm = re.search(r' (\w+) - ', text)
+            if mm:
+                refs.append(mm.group(1))
+        return self.log_results(refs)
+# Sim code end
 
 class GitShow(object):
     def run(self, edit=None):
@@ -133,7 +173,9 @@ class GitGraph(object):
         )
 
     def log_done(self, result):
-        self.scratch(result, title="Git Log Graph", syntax=plugin_file("syntax/Git Graph.tmLanguage"))
+        workdir = self.get_working_dir() + "\\" + self.get_file_name() #Sim added, support goto commit
+        view = self.scratch(result, title="Git Log Graph", syntax=plugin_file("syntax/Git Graph.tmLanguage"))
+        view.settings().set("git_file_path", workdir) #Sim added, support goto commit
 
 
 class GitGraphCommand(GitGraph, GitTextCommand):
