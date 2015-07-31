@@ -4,7 +4,7 @@ import os
 
 import sublime
 import sublime_plugin
-from git import GitTextCommand, GitWindowCommand, plugin_file, view_contents, _make_text_safeish
+from git import GitTextCommand, GitWindowCommand, plugin_file, view_contents, _make_text_safeish, git_root
 import add
 import codecs
 
@@ -105,6 +105,8 @@ class GitCommitCommand(GitWindowCommand):
         msg.sel().clear()
         msg.sel().add(sublime.Region(0, 0))
         GitCommitCommand.active_message = self
+
+        msg.settings().set("git_root_dir", git_root(self.get_working_dir())) # Sim added, support goto diff
 
     def message_done(self, message):
         # filter out the comments (git commit doesn't do this automatically)
