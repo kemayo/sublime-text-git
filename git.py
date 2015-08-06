@@ -71,10 +71,10 @@ def plugin_file(name):
     return PLUGIN_DIRECTORY + '/' + name
 
 
-def do_when(conditional, callback, *args, **kwargs):
+def do_when(conditional, command, *args, **kwargs):
     if conditional():
-        return callback(*args, **kwargs)
-    sublime.set_timeout(functools.partial(do_when, conditional, callback, *args, **kwargs), 50)
+        return command(*args, **kwargs)
+    sublime.set_timeout(functools.partial(do_when, conditional, command, *args, **kwargs), 50)
 
 
 def goto_xy(view, line, col):
@@ -228,7 +228,10 @@ class GitCommand(object):
         if wait_for_lock and root and os.path.exists(os.path.join(root, '.git', 'index.lock')):
             print("waiting for index.lock", command)
             do_when(lambda: not os.path.exists(os.path.join(root, '.git', 'index.lock')),
-                self.run_command, command, callback=callback, show_status=show_status, filter_empty_args=filter_empty_args, no_save=no_save, wait_for_lock=wait_for_lock, **kwargs)
+                    self.run_command, command, callback=callback,
+                    show_status=show_status, filter_empty_args=filter_empty_args,
+                    no_save=no_save, wait_for_lock=wait_for_lock, **kwargs)
+            return
 
         s = sublime.load_settings("Git.sublime-settings")
         if s.get('save_first') and self.active_view() and self.active_view().is_dirty() and not no_save:
@@ -414,11 +417,31 @@ class GitRawCommand(GitWindowCommand):
 
     def run(self, **args):
         self.command = str(args.get('command', ''))
-        show_in = str(args.get('show_in', 'pane_below'))
+
 
         if self.command.strip() == "":
             self.panel("No git command provided")
             return
+
+        # Collect the users input, if required
+        self.__args = args
+        self.input_queue = []
+        self.handle_input()
+
+        try:
+            self.get_input(**self.input_queue.pop())
+        except IndexError:
+            self.complete_command()
+
+    def insert_inputs(self):
+        self.command = self.command.format(**self.inputs)
+        self.complete_command()
+
+    def complete_command(self):
+        args = self.__args
+
+        show_in = str(args.get('show_in', 'pane_below'))
+
         import shlex
         command_split = shlex.split(self.command)
 
@@ -429,14 +452,67 @@ class GitRawCommand(GitWindowCommand):
 
         self.may_change_files = bool(args.get('may_change_files', True))
 
-        if show_in == 'pane_below':
-            self.run_command(command_split)
-        elif show_in == 'quick_panel':
-            self.run_command(command_split, self.show_in_quick_panel)
+        runargs = [command_split]
+        if show_in == 'quick_panel':
+            runargs.append(self.show_in_quick_panel)
         elif show_in == 'new_tab':
-            self.run_command(command_split, self.show_in_new_tab)
+            runargs.append(self.show_in_new_tab)
         elif show_in == 'suppress':
-            self.run_command(command_split, self.do_nothing)
+            runargs.append(self.do_nothing)
+        self.run_command(*runargs)
+
+    def handle_input(self):
+        """
+        populates dict self.inputs to be used in command.format()
+        If 'default_<label>' exists:
+            => default value
+        If 'input_<label>' exists:
+            True => collect user input (optional default)
+            False => mandatory default
+        """
+        labels = ('credentials', 'url', 'refspec')
+        args = self.__args
+
+        default_template = 'default_{0}'
+        directive_template = 'input_{0}'
+
+        self.inputs = {}
+        for label in labels:
+            default_key = default_template.format(label)
+            default_val = args.get(default_key, None)
+
+            directive_key = directive_template.format(label)
+            directive_val = args.get(directive_key, None)
+            
+            if default_val is None and not directive_val:
+                # there's probably a better way to handle "input==False and 
+                # defualt is None".  This whole block feels silly.
+                continue
+
+            if default_val is None:
+                default_val = ''
+
+            if directive_val:
+                self.input_queue.append({'label': label, 'prompt': label, 'default': default_val})
+            else:
+                self.inputs[label] = default_val
+
+    def get_input(self, label, prompt="INPUT", default=''):
+        """
+        label: key of self.inputs that will be set to user's input
+        """
+
+        callback = functools.partial(self.on_input, label)
+        self.get_window().show_input_panel(prompt, default, callback, None, None)
+
+    def on_input(self, label, input):
+        input = str(input)  # avoiding unicode
+        self.inputs[label] = input
+        
+        try:
+            self.get_input(**self.input_queue.pop())
+        except IndexError:
+            self.insert_inputs()
 
     def show_in_quick_panel(self, result):
         self.results = list(result.rstrip().split('\n'))
