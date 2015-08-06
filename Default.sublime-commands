@@ -166,6 +166,14 @@
         "command": "git_raw", "args": { "command": "git push", "may_change_files": false }
     }
     ,{
+        "caption": "Git: Push to Custom URL (Refspec=master)",
+        "command": "git_raw", "args": { "command": "git push https://{credentials}@{url} {refspec}", "may_change_files": false, "input_credentials": true, "input_url": true, "input_refspec": false, "default_refspec": "master" }
+    }
+    ,{
+        "caption": "Git: Push to Custom URL, Custom Refspec",
+        "command": "git_raw", "args": { "command": "git push https://{credentials}@{url} {refspec}", "may_change_files": false, "input_credentials": true, "input_url": true, "input_refspec": true, "default_refspec": "master" }
+    }
+    ,{
         "caption": "Git: Push Current Branch",
         "command": "git_push_current_branch"
     }
