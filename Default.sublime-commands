@@ -242,4 +242,18 @@
         "caption": "Git: Open Config Url",
         "command": "git_open_config_url", "args": { "url_param": "remote.origin.url" }
     }
+    ,{
+        "caption": "Preferences: Git Settings – Default",
+        "command": "open_file", "args":
+        {
+            "file": "${packages}/Git/Git.sublime-settings"
+        }
+    }
+    ,{
+        "caption": "Preferences: Git Settings – User",
+        "command": "open_file", "args":
+        {
+            "file": "${packages}/User/Git.sublime-settings"
+        }
+    }
 ]
