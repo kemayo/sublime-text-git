@@ -36,17 +36,21 @@ class GitBranchCommand(GitWindowCommand):
 
     def branch_done(self, result):
         self.results = result.rstrip().split('\n')
-        self.quick_panel(self.results, self.panel_done,
-            sublime.MONOSPACE_FONT)
+        self.quick_panel(self.results, self.panel_done, sublime.MONOSPACE_FONT)
+
+    def process(self, command):
+        self.run_command(['git'] + command + [self.picked_branch], self.update_status)
 
     def panel_done(self, picked):
         if 0 > picked < len(self.results):
             return
         picked_branch = self.results[picked]
         if picked_branch.startswith("*"):
+            self.panel("Can't process with current branch")
             return
-        picked_branch = picked_branch.strip()
-        self.run_command(['git'] + self.command_to_run_after_branch + [picked_branch], self.update_status)
+        self.picked_branch = picked_branch.strip()
+
+        self.process(self.command_to_run_after_branch)
 
     def update_status(self, result):
         global branch
@@ -62,6 +66,22 @@ class GitMergeCommand(GitBranchCommand):
 
 class GitDeleteBranchCommand(GitBranchCommand):
     command_to_run_after_branch = ['branch', '-d']
+    command_to_run_after_branch_force = ['branch', '-D']
+
+    def force_delete(self, picked):
+        if picked == 0:
+            self.process(self.command_to_run_after_branch_force)
+
+    def update_status(self, result):
+        if 'error' in result:
+            if 'not fully merged' in result:
+                self.quick_panel(
+                    ['Delete not fully merged branch', 'Cancel'],
+                    self.force_delete,
+                )
+            else:
+                self.panel(result)
+        return super(GitDeleteBranchCommand, self).update_status(result)
 
 
 class GitNewBranchCommand(GitWindowCommand):
