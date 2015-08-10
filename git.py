@@ -224,22 +224,13 @@ class GitCommand(object):
     may_change_files = False
 
     def run_command(self, command, callback=None, show_status=True,
-            filter_empty_args=True, no_save=False, wait_for_lock=True, **kwargs):
+            filter_empty_args=True, no_save=False, **kwargs):
         if filter_empty_args:
             command = [arg for arg in command if arg]
         if 'working_dir' not in kwargs:
             kwargs['working_dir'] = self.get_working_dir()
         if 'fallback_encoding' not in kwargs and self.active_view() and self.active_view().settings().get('fallback_encoding'):
             kwargs['fallback_encoding'] = self.active_view().settings().get('fallback_encoding').rpartition('(')[2].rpartition(')')[0]
-
-        root = git_root(self.get_working_dir())
-        if wait_for_lock and root and os.path.exists(os.path.join(root, '.git', 'index.lock')):
-            print("waiting for index.lock", command)
-            do_when(lambda: not os.path.exists(os.path.join(root, '.git', 'index.lock')),
-                    self.run_command, command, callback=callback,
-                    show_status=show_status, filter_empty_args=filter_empty_args,
-                    no_save=no_save, wait_for_lock=wait_for_lock, **kwargs)
-            return
 
         s = sublime.load_settings("Git.sublime-settings")
         if s.get('save_first') and self.active_view() and self.active_view().is_dirty() and not no_save:
