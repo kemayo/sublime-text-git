@@ -181,13 +181,21 @@ class CommandThread(threading.Thread):
             if sublime.platform() == 'windows' and 'HOME' not in env:
                 env['HOME'] = env['USERPROFILE']
 
-            # universal_newlines seems to break `log` in python3
-            proc = subprocess.Popen(self.command,
-                stdout=self.stdout, stderr=subprocess.STDOUT,
-                stdin=subprocess.PIPE, startupinfo=startupinfo,
-                shell=shell, universal_newlines=False,
-                env=env)
-            output = proc.communicate(self.stdin)[0]
+            returncode = 128
+            tries = 0
+            while returncode == 128 and tries < 5:
+                if tries > 0:
+                    print("retrying", self.command, tries)
+                # universal_newlines seems to break `log` in python3
+                proc = subprocess.Popen(self.command,
+                    stdout=self.stdout, stderr=subprocess.STDOUT,
+                    stdin=subprocess.PIPE, startupinfo=startupinfo,
+                    shell=shell, universal_newlines=False,
+                    env=env)
+                output = proc.communicate(self.stdin)[0]
+                returncode = proc.returncode
+                tries += 1
+
             if not output:
                 output = ''
             output = _make_text_safeish(output, self.fallback_encoding)
