@@ -139,10 +139,11 @@ def are_commands_working():
     return commands_working != 0
 
 class CommandThread(threading.Thread):
-    def __init__(self, command, on_done, working_dir="", fallback_encoding="", **kwargs):
+    def __init__(self, command, on_done, max_tries, working_dir="", fallback_encoding="", **kwargs):
         threading.Thread.__init__(self)
         self.command = command
         self.on_done = on_done
+        self.max_tries = max_tries
         self.working_dir = working_dir
         if "stdin" in kwargs:
             self.stdin = kwargs["stdin"].encode()
@@ -183,7 +184,7 @@ class CommandThread(threading.Thread):
 
             returncode = 128
             tries = 0
-            while returncode == 128 and tries < 5:
+            while returncode == 128 and tries < self.max_tries:
                 if tries > 0:
                     print("retrying", self.command, tries)
                 # universal_newlines seems to break `log` in python3
@@ -222,6 +223,7 @@ class GitScratchOutputCommand(sublime_plugin.TextCommand):
 # A base for all commands
 class GitCommand(object):
     may_change_files = False
+    max_tries = 5
 
     def run_command(self, command, callback=None, show_status=True,
             filter_empty_args=True, no_save=False, **kwargs):
@@ -248,7 +250,7 @@ class GitCommand(object):
         if not callback:
             callback = self.generic_done
 
-        thread = CommandThread(command, callback, **kwargs)
+        thread = CommandThread(command, callback, self.max_tries, **kwargs)
         thread.start()
 
         if show_status:
