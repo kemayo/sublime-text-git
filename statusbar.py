@@ -14,6 +14,8 @@ class GitBranchStatusListener(sublime_plugin.EventListener):
 
 
 class GitBranchStatusCommand(GitTextCommand):
+    max_tries = 1
+
     def run(self, view):
         s = sublime.load_settings("Git.sublime-settings")
         if s.get("statusbar_branch"):

@@ -139,10 +139,11 @@ def are_commands_working():
     return commands_working != 0
 
 class CommandThread(threading.Thread):
-    def __init__(self, command, on_done, working_dir="", fallback_encoding="", **kwargs):
+    def __init__(self, command, on_done, max_tries, working_dir="", fallback_encoding="", **kwargs):
         threading.Thread.__init__(self)
         self.command = command
         self.on_done = on_done
+        self.max_tries = max_tries
         self.working_dir = working_dir
         if "stdin" in kwargs:
             self.stdin = kwargs["stdin"].encode()
@@ -181,13 +182,21 @@ class CommandThread(threading.Thread):
             if sublime.platform() == 'windows' and 'HOME' not in env:
                 env['HOME'] = env['USERPROFILE']
 
-            # universal_newlines seems to break `log` in python3
-            proc = subprocess.Popen(self.command,
-                stdout=self.stdout, stderr=subprocess.STDOUT,
-                stdin=subprocess.PIPE, startupinfo=startupinfo,
-                shell=shell, universal_newlines=False,
-                env=env)
-            output = proc.communicate(self.stdin)[0]
+            returncode = 128
+            tries = 0
+            while returncode == 128 and tries < self.max_tries:
+                if tries > 0:
+                    print("retrying", self.command, tries)
+                # universal_newlines seems to break `log` in python3
+                proc = subprocess.Popen(self.command,
+                    stdout=self.stdout, stderr=subprocess.STDOUT,
+                    stdin=subprocess.PIPE, startupinfo=startupinfo,
+                    shell=shell, universal_newlines=False,
+                    env=env)
+                output = proc.communicate(self.stdin)[0]
+                returncode = proc.returncode
+                tries += 1
+
             if not output:
                 output = ''
             output = _make_text_safeish(output, self.fallback_encoding)
@@ -214,24 +223,16 @@ class GitScratchOutputCommand(sublime_plugin.TextCommand):
 # A base for all commands
 class GitCommand(object):
     may_change_files = False
+    max_tries = 5
 
     def run_command(self, command, callback=None, show_status=True,
-            filter_empty_args=True, no_save=False, wait_for_lock=True, **kwargs):
+            filter_empty_args=True, no_save=False, **kwargs):
         if filter_empty_args:
             command = [arg for arg in command if arg]
         if 'working_dir' not in kwargs:
             kwargs['working_dir'] = self.get_working_dir()
         if 'fallback_encoding' not in kwargs and self.active_view() and self.active_view().settings().get('fallback_encoding'):
             kwargs['fallback_encoding'] = self.active_view().settings().get('fallback_encoding').rpartition('(')[2].rpartition(')')[0]
-
-        root = git_root(self.get_working_dir())
-        if wait_for_lock and root and os.path.exists(os.path.join(root, '.git', 'index.lock')):
-            print("waiting for index.lock", command)
-            do_when(lambda: not os.path.exists(os.path.join(root, '.git', 'index.lock')),
-                    self.run_command, command, callback=callback,
-                    show_status=show_status, filter_empty_args=filter_empty_args,
-                    no_save=no_save, wait_for_lock=wait_for_lock, **kwargs)
-            return
 
         s = sublime.load_settings("Git.sublime-settings")
         if s.get('save_first') and self.active_view() and self.active_view().is_dirty() and not no_save:
@@ -249,7 +250,7 @@ class GitCommand(object):
         if not callback:
             callback = self.generic_done
 
-        thread = CommandThread(command, callback, **kwargs)
+        thread = CommandThread(command, callback, self.max_tries, **kwargs)
         thread.start()
 
         if show_status:
