@@ -65,23 +65,32 @@ class GitMergeCommand(GitBranchCommand):
 
 
 class GitDeleteBranchCommand(GitBranchCommand):
-    command_to_run_after_branch = ['branch', '-d']
+    command_to_run_after_branch = ['branch', '-D']
     command_to_run_after_branch_force = ['branch', '-D']
+    command_is_branch_merged = ['branch', '--no-merged']
 
-    def force_delete(self, picked):
-        if picked == 0:
-            self.process(self.command_to_run_after_branch_force)
+    def _process(self, command):
+        # default process behaviour
+        super(GitDeleteBranchCommand, self).process(command)
 
-    def update_status(self, result):
-        if 'error' in result:
-            if 'not fully merged' in result:
+    def process(self, command):
+        def no_merged_branches(result):
+            if any(
+                branch for branch in result.split('\n')
+                if branch.strip() == self.picked_branch
+            ):
                 self.quick_panel(
                     ['Delete not fully merged branch', 'Cancel'],
                     self.force_delete,
                 )
             else:
-                self.panel(result)
-        return super(GitDeleteBranchCommand, self).update_status(result)
+                self._process(command)
+
+        self.run_command(['git'] + self.command_is_branch_merged, no_merged_branches)
+
+    def force_delete(self, picked):
+        if picked == 0:
+            self._process(self.command_to_run_after_branch_force)
 
 
 class GitNewBranchCommand(GitWindowCommand):
