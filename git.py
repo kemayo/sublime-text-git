@@ -292,6 +292,7 @@ class GitCommand(object):
         scratch_file.set_scratch(True)
         self._output_to_view(scratch_file, output, **kwargs)
         scratch_file.set_read_only(True)
+        scratch_file.settings().set('word_wrap', False)
         if position:
             sublime.set_timeout(lambda: scratch_file.set_viewport_position(position), 0)
         return scratch_file
