@@ -78,8 +78,9 @@ class GitLog(object):
             self.details_done)
 
     def details_done(self, result):
+        workdir = git_root(self.get_working_dir()) # Sim added, support goto commit diff without open folder
         view = self.scratch(result, title="Git Commit Details", syntax=plugin_file("syntax/Git Commit Message.tmLanguage"))
-        view.settings().set("git_root_dir", git_root(self.get_working_dir())) # Sim added, support goto commit diff
+        view.settings().set("git_root_dir", workdir) # Sim added, support goto commit diff without open folder
 
 
 class GitLogCommand(GitLog, GitTextCommand):
@@ -173,9 +174,9 @@ class GitGraph(object):
         )
 
     def log_done(self, result):
-        workdir = self.get_working_dir() + "\\" + self.get_file_name() #Sim added, support goto commit
+        workdir = self.get_working_dir() + "\\" + self.get_file_name() #Sim added, support goto commit without open folder
         view = self.scratch(result, title="Git Log Graph", syntax=plugin_file("syntax/Git Graph.tmLanguage"))
-        view.settings().set("git_file_path", workdir) #Sim added, support goto commit
+        view.settings().set("git_file_path", workdir) #Sim added, support goto commit without open folder
 
 
 class GitGraphCommand(GitGraph, GitTextCommand):
