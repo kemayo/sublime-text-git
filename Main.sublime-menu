@@ -85,6 +85,14 @@
                     ,{ "caption": "Status...", "command": "git_status" }
                     ,{ "caption": "Branches...", "command": "git_branch" }
                     ,{ "caption": "Merge...", "command": "git_merge" }
+                    ,{ "caption": "Remote...", 
+                        "children":
+                        [
+                            { "caption": "add", "command": "git_remote_add"}
+                            ,{ "caption": "remove", "command": "git_remote_remove"}
+                            ,{ "caption": "show", "command": "git_remote_show"}
+                        ]
+                    }
                     ,{ "caption": "See commit history...", "command": "git_commit_history"}
                 ]
             }
