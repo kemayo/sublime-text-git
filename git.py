@@ -480,7 +480,9 @@ class GitUpdateIgnoreCommand(sublime_plugin.TextCommand):
                         folder["file_exclude_patterns"] = []
                     for pattern in gitignore_file:
                         pattern = pattern.strip()
-                        if os.path.isdir(os.path.join(path, pattern)):
+                        if len(pattern) == 0 or pattern[0] == '#':
+                            continue
+                        elif os.path.isdir(os.path.join(path, pattern)):
                             if not pattern in folder["folder_exclude_patterns"]:
                                 folder["folder_exclude_patterns"].append(pattern)
                         else:
