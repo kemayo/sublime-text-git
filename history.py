@@ -108,7 +108,7 @@ class GitLogMultiTextCommand(GitTextCommand):
 class GitLogCurSelCommand(GitLogMultiCommand, GitLogMultiTextCommand):
     def run(self, edit=None):
         refs = []
-        view = self.active_view();
+        view = self.active_view()
         for s in view.sel():
             if s.empty():
                 s = view.word(s)
@@ -118,7 +118,7 @@ class GitLogCurSelCommand(GitLogMultiCommand, GitLogMultiTextCommand):
 class GitLogMultiLinesCommand(GitLogMultiCommand, GitLogMultiTextCommand):
     def run(self, edit=None):
         refs = []
-        view = self.active_view();
+        view = self.active_view()
         for s in view.sel():
             s = view.line(s)
             text = view.substr(s)
@@ -126,6 +126,53 @@ class GitLogMultiLinesCommand(GitLogMultiCommand, GitLogMultiTextCommand):
             if mm:
                 refs.append(mm.group(1))
         return self.log_results(refs)
+
+class GitLogBlock(GitLog):
+    def log_results(self, refs):
+        n = len(refs)
+        if ( n < 1 ):
+            return
+
+        self.files = set()
+        for ref in refs:
+            self.log_result(ref)
+        self.run_command(
+            ['git', 'diff', refs[n-1]+'~1', refs[0], '--', self.get_file_name()],
+            self.block_done)
+
+    def details_done(self, result):
+        for s in result.split('\n'):
+            mm = re.search(r'^[+]{3} b(.*)', s.strip())
+            if ( mm ):
+                self.files.add(mm.group(1))
+
+    def block_done(self, result):
+        poslist = []
+        pos = 0
+        diffTag = 'diff --git'
+        while True:
+            pos = result.find(diffTag, pos)
+            if pos < 0:
+                break
+            if (0 == pos) or ('\n' == result[pos-1]) or ('\a' == result[pos-1]):
+                poslist.append(pos)
+            pos += len(diffTag)
+        poslist.append(len(result))
+
+        results = []
+        for i in range(0,len(poslist)-1):
+            for filename in self.files:
+                pos = result.find(filename, poslist[i], poslist[i+1])
+                if 0 <= pos :
+                    results.append(result[poslist[i]:poslist[i+1]])
+                    break
+
+        workdir = git_root(self.get_working_dir())
+        view = self.scratch(''.join(results), title="Git Block Details", syntax=plugin_file("syntax/Git Commit Message.tmLanguage"))
+        view.settings().set("git_root_dir", workdir)
+
+class GitLogBlockCommand(GitLogBlock, GitLogMultiLinesCommand):
+    pass
 # Sim code end
 
 class GitShow(object):

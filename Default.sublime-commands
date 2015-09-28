@@ -35,6 +35,10 @@
         "command": "git_log_multi_lines"
     }
     ,{
+        "caption": "Git: Log Current Blocks",
+        "command": "git_log_block"
+    }
+    ,{
         "caption": "Git: Graph Current File",
         "command": "git_graph"
     }
