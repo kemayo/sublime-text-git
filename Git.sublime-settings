@@ -37,4 +37,7 @@
 
 	// e.g. "Packages/Git/syntax/Git Commit Message.tmLanguage"
 	,"diff_syntax": "Packages/Diff/Diff.tmLanguage"
+
+	// Rulers for commit view
+	,"commit_rulers": [70]
 }

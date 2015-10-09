@@ -81,6 +81,7 @@ class GitCommitCommand(GitWindowCommand):
     def diff_done(self, result):
         settings = sublime.load_settings("Git.sublime-settings")
         historySize = settings.get('history_size')
+        rulers = settings.get('commit_rulers')
 
         def format(line):
             return '# ' + line.replace("\n", " ")
@@ -100,6 +101,10 @@ class GitCommitCommand(GitWindowCommand):
         msg = self.window.new_file()
         msg.set_scratch(True)
         msg.set_name("COMMIT_EDITMSG")
+
+        if rulers:
+            msg.settings().set('rulers', rulers)
+
         self._output_to_view(msg, template, syntax=plugin_file("syntax/Git Commit Message.tmLanguage"))
         msg.sel().clear()
         msg.sel().add(sublime.Region(0, 0))
