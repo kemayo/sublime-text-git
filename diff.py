@@ -1,6 +1,6 @@
 import sublime
 import re
-from git import git_root, GitTextCommand, GitWindowCommand
+from git import git_root, GitTextCommand, GitWindowCommand, plugin_file
 import functools
 
 
@@ -30,15 +30,12 @@ class GitDiff (object):
         if s.get('diff_panel'):
             view = self.panel(result)
         else:
-            view = self.scratch(result, title="Git Diff")
+            # Sim modified, improve show diff syntax color better
+            view = self.scratch(result, title="Git Diff", syntax=plugin_file("syntax/Git Commit Message.tmLanguage"))
 
         lines_files = view.find_all(r'^[-+]{3} .*') # Sim added, support highlight filename
-        lines_inserted = view.find_all(r'^\+[^+]{2} ')
-        lines_deleted = view.find_all(r'^-[^-]{2} ')
 
         view.add_regions("files", lines_files, "markup.changed.diff", "dot") # Sim added, support highlight filename
-        view.add_regions("inserted", lines_inserted, "markup.inserted.diff", "dot", sublime.HIDDEN)
-        view.add_regions("deleted", lines_deleted, "markup.deleted.diff", "dot", sublime.HIDDEN)
 
         # Store the git root directory in the view so we can resolve relative paths
         # when the user wants to navigate to the source file.
@@ -55,7 +52,8 @@ class GitDiffCommit (object):
         if not result.strip():
             self.panel("No output")
             return
-        view = self.scratch(result, title="Git Diff")
+        # Sim modified, improve show diff syntax color better
+        view = self.scratch(result, title="Git Diff", syntax=plugin_file("syntax/Git Commit Message.tmLanguage"))
 
         lines_files = view.find_all(r'^[-+]{3} .*') # Sim added, support highlight filename
         view.add_regions("files", lines_files, "markup.changed.diff", "dot") # Sim added, support highlight filename
