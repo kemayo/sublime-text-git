@@ -2,7 +2,7 @@ import re
 
 import sublime
 import sublime_plugin
-from .git import GitTextCommand, do_when, are_commands_working
+from .git import GitTextCommand
 
 
 class GitBranchStatusListener(sublime_plugin.EventListener):
@@ -21,10 +21,7 @@ class GitBranchStatusCommand(GitTextCommand):
         else:
             self.view.set_status("git-branch", "")
         if (s.get("statusbar_status")):
-            do_when(
-                lambda: not are_commands_working(),
-                self.run_command,
-                ['git', 'status', '--porcelain'], self.status_done, show_status=False, no_save=True)
+            self.run_command(['git', 'status', '--porcelain'], self.status_done, show_status=False, no_save=True)
         else:
             self.view.set_status("git-status", "")
 
