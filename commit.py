@@ -58,7 +58,7 @@ class GitCommitCommand(GitWindowCommand):
         self.run_command(
             ['git', 'status', '--untracked-files=no', '--porcelain'],
             self.porcelain_status_done
-            )
+        )
 
     def porcelain_status_done(self, result):
         # todo: split out these status-parsing things... asdf

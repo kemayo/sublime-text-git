@@ -1,4 +1,5 @@
-import sublime, sublime_plugin
+import sublime
+import sublime_plugin
 import os
 import re
 from .git import git_root, GitTextCommand, GitWindowCommand, do_when, goto_xy
@@ -84,12 +85,12 @@ class GitGotoDiff(sublime_plugin.TextCommand):
                 if not hunk_line:
                     hunk_line = lineContent
             elif lineContent.startswith("+++ b/"):
-                self.file_name = v.substr(sublime.Region(line.a+6, line.b)).strip()
+                self.file_name = v.substr(sublime.Region(line.a + 6, line.b)).strip()
                 break
             elif not hunk_line and not lineContent.startswith("-"):
-                line_offset = line_offset+1
+                line_offset = line_offset + 1
 
-            pt = v.line(pt-1).a
+            pt = v.line(pt - 1).a
 
         hunk = re.match(r"^@@ -(\d+),(\d+) \+(\d+),(\d+) @@.*", hunk_line)
         if not hunk:

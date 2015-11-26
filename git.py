@@ -13,6 +13,7 @@ import time
 
 git_root_cache = {}
 
+
 def find_plugin_directory(f):
     dirname = os.path.split(os.path.dirname(f))[-1]
     return "Packages/" + dirname.replace(".sublime-package", "")
@@ -104,6 +105,8 @@ def _test_paths_for_executable(paths, test_file):
         file_path = os.path.join(directory, test_file)
         if os.path.exists(file_path) and os.access(file_path, os.X_OK):
             return file_path
+
+
 def find_git():
     # It turns out to be difficult to reliably run git, with varying paths
     # and subprocess environments across different platforms. So. Let's hack
@@ -201,8 +204,9 @@ class CommandThread(threading.Thread):
             self.command_lock.release()
             main_thread(callback, output, **self.kwargs)
 
+
 class GitScratchOutputCommand(sublime_plugin.TextCommand):
-    def run(self, edit, output = '', output_file = None, clear = False):
+    def run(self, edit, output='', output_file=None, clear=False):
         if clear:
             region = sublime.Region(0, self.view.size())
             self.view.erase(edit, region)
@@ -474,16 +478,16 @@ class GitUpdateIgnoreCommand(sublime_plugin.TextCommand):
             print("gitignore path", gitignore)
             if (os.path.exists(gitignore)):
                 with open(gitignore) as gitignore_file:
-                    if not "folder_exclude_patterns" in folder:
+                    if "folder_exclude_patterns" not in folder:
                         folder["folder_exclude_patterns"] = []
-                    if not "file_exclude_patterns" in folder:
+                    if "file_exclude_patterns" not in folder:
                         folder["file_exclude_patterns"] = []
                     for pattern in gitignore_file:
                         pattern = pattern.strip()
                         if os.path.isdir(os.path.join(path, pattern)):
-                            if not pattern in folder["folder_exclude_patterns"]:
+                            if pattern not in folder["folder_exclude_patterns"]:
                                 folder["folder_exclude_patterns"].append(pattern)
                         else:
-                            if not pattern in folder["file_exclude_patterns"]:
+                            if pattern not in folder["file_exclude_patterns"]:
                                 folder["file_exclude_patterns"].append(pattern)
         self.view.window().set_project_data(data)

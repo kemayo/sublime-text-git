@@ -14,7 +14,7 @@ class GitAddChoiceCommand(GitStatusCommand):
         self.results = [
             [" + All Files", "apart from untracked files"],
             [" + All Files", "including untracked files"],
-        ] + [[a,''] for a in self.results]
+        ] + [[a, ''] for a in self.results]
         return super(GitAddChoiceCommand, self).show_status_list()
 
     def panel_followup(self, picked_status, picked_file, picked_index):
@@ -52,7 +52,7 @@ class GitAddSelectedHunkCommand(GitTextCommand):
                 "end": self.view.rowcol(sel.end())[0] + 1,
             })
 
-        hunks = [{"diff":""}]
+        hunks = [{"diff": ""}]
         i = 0
         matcher = re.compile('^@@ -([0-9]*)(?:,([0-9]*))? \+([0-9]*)(?:,([0-9]*))? @@')
         for line in result.splitlines():
