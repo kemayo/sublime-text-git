@@ -63,6 +63,7 @@ class GitMergeCommand(GitBranchCommand):
         self.panel(result)
         if sublime.load_settings("Git.sublime-settings").get('mergetool_on_conflicts'):
             if '\nCONFLICT ' in result:
+                sublime.status_message("Merge conflict: launching mergetool...")
                 self.get_window().run_command("git_raw", {"command": "git mergetool -y"})
         global branch
         branch = ""
