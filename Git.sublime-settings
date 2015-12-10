@@ -37,4 +37,7 @@
 
 	// e.g. "Packages/Git/syntax/Git Commit Message.tmLanguage"
 	,"diff_syntax": "Packages/Diff/Diff.tmLanguage"
+
+	// %H to have more convinent way to search by changeset hash
+	,"log_format": "%s (%h)\\a%an <%aE>\\a%ad (%ar)"
 }

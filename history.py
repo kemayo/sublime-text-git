@@ -49,13 +49,18 @@ class GitLog(object):
         return self.run_log(fn != '', '--', fn)
 
     def run_log(self, follow, *args):
+        s = sublime.load_settings("Git.sublime-settings")
+        log_format_fallback = '%s (%h)\a%an <%aE>\a%ad (%ar)'
+        # all this to remove convert json escape \\a to \a
+        log_format = bytes(s.get('log_format', log_format_fallback), 'utf-8').decode('unicode_escape')
+
         # the ASCII bell (\a) is just a convenient character I'm pretty sure
         # won't ever come up in the subject of the commit (and if it does then
         # you positively deserve broken output...)
         # 9000 is a pretty arbitrarily chosen limit; picked entirely because
         # it's about the size of the largest repo I've tested this on... and
         # there's a definite hiccup when it's loading that
-        command = ['git', 'log', '--no-color', '--pretty=%s (%h)\a%an <%aE>\a%ad (%ar)',
+        command = ['git', 'log', '--no-color', '--pretty=' + log_format,
             '--date=local', '--max-count=9000', '--follow' if follow else None]
         command.extend(args)
         self.run_command(
