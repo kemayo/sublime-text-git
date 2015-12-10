@@ -160,6 +160,14 @@ class CommandThread(threading.Thread):
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
+            # Change "git-flow" command to "git flow" for Windows
+            cmd = self.command[1]
+            if os.name == "nt" and (cmd == "hotfix" or cmd == "feature" or cmd == "release"):
+                if len(self.command) > 2 and self.command[2] == "start":
+                    self.command = ["git", "flow", self.command[1], "start", self.command[3]]
+                else:
+                    self.command = ["git", "flow", self.command[1], "finish"]
+
             # universal_newlines seems to break `log` in python3
             proc = subprocess.Popen(self.command,
                 stdout=self.stdout, stderr=subprocess.STDOUT,
