@@ -1,3 +1,8 @@
+# Fixed git-flow problem on Windows
+fixed at Dec 11, 2015
+
+
+
 # Sublime Text 3 plugin: git (Fork)
 
 This fork of [Git](https://github.com/kemayo/sublime-git) for Sublime Text supports the usual features and adds the following:
