@@ -1,9 +1,9 @@
 from .git import GitWindowCommand
 
 
-class GitStashApplyCommand(GitWindowCommand):
+class GitStashCommand(GitWindowCommand):
     may_change_files = True
-    command_to_run_after_list = 'apply'
+    command_to_run_after_list = False
 
     def run(self):
         self.run_command(['git', 'stash', 'list'], self.stash_list_done)
@@ -27,9 +27,24 @@ class GitStashApplyCommand(GitWindowCommand):
             return
 
         # get the stash ref (e.g. stash@{3})
-        self.stash = self.results[picked].split(':')[0]
-        self.run_command(['git', 'stash', self.command_to_run_after_list, self.stash])
+        stash = self.results[picked].split(':')[0]
+        self.run_command(['git', 'stash'] + self.command_to_run_after_list + [stash], self.handle_command or self.generic_done, stash=stash)
+
+    def handle_command(self, result, stash, **kw):
+        return self.generic_done(result, **kw)
 
 
-class GitStashDropCommand(GitStashApplyCommand):
-    command_to_run_after_list = 'drop'
+class GitStashListCommand(GitStashCommand):
+    may_change_files = False
+    command_to_run_after_list = ['show', '-p']
+
+    def handle_command(self, result, stash, **kw):
+        self.scratch(result, title=stash, syntax="Packages/Diff/Diff.tmLanguage")
+
+
+class GitStashApplyCommand(GitStashCommand):
+    command_to_run_after_list = ['apply']
+
+
+class GitStashDropCommand(GitStashCommand):
+    command_to_run_after_list = ['drop']

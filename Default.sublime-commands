@@ -134,6 +134,10 @@
         "command": "git_stash_drop"
     }
     ,{
+        "caption": "Git: Stash List",
+        "command": "git_stash_list"
+    }
+    ,{
         "caption": "Git: Add Current File",
         "command": "git_raw", "args": { "command": "git add", "append_current_file": true }
     }
