@@ -37,6 +37,12 @@
 			<key>patterns</key>
 			<array>
 				<dict>
+					<key>match</key>
+					<string>^[-+]{3}.*</string>
+					<key>name</key>
+					<string>markup.changed</string>
+				</dict>		
+				<dict>
 					<key>include</key>
 					<string>source.diff</string>
 				</dict>

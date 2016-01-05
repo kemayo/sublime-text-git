@@ -27,6 +27,18 @@
         "command": "git_log_all"
     }
     ,{
+        "caption": "Git: Log Current Highlight Line",
+        "command": "git_log_cur_sel"
+    }
+    ,{
+        "caption": "Git: Log Current Highlight Multiple Lines",
+        "command": "git_log_multi_lines"
+    }
+    ,{
+        "caption": "Git: Log Current Blocks",
+        "command": "git_log_block"
+    }
+    ,{
         "caption": "Git: Graph Current File",
         "command": "git_graph"
     }
