@@ -51,6 +51,7 @@ class GitQuickCommitCommand(GitTextCommand):
 class GitCommitCommand(GitWindowCommand):
     active_message = False
     extra_options = ""
+    quit_when_nothing_staged = True
 
     def run(self):
         self.lines = []
@@ -68,7 +69,7 @@ class GitCommitCommand(GitWindowCommand):
             if line and not line[0].isspace():
                 has_staged_files = True
                 break
-        if not has_staged_files:
+        if not has_staged_files and self.quit_when_nothing_staged:
             self.panel("Nothing to commit")
             return
         # Okay, get the template!
@@ -132,6 +133,7 @@ class GitCommitCommand(GitWindowCommand):
 
 class GitCommitAmendCommand(GitCommitCommand):
     extra_options = "--amend"
+    quit_when_nothing_staged = False
 
     def diff_done(self, result):
         self.after_show = result
