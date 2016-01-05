@@ -27,7 +27,7 @@ class GitAddChoiceCommand(GitStatusCommand):
         else:
             command = ['git']
             picked_file = picked_file.strip('"')
-            if os.path.isfile(working_dir + "/" + picked_file):
+            if os.path.exists(working_dir + "/" + picked_file):
                 command += ['add']
             else:
                 command += ['rm']
