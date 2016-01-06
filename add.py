@@ -83,7 +83,7 @@ class GitAddSelectedHunkCommand(GitTextCommand):
                 selection_is_hunky = True
 
         if selection_is_hunky:
-            self.run_command(['git', 'apply', '--cached'], stdin=diffs)
+            self.run_command(['git', 'apply', '--cached'], stdin=diffs.encode('utf-8'))
         else:
             sublime.status_message("No selected hunk")
 
@@ -95,7 +95,7 @@ class GitResetHead(object):
     def run(self, edit=None):
         self.run_command(['git', 'reset', 'HEAD', self.get_file_name()])
 
-    def generic_done(self, result):
+    def generic_done(self, result, **kwargs):
         pass
 
 
