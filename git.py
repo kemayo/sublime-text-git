@@ -436,6 +436,9 @@ class GitRawCommand(GitWindowCommand):
         elif show_in == 'suppress':
             self.run_command(command_split, self.do_nothing)
 
+        view = self.active_view()
+        view.run_command('git_branch_status')
+
     def show_in_quick_panel(self, result):
         self.results = list(result.rstrip().split('\n'))
         if len(self.results):
