@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>fileTypes</key>
+	<array>
+		<string>git-commit-view</string>
+	</array>
+	<key>name</key>
+	<string>Git Commit View</string>
+	<key>patterns</key>
+	<array>
+		<dict>
+			<key>name</key>
+			<string>string.sha.git-blame</string>
+			<key>match</key>
+			<string>^commit [a-f0-9]+$</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>support.function.author.git-blame</string>
+			<key>match</key>
+			<string>^Author: .+$</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>constant.numeric.date.git-blame</string>
+			<key>match</key>
+			<string>^Date: .+$</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>(^diff --.+$)</string>
+			<key>name</key>
+			<string>string.path.git-diff</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>(^(((-{3}) .+)|((\*{3}) .+))$\n?|^(={4}) .+(?= - ))</string>
+			<key>name</key>
+			<string>meta.diff.header.from-file</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>(^(\+{3}) .+$\n?| (-) .* (={4})$\n?)</string>
+			<key>name</key>
+			<string>meta.diff.header.to-file</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.range.diff</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>meta.toc-list.line-number.diff</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.range.diff</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^(@@)\s*(.+?)\s*(@@)($\n?)?</string>
+			<key>name</key>
+			<string>meta.diff.range.unified</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.inserted.diff</string>
+				</dict>
+				<key>6</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.inserted.diff</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^(((&gt;)( .*)?)|((\+).*))$\n?</string>
+			<key>name</key>
+			<string>markup.inserted.diff</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.inserted.diff</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^(!).*$\n?</string>
+			<key>name</key>
+			<string>markup.changed.diff</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.inserted.diff</string>
+				</dict>
+				<key>6</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.inserted.diff</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^(((&lt;)( .*)?)|((-).*))$\n?</string>
+			<key>name</key>
+			<string>markup.deleted.diff</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>meta.toc-list.file-name.diff</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^index (.+)$\n?</string>
+			<key>name</key>
+			<string>meta.diff.index</string>
+		</dict>
+	</array>
+	<key>scopeName</key>
+	<string>text.git-commit-view</string>
+	<key>uuid</key>
+	<string>5d37add9-1219-4174-b232-4bd423b84c0a</string>
+</dict>
+</plist>
