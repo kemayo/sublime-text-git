@@ -57,6 +57,31 @@ class GitDiffCommitCommand(GitDiffCommit, GitWindowCommand):
     pass
 
 
+class GitDiffBranchCommand(GitDiff, GitWindowCommand):
+    may_change_files = False
+    on_file = []
+
+    def run(self, edit=None, ignore_whitespace=False, current_file=False):
+        self.ignore_whitespace = ignore_whitespace
+        if current_file and self._active_file_name():
+            self.on_file = ['--', self._active_file_name()]
+        self.run_command(['git', 'branch', '--no-color'], self.branch_done)
+
+    def branch_done(self, result):
+        self.results = result.rstrip().split('\n')
+        self.quick_panel(self.results, self.panel_done,
+            sublime.MONOSPACE_FONT)
+
+    def panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        picked_branch = self.results[picked].strip()
+        command = ['git', 'diff', '--no-color']
+        if self.ignore_whitespace:
+            command.extend(('--ignore-all-space', '--ignore-blank-lines'))
+        self.run_command(command + ['..'+picked_branch] + self.on_file, self.diff_done)
+
+
 class GitGotoDiff(sublime_plugin.TextCommand):
     def __init__(self, view):
         self.view = view
