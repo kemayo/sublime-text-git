@@ -1,8 +1,10 @@
+from __future__ import absolute_import, unicode_literals, print_function, division
+
 import os
 import re
 
 import sublime
-from git import GitWindowCommand, git_root
+from . import GitWindowCommand, git_root
 
 
 class GitStatusCommand(GitWindowCommand):
@@ -12,7 +14,7 @@ class GitStatusCommand(GitWindowCommand):
         self.run_command(['git', 'status', '--porcelain'], self.status_done)
 
     def status_done(self, result):
-        self.results = filter(self.status_filter, result.rstrip().split('\n'))
+        self.results = list(filter(self.status_filter, result.rstrip().split('\n')))
         if len(self.results):
             self.show_status_list()
         else:
@@ -32,6 +34,8 @@ class GitStatusCommand(GitWindowCommand):
         if 0 > picked < len(self.results):
             return
         picked_file = self.results[picked]
+        if isinstance(picked_file, (list, tuple)):
+            picked_file = picked_file[0]
         # first 2 characters are status codes, the third is a space
         picked_status = picked_file[:2]
         picked_file = picked_file[3:]
@@ -43,9 +47,12 @@ class GitStatusCommand(GitWindowCommand):
         s = sublime.load_settings("Git.sublime-settings")
         root = git_root(self.get_working_dir())
         if picked_status == '??' or s.get('status_opens_file') or self.force_open:
-            file_name = os.path.join(os.path.realpath(root), picked_file)
-            if os.path.isfile(file_name):
-                self.window.open_file(file_name)
+            file_name = os.path.join(root, picked_file)
+            if(os.path.isfile(file_name)):
+                # Sublime Text 3 has a bug wherein calling open_file from within a panel
+                # callback causes the new view to not have focus. Make a deferred call via
+                # set_timeout to workaround this issue.
+                sublime.set_timeout(lambda: self.window.open_file(file_name), 0)
         else:
             if s.get('diff_tool'):
                 self.run_command(['git', 'difftool', '--', picked_file.strip('"')],

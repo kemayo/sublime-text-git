@@ -1,15 +1,17 @@
+from __future__ import absolute_import, unicode_literals, print_function, division
+
 import re
 
 import sublime
 import sublime_plugin
-from git import GitTextCommand
+from . import GitTextCommand
 
 
 class GitBranchStatusListener(sublime_plugin.EventListener):
-    def on_activated(self, view):
+    def on_activated_async(self, view):
         view.run_command("git_branch_status")
 
-    def on_post_save(self, view):
+    def on_post_save_async(self, view):
         view.run_command("git_branch_status")
 
 

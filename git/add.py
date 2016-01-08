@@ -1,17 +1,22 @@
+from __future__ import absolute_import, unicode_literals, print_function, division
+
 import os
 import re
 
 import sublime
-from git import GitTextCommand, GitWindowCommand, git_root
-import status
+from . import GitTextCommand, GitWindowCommand, git_root
+from .status import GitStatusCommand
 
 
-class GitAddChoiceCommand(status.GitStatusCommand):
+class GitAddChoiceCommand(GitStatusCommand):
     def status_filter(self, item):
         return super(GitAddChoiceCommand, self).status_filter(item) and not item[1].isspace()
 
     def show_status_list(self):
-        self.results = [[" + All Files", "apart from untracked files"], [" + All Files", "including untracked files"]] + self.results
+        self.results = [
+            [" + All Files", "apart from untracked files"],
+            [" + All Files", "including untracked files"],
+        ] + [[a, ''] for a in self.results]
         return super(GitAddChoiceCommand, self).show_status_list()
 
     def panel_followup(self, picked_status, picked_file, picked_index):
@@ -24,7 +29,7 @@ class GitAddChoiceCommand(status.GitStatusCommand):
         else:
             command = ['git']
             picked_file = picked_file.strip('"')
-            if os.path.isfile(working_dir + "/" + picked_file):
+            if os.path.exists(working_dir + "/" + picked_file):
                 command += ['add']
             else:
                 command += ['rm']
@@ -35,11 +40,6 @@ class GitAddChoiceCommand(status.GitStatusCommand):
 
     def rerun(self, result):
         self.run()
-
-
-class GitAdd(GitTextCommand):
-    def run(self, edit):
-        self.run_command(['git', 'add', self.get_file_name()])
 
 
 class GitAddSelectedHunkCommand(GitTextCommand):
@@ -54,7 +54,7 @@ class GitAddSelectedHunkCommand(GitTextCommand):
                 "end": self.view.rowcol(sel.end())[0] + 1,
             })
 
-        hunks = [{"diff":""}]
+        hunks = [{"diff": ""}]
         i = 0
         matcher = re.compile('^@@ -([0-9]*)(?:,([0-9]*))? \+([0-9]*)(?:,([0-9]*))? @@')
         for line in result.splitlines():

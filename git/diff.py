@@ -1,41 +1,30 @@
+from __future__ import absolute_import, unicode_literals, print_function, division
+
 import sublime
+import sublime_plugin
+import os
 import re
-from git import git_root, GitTextCommand, GitWindowCommand
-import functools
-
-
-def do_when(conditional, callback, *args, **kwargs):
-    if conditional():
-        return callback(*args, **kwargs)
-    sublime.set_timeout(functools.partial(do_when, conditional, callback, *args, **kwargs), 50)
-
-
-def goto_xy(view, line, col):
-    view.run_command("goto_line", {"line": line})
-    for i in range(col):
-        view.run_command("move", {"by": "characters", "forward": True})
+from . import git_root, GitTextCommand, GitWindowCommand, do_when, goto_xy
 
 
 class GitDiff (object):
-    def run(self, edit=None):
-        self.run_command(['git', 'diff', '--no-color', '--', self.get_file_name()],
-                         self.diff_done)
+    def run(self, edit=None, ignore_whitespace=False):
+        command = ['git', 'diff', '--no-color']
+        if ignore_whitespace:
+            command.extend(('--ignore-all-space', '--ignore-blank-lines'))
+        command.extend(('--', self.get_file_name()))
+        self.run_command(command, self.diff_done)
 
     def diff_done(self, result):
         if not result.strip():
             self.panel("No output")
             return
         s = sublime.load_settings("Git.sublime-settings")
+        syntax = s.get("diff_syntax", "Packages/Diff/Diff.tmLanguage")
         if s.get('diff_panel'):
-            view = self.panel(result)
+            view = self.panel(result, syntax=syntax)
         else:
-            view = self.scratch(result, title="Git Diff")
-
-        lines_inserted = view.find_all(r'^\+[^+]{2} ')
-        lines_deleted = view.find_all(r'^-[^-]{2} ')
-
-        view.add_regions("inserted", lines_inserted, "markup.inserted.diff", "dot", sublime.HIDDEN)
-        view.add_regions("deleted", lines_deleted, "markup.deleted.diff", "dot", sublime.HIDDEN)
+            view = self.scratch(result, title="Git Diff", syntax=syntax)
 
         # Store the git root directory in the view so we can resolve relative paths
         # when the user wants to navigate to the source file.
@@ -43,15 +32,19 @@ class GitDiff (object):
 
 
 class GitDiffCommit (object):
-    def run(self, edit=None):
-        self.run_command(['git', 'diff', '--cached', '--no-color'],
-            self.diff_done)
+    def run(self, edit=None, ignore_whitespace=False):
+        command = ['git', 'diff', '--cached', '--no-color']
+        if ignore_whitespace:
+            command.extend(('--ignore-all-space', '--ignore-blank-lines'))
+        self.run_command(command, self.diff_done)
 
     def diff_done(self, result):
         if not result.strip():
             self.panel("No output")
             return
-        self.scratch(result, title="Git Diff")
+        s = sublime.load_settings("Git.sublime-settings")
+        syntax = s.get("diff_syntax", "Packages/Diff/Diff.tmLanguage")
+        self.scratch(result, title="Git Diff", syntax=syntax)
 
 
 class GitDiffCommand(GitDiff, GitTextCommand):
@@ -66,31 +59,10 @@ class GitDiffCommitCommand(GitDiffCommit, GitWindowCommand):
     pass
 
 
-class GitDiffTool(object):
-    def run(self, edit=None):
-        self.run_command(['git', 'difftool', '--', self.get_file_name()])
-
-
-class GitDiffToolCommand(GitDiffTool, GitTextCommand):
-    pass
-
-
-class GitDiffToolAll(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'difftool'])
-
-
-class GitDiffToolCommit(GitTextCommand):
-    def run(self, edit=None):
-        self.run_command(['git', 'difftool', '--cached', '--', self.get_file_name()])
-
-
-class GitDiffToolCommitAll(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'difftool', '--cached'])
-
-
 class GitGotoDiff(sublime_plugin.TextCommand):
+    def __init__(self, view):
+        self.view = view
+
     def run(self, edit):
         v = self.view
         view_scope_name = v.scope_name(v.sel()[0].a)
@@ -115,12 +87,12 @@ class GitGotoDiff(sublime_plugin.TextCommand):
                 if not hunk_line:
                     hunk_line = lineContent
             elif lineContent.startswith("+++ b/"):
-                self.file_name = v.substr(sublime.Region(line.a+6, line.b)).strip()
+                self.file_name = v.substr(sublime.Region(line.a + 6, line.b)).strip()
                 break
             elif not hunk_line and not lineContent.startswith("-"):
-                line_offset = line_offset+1
+                line_offset = line_offset + 1
 
-            pt = v.line(pt-1).a
+            pt = v.line(pt - 1).a
 
         hunk = re.match(r"^@@ -(\d+),(\d+) \+(\d+),(\d+) @@.*", hunk_line)
         if not hunk:

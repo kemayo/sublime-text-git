@@ -7,8 +7,16 @@
         "command": "git_blame"
     }
     ,{
+        "caption": "Git: Document Selection",
+        "command": "git_document"
+    }
+    ,{
         "caption": "Git: New Tag",
         "command": "git_new_tag"
+    }
+    ,{
+        "caption": "Git: Delete Tag",
+        "command": "git_delete_tag"
     }
     ,{
         "caption": "Git: Show Tags",
@@ -16,7 +24,11 @@
     }
     ,{
         "caption": "Git: Push Tags",
-        "command": "git_push_tags"
+        "command": "git_raw", "args": { "command": "git push --tags", "may_change_files": false }
+    }
+    ,{
+        "caption": "Git: Checkout Tag",
+        "command": "git_checkout_tag"
     }
     ,{
         "caption": "Git: Log Current File",
@@ -39,20 +51,35 @@
         "command": "git_diff"
     }
     ,{
-        "caption": "Git: Diff All",
+        "caption": "Git: Diff All Files",
         "command": "git_diff_all"
     }
     ,{
-        "caption": "Git: Diff Staged",
+        "caption": "Git: Diff Staged Files",
         "command": "git_diff_commit"
     }
     ,{
+        "caption": "Git: Diff Current File (Ignore Whitespace)",
+        "command": "git_diff",
+        "args": { "ignore_whitespace": true }
+    }
+    ,{
+        "caption": "Git: Diff All Files (Ignore Whitespace)",
+        "command": "git_diff_all",
+        "args": { "ignore_whitespace": true }
+    }
+    ,{
+        "caption": "Git: Diff Staged Files (Ignore Whitespace)",
+        "command": "git_diff_commit",
+        "args": { "ignore_whitespace": true }
+    }
+    ,{
         "caption": "Git: Diff Tool Current File",
-        "command": "git_diff_tool"
+        "command": "git_raw", "args": { "command": "git difftool", "append_current_file": true, "may_change_files": false }
     }
     ,{
         "caption": "Git: Diff Tool All",
-        "command": "git_diff_tool_all"
+        "command": "git_raw", "args": { "command": "git difftool", "may_change_files": false }
     }
     ,{
         "caption": "Git: Diff Tool Current File Staged",
@@ -104,11 +131,11 @@
     }
     ,{
         "caption": "Git: Stash Changes",
-        "command": "git_stash"
+        "command": "git_raw", "args": { "command": "git stash" }
     }
     ,{
         "caption": "Git: Stash Pop",
-        "command": "git_stash_pop"
+        "command": "git_raw", "args": { "command": "git stash pop" }
     }
     ,{
         "caption": "Git: Stash Apply",
@@ -123,24 +150,36 @@
         "command": "git_stash_list"
     }
     ,{
+        "caption": "Git: Stash List",
+        "command": "git_stash_list"
+    }
+    ,{
         "caption": "Git: Add Current File",
-        "command": "git_add"
+        "command": "git_raw", "args": { "command": "git add", "append_current_file": true }
     }
     ,{
         "caption": "Git: Add...",
         "command": "git_add_choice"
     }
     ,{
+        "caption": "Git: Add All",
+        "command": "git_raw", "args": { "command": "git add -A" }
+    }
+    ,{
         "caption": "Git: Checkout Current File",
-        "command": "git_checkout"
+        "command": "git_raw", "args": { "command": "git checkout", "append_current_file": true }
     }
     ,{
         "caption": "Git: Fetch",
-        "command": "git_fetch"
+        "command": "git_raw", "args": { "command": "git fetch", "may_change_files": false }
     }
     ,{
         "caption": "Git: Pull",
-        "command": "git_pull"
+        "command": "git_raw", "args": { "command": "git pull" }
+    }
+    ,{
+        "caption": "Git: Pull Using Rebase",
+        "command": "git_raw", "args": { "command": "git pull --rebase" }
     }
     ,{
         "caption": "Git: Pull Using Rebase",
@@ -152,7 +191,7 @@
     }
     ,{
         "caption": "Git: Push",
-        "command": "git_push"
+        "command": "git_raw", "args": { "command": "git push", "may_change_files": false }
     }
     ,{
         "caption": "Git: Push Current Branch",
@@ -200,11 +239,11 @@
     }
     ,{
         "caption": "Git: Reset (unstage) Current File",
-        "command": "git_reset_head"
+        "command": "git_raw", "args": { "command": "git reset HEAD", "append_current_file": true, "show_in": "suppress" }
     }
     ,{
         "caption": "Git: Reset (unstage) All",
-        "command": "git_reset_head_all"
+        "command": "git_raw", "args": { "command": "git reset HEAD", "show_in": "suppress" }
     }
     ,{
         "caption": "Git: Reset (hard) HEAD",
@@ -239,25 +278,7 @@
         "command": "git_commit_history"
     }
     ,{
-        "caption": "Git: Open Config File",
-        "command": "git_open_config_file"
-    }
-    ,{
-        "caption": "Git: Open Config Url",
-        "command": "git_open_config_url", "args": { "url_param": "remote.origin.url" }
-    }
-    ,{
-        "caption": "Preferences: Git Settings – Default",
-        "command": "open_file", "args":
-        {
-            "file": "${packages}/Git/Git.sublime-settings"
-        }
-    }
-    ,{
-        "caption": "Preferences: Git Settings – User",
-        "command": "open_file", "args":
-        {
-            "file": "${packages}/User/Git.sublime-settings"
-        }
+        "caption": "Git: Update Project Ignored Files",
+        "command": "git_update_ignore"
     }
 ]

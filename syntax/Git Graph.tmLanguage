@@ -45,7 +45,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>^([| *\\]+)([0-9a-f]{4,40}) -( \(.*?\))? (.*) (\(.*) (&lt;.*&gt;) .*</string>
+			<string>^([| *\\]+)([0-9a-f]{4,40}) -( \(.*?\))? (.*) (\(.*\)) (&lt;.*?&gt;) .*</string>
 			<key>name</key>
 			<string>log-entry.git-graph</string>
 		</dict>

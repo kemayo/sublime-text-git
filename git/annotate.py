@@ -1,10 +1,12 @@
+from __future__ import absolute_import, unicode_literals, print_function, division
+
 import tempfile
 import re
 import os
 
 import sublime
 import sublime_plugin
-from git import git_root, GitTextCommand
+from . import git_root, GitTextCommand
 
 
 class GitClearAnnotationCommand(GitTextCommand):
@@ -57,7 +59,7 @@ class GitAnnotateCommand(GitTextCommand):
         self.run_command(['git', 'show', 'HEAD:{0}'.format(repo_file)], show_status=False, no_save=True, callback=self.compare_tmp, stdout=self.tmp)
 
     def compare_tmp(self, result, stdout=None):
-        all_text = self.view.substr(sublime.Region(0, self.view.size())).encode("utf-8")
+        all_text = self.view.substr(sublime.Region(0, self.view.size()))
         self.run_command(['diff', '-u', self.tmp.name, '-'], stdin=all_text, no_save=True, show_status=False, callback=self.parse_diff)
 
     # This is where the magic happens. At the moment, only one chunk format is supported. While
@@ -115,7 +117,7 @@ class GitAnnotateCommand(GitTextCommand):
             if change_type == '-':
                 full_region = self.view.full_line(self.view.text_point(line - 1, 0))
                 position = full_region.begin()
-                for i in xrange(full_region.size()):
+                for i in range(full_region.size()):
                     typed_diff[change_type].append(sublime.Region(position + i))
             else:
                 point = self.view.text_point(line, 0)

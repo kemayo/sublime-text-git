@@ -1,7 +1,9 @@
+from __future__ import absolute_import, unicode_literals, print_function, division
+
 import os
 
 import sublime
-from git import GitTextCommand, GitWindowCommand, git_root_exist
+from . import GitWindowCommand, git_root_exist
 
 
 class GitInit(object):
@@ -93,6 +95,26 @@ class GitNewTagCommand(GitWindowCommand):
         self.run_command(['git', 'tag', tagname])
 
 
+class GitDeleteTagCommand(GitWindowCommand):
+    def run(self):
+        self.run_command(['git', 'tag'], self.fetch_tag)
+
+    def fetch_tag(self, result):
+        if result.strip() == "":
+            sublime.status_message("No Tags provided.")
+            return
+        self.results = result.rstrip().split('\n')
+        self.quick_panel(self.results, self.panel_done)
+
+    def panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        picked_tag = self.results[picked]
+        picked_tag = picked_tag.strip()
+        if sublime.ok_cancel_dialog("Delete \"%s\" Tag?" % picked_tag, "Delete"):
+            self.run_command(['git', 'tag', '-d', picked_tag])
+
+
 class GitShowTagsCommand(GitWindowCommand):
     def run(self):
         self.run_command(['git', 'tag'], self.fetch_tag)
@@ -109,26 +131,23 @@ class GitShowTagsCommand(GitWindowCommand):
         self.run_command(['git', 'show', picked_tag])
 
 
-class GitPushTagsCommand(GitWindowCommand):
+class GitCheckoutTagCommand(GitWindowCommand):
     def run(self):
-        self.run_command(['git', 'push', '--tags'])
+        self.run_command(['git', 'tag'], self.fetch_tag)
 
+    def fetch_tag(self, result):
+        if result.strip() == "":
+            sublime.status_message("No Tags provided.")
+            return
+        self.results = result.rstrip().split('\n')
+        self.quick_panel(self.results, self.panel_done)
 
-class GitCheckoutCommand(GitTextCommand):
-    may_change_files = True
-
-    def run(self, edit):
-        self.run_command(['git', 'checkout', self.get_file_name()])
-
-
-class GitFetchCommand(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'fetch'], callback=self.panel)
-
-
-class GitPullCommand(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'pull'], callback=self.panel)
+    def panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        picked_tag = self.results[picked]
+        picked_tag = picked_tag.strip()
+        self.run_command(['git', 'checkout', "tags/%s" % picked_tag])
 
 
 class GitPullRebaseCommand(GitWindowCommand):
@@ -140,7 +159,7 @@ class GitPullCurrentBranchCommand(GitWindowCommand):
     command_to_run_after_describe = 'pull'
 
     def run(self):
-        self.run_command(['git', 'describe', '--contains',  '--all', 'HEAD'], callback=self.describe_done)
+        self.run_command(['git', 'describe', '--contains', '--all', 'HEAD'], callback=self.describe_done)
 
     def describe_done(self, result):
         self.current_branch = result.strip()
@@ -159,11 +178,6 @@ class GitPullCurrentBranchCommand(GitWindowCommand):
         self.picked_remote = self.remotes[picked]
         self.picked_remote = self.picked_remote.strip()
         self.run_command(['git', self.command_to_run_after_describe, self.picked_remote, self.current_branch])
-
-
-class GitPushCommand(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'push'], callback=self.panel)
 
 
 class GitPushCurrentBranchCommand(GitPullCurrentBranchCommand):
