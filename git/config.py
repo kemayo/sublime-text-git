@@ -1,8 +1,10 @@
+from __future__ import absolute_import, unicode_literals, print_function, division
+
 import os
 import re
 
 import sublime
-from git import GitWindowCommand, git_root
+from . import GitWindowCommand, git_root
 
 
 class GitOpenConfigFileCommand(GitWindowCommand):
