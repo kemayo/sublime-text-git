@@ -8,10 +8,10 @@ from . import GitTextCommand
 
 
 class GitBranchStatusListener(sublime_plugin.EventListener):
-    def on_activated_async(self, view):
+    def on_activated(self, view):
         view.run_command("git_branch_status")
 
-    def on_post_save_async(self, view):
+    def on_post_save(self, view):
         view.run_command("git_branch_status")
 
 
