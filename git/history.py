@@ -1,8 +1,10 @@
-import sublime_plugin
+from __future__ import absolute_import, unicode_literals, print_function, division
+
 import functools
 import re
 
 import sublime
+import sublime_plugin
 from . import GitTextCommand, GitWindowCommand, plugin_file
 
 
