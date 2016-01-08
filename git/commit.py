@@ -4,7 +4,7 @@ import os
 
 import sublime
 import sublime_plugin
-from .git import GitTextCommand, GitWindowCommand, plugin_file, view_contents, _make_text_safeish
+from . import GitTextCommand, GitWindowCommand, plugin_file, view_contents, _make_text_safeish
 from .add import GitAddSelectedHunkCommand
 
 history = []

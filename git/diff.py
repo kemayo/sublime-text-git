@@ -2,7 +2,7 @@ import sublime
 import sublime_plugin
 import os
 import re
-from .git import git_root, GitTextCommand, GitWindowCommand, do_when, goto_xy
+from . import git_root, GitTextCommand, GitWindowCommand, do_when, goto_xy
 
 
 class GitDiff (object):

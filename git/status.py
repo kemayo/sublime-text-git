@@ -2,7 +2,7 @@ import os
 import re
 
 import sublime
-from .git import GitWindowCommand, git_root
+from . import GitWindowCommand, git_root
 
 
 class GitStatusCommand(GitWindowCommand):
