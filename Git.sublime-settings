@@ -29,6 +29,9 @@
 	// Annotations default to being on for all files. Can be slow in some cases.
 	,"annotations": false
 
+	// Set upstream branch on push (see --set-upstream option in `git push`)
+	,"set_upstream": false
+
 	// statusbar
 	,"statusbar_branch": true
 	// Symbols for quick git status in status bar
