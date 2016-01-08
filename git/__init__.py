@@ -23,7 +23,7 @@ if __file__.startswith('./'):
 else:
     # In a complete inversion from ST2, in ST3 when a plugin is loaded we
     # actually can trust __file__.
-    PLUGIN_DIRECTORY = find_plugin_directory(__file__)
+    PLUGIN_DIRECTORY = find_plugin_directory(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 def main_thread(callback, *args, **kwargs):
