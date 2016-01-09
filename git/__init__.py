@@ -116,7 +116,7 @@ def _test_paths_for_executable(paths, test_file):
             return file_path
 
 
-def find_git():
+def find_binary(cmd):
     # It turns out to be difficult to reliably run git, with varying paths
     # and subprocess environments across different platforms. So. Let's hack
     # this a bit.
@@ -124,13 +124,11 @@ def find_git():
     # attitude. But that involves a lot more arguing with people.)
     path = os.environ.get('PATH', '').split(os.pathsep)
     if os.name == 'nt':
-        git_cmd = 'git.exe'
-    else:
-        git_cmd = 'git'
+        cmd = cmd + '.exe'
 
-    git_path = _test_paths_for_executable(path, git_cmd)
+    path = _test_paths_for_executable(path, cmd)
 
-    if not git_path:
+    if not path:
         # /usr/local/bin:/usr/local/git/bin
         if os.name == 'nt':
             extra_paths = (
@@ -142,9 +140,10 @@ def find_git():
                 '/usr/local/bin',
                 '/usr/local/git/bin',
             )
-        git_path = _test_paths_for_executable(extra_paths, git_cmd)
-    return git_path
-GIT = find_git()
+        path = _test_paths_for_executable(extra_paths, cmd)
+    return path
+GIT = find_binary('git')
+GITK = find_binary('gitk')
 
 
 class CommandThread(threading.Thread):
@@ -206,7 +205,7 @@ class CommandThread(threading.Thread):
         except OSError as e:
             callback = sublime.error_message
             if e.errno == 2:
-                output = "Git binary could not be found in PATH\n\nConsider using the git_command setting for the Git plugin\n\nPATH is: %s" % os.environ['PATH']
+                output = "{cmd} binary could not be found in PATH\n\nConsider using the {cmd_setting}_command setting for the Git plugin\n\nPATH is: {path}".format(cmd=self.command[0], cmd_setting=self.command[0].replace('-', '_'), path=os.environ['PATH'])
             else:
                 output = e.strerror
         finally:
@@ -237,7 +236,10 @@ class GitCommand(object):
             elif GIT:
                 command[0] = GIT
         if command[0] == 'gitk' and s.get('gitk_command'):
-            command[0] = s.get('gitk_command')
+            if s.get('gitk_command'):
+                command[0] = s.get('gitk_command')
+            elif GITK:
+                command[0] = GITK
         if command[0] == 'git' and command[1] == 'flow' and s.get('git_flow_command'):
             command[0] = s.get('git_flow_command')
             del(command[1])

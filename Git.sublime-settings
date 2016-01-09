@@ -6,6 +6,10 @@
 	// e.g. "/Users/kemayo/bin/git" or "C:\bin\git.exe"
 	,"git_command": false
 
+	// if present, use this command instead of plain "gitk"
+	// e.g. "/Users/kemayo/bin/gitk" or "C:\bin\gitk.exe"
+	,"gitk_command": false
+
 	// point this the installation location of git-flow
 	,"git_flow_command": "/usr/local/bin/git-flow"
 
