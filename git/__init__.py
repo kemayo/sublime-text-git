@@ -14,15 +14,19 @@ git_root_cache = {}
 
 
 # Goal is to get: "Packages/Git", allowing for people who rename things
-def find_plugin_directory(f):
-    dirname = os.path.split(os.path.dirname(f))[-1]
+def find_plugin_directory():
+    if __file__.startswith('./'):
+        # ST2, we get "./git/__init__.py" which is pretty useless since we want the part above that
+        # However, os.getcwd() is the plugin directory!
+        full = os.getcwd()
+    else:
+        # In a complete inversion, in ST3 when a plugin is loaded we
+        # actually can trust __file__. It'll be something like:
+        # /Users/dlynch/Library/Application Support/Sublime Text 3/Packages/Git/git/__init__.py
+        full = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
+    dirname = os.path.split(full)[-1]
     return "Packages/" + dirname.replace(".sublime-package", "")
-if __file__.startswith('./'):
-    PLUGIN_DIRECTORY = os.getcwd().replace(os.path.normpath(os.path.join(os.getcwd(), '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
-else:
-    # In a complete inversion from ST2, in ST3 when a plugin is loaded we
-    # actually can trust __file__.
-    PLUGIN_DIRECTORY = find_plugin_directory(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
+PLUGIN_DIRECTORY = find_plugin_directory()
 
 
 def main_thread(callback, *args, **kwargs):
