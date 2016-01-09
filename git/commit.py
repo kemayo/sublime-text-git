@@ -177,6 +177,6 @@ class GitCommitHistoryCommand(sublime_plugin.TextCommand):
 
 
 class GitCommitSelectedHunk(GitAddSelectedHunkCommand):
-    def run(self, edit):
-        self.run_command(['git', 'diff', '--no-color', self.get_file_name()], self.cull_diff)
+    def cull_diff(self, result):
+        super(GitCommitSelectedHunk, self).cull_diff(result)
         self.get_window().run_command('git_commit')
