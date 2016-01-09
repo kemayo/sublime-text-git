@@ -1,5 +1,6 @@
 from __future__ import absolute_import, unicode_literals, print_function, division
 
+import codecs
 import functools
 import tempfile
 import os
