@@ -132,8 +132,8 @@ def find_binary(cmd):
         # /usr/local/bin:/usr/local/git/bin
         if os.name == 'nt':
             extra_paths = (
-                os.path.join(os.environ["ProgramFiles"], "Git", "bin"),
-                os.path.join(os.environ["ProgramFiles(x86)"], "Git", "bin"),
+                os.path.join(os.environ.get("ProgramFiles", ""), "Git", "bin"),
+                os.path.join(os.environ.get("ProgramFiles(x86)", ""), "Git", "bin"),
             )
         else:
             extra_paths = (
@@ -205,7 +205,10 @@ class CommandThread(threading.Thread):
         except OSError as e:
             callback = sublime.error_message
             if e.errno == 2:
-                output = "{cmd} binary could not be found in PATH\n\nConsider using the {cmd_setting}_command setting for the Git plugin\n\nPATH is: {path}".format(cmd=self.command[0], cmd_setting=self.command[0].replace('-', '_'), path=os.environ['PATH'])
+                global _has_warned
+                if not _has_warned:
+                    _has_warned = True
+                    output = "{cmd} binary could not be found in PATH\n\nConsider using the {cmd_setting}_command setting for the Git plugin\n\nPATH is: {path}".format(cmd=self.command[0], cmd_setting=self.command[0].replace('-', '_'), path=os.environ['PATH'])
             else:
                 output = e.strerror
         finally:
