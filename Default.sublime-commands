@@ -144,10 +144,6 @@
     ,{
         "caption": "Git: Stash Drop",
         "command": "git_stash_drop"
-    } 
-    ,{
-        "caption": "Git: Stash List",
-        "command": "git_stash_list"
     }
     ,{
         "caption": "Git: Stash List",
