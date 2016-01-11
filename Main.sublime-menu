@@ -88,6 +88,7 @@
                     ,{ "caption": "Init", "command": "git_init"}
                     ,{ "caption": "Status...", "command": "git_status" }
                     ,{ "caption": "Branches...", "command": "git_branch" }
+                    ,{ "caption": "Track Remote Branch", "command": "git_track_remote_branch" }
                     ,{ "caption": "Merge...", "command": "git_merge" }
                     ,{ "caption": "See commit history...", "command": "git_commit_history"}
                 ]

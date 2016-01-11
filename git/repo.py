@@ -32,12 +32,18 @@ class GitBranchCommand(GitWindowCommand):
     may_change_files = True
     command_to_run_after_branch = ['checkout']
     extra_flags = []
+    filter_invalid_items = False
+    strip_items = False
 
     def run(self):
         self.run_command(['git', 'branch', '--no-color'] + self.extra_flags, self.branch_done)
 
     def branch_done(self, result):
         self.results = result.rstrip().split('\n')
+        if self.strip_items:
+            self.results = [item.strip() for item in self.results]
+        if self.filter_invalid_items:
+            self.results = [item for item in self.results if item.strip().find(' ') < 0]
         self.quick_panel(self.results, self.panel_done,
             sublime.MONOSPACE_FONT)
 
@@ -80,8 +86,10 @@ class GitNewBranchCommand(GitWindowCommand):
 
 
 class GitTrackRemoteBranchCommand(GitBranchCommand):
-	command_to_run_after_branch = ['checkout', '-t']
-	extra_flags = ['-r']
+    command_to_run_after_branch = ['checkout', '-t']
+    extra_flags = ['-r']
+    filter_invalid_items = True
+    strip_items = True
 
 
 class GitNewTagCommand(GitWindowCommand):
