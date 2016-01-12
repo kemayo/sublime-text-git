@@ -59,6 +59,10 @@
         "command": "git_diff_commit"
     }
     ,{
+        "caption": "Git: Diff Branch",
+        "command": "git_diff_branch"
+    }
+    ,{
         "caption": "Git: Diff Current File (Ignore Whitespace)",
         "command": "git_diff",
         "args": { "ignore_whitespace": true }
@@ -71,6 +75,11 @@
     ,{
         "caption": "Git: Diff Staged Files (Ignore Whitespace)",
         "command": "git_diff_commit",
+        "args": { "ignore_whitespace": true }
+    }
+    ,{
+        "caption": "Git: Diff Branch (Ignore Whitespace)",
+        "command": "git_diff_branch",
         "args": { "ignore_whitespace": true }
     }
     ,{
