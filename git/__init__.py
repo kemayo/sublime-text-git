@@ -20,7 +20,7 @@ def find_plugin_directory():
         # zipped package, all we care about is the bit right before .sublime-package
         match = re.search(r"([^\\/]+)\.sublime-package", __file__)
         if match:
-            return match.group(1)
+            return "Packages/" + match.group(1)
     if __file__.startswith('./'):
         # ST2, we get "./git/__init__.py" which is pretty useless since we want the part above that
         # However, os.getcwd() is the plugin directory!
