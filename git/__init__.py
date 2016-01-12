@@ -1,6 +1,7 @@
 from __future__ import absolute_import, unicode_literals, print_function, division
 
 import os
+import re
 import sublime
 import sublime_plugin
 import threading
@@ -15,6 +16,11 @@ git_root_cache = {}
 
 # Goal is to get: "Packages/Git", allowing for people who rename things
 def find_plugin_directory():
+    if ".sublime-package" in __file__:
+        # zipped package, all we care about is the bit right before .sublime-package
+        match = re.search(r"([^\\/]+)\.sublime-package", __file__)
+        if match:
+            return match.group(1)
     if __file__.startswith('./'):
         # ST2, we get "./git/__init__.py" which is pretty useless since we want the part above that
         # However, os.getcwd() is the plugin directory!
