@@ -166,18 +166,23 @@ class GitDiffBranch (GitWindowCommand):
     def panel_file(self, result):
         self.files = [['All', 'Compare all files']]
         for item in result.rstrip().split('\n'):
-            self.files.append(item[1:].strip())
-        self.quick_panel(self.files, self.panel_file_done,
-            sublime.MONOSPACE_FONT)
+            item = item.split('\t', 1)[::-1]
+            self.files.append(item)
+        
+        if (len(self.files) == 1):
+            self.panel("No changed files")
+            return
+        
+        self.quick_panel(self.files, self.panel_file_done, sublime.MONOSPACE_FONT)
 
     def panel_file_done(self, picked = 0):
         if 0 > picked < len(self.branches):
             return
         command = ['git', 'diff', '--cached', '--no-color', self.picked_branch]
         if self.ignore_whitespace:
-            command.extend(('--ignore-all-space', '--ignore-blank-lines'))
+            command += ['--ignore-all-space', '--ignore-blank-lines']
         if picked > 0:
-            command.extend(('--', self.files[picked]))
+            command += ['--', self.files[picked][0]]
         
         self.run_command(command, self.diff_contents_done)
 
