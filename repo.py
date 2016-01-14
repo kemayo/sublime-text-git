@@ -1,7 +1,7 @@
 import os
 
 import sublime
-from .git import GitWindowCommand, git_root_exist
+from .git import GitWindowCommand, git_root_exist, git_root
 
 
 class GitInit(object):
@@ -32,6 +32,7 @@ class GitBranchCommand(GitWindowCommand):
     extra_flags = []
 
     def run(self):
+        self.close_removed = sublime.load_settings("Git.sublime-settings").get("close_removed_on_checkout")
         self.run_command(['git', 'branch', '--no-color'] + self.extra_flags, self.branch_done)
 
     def branch_done(self, result):
@@ -46,9 +47,34 @@ class GitBranchCommand(GitWindowCommand):
         if picked_branch.startswith("*"):
             return
         picked_branch = picked_branch.strip()
-        self.run_command(['git'] + self.command_to_run_after_branch + [picked_branch], self.update_status)
+        self.delfiles = []
+        if self.close_removed:
+            self.run_command(['git', 'diff', '--name-only', '--diff-filter=D'] + ['..'+picked_branch], self.manage_diffs, branch=picked_branch)
+        else:
+            self.do_checkout(picked_branch)
+
+    def do_checkout(self, branch):
+        self.run_command(['git'] + self.command_to_run_after_branch + [branch], self.update_status)
+
+    def manage_diffs(self, result, branch):
+        if result:
+            self.delfiles = result.strip().split('\n')
+            if len(self.delfiles) > 0:
+                working_dir = self.get_working_dir()
+                root = git_root(working_dir)
+                views = [v for v in self.window.views() if not v.is_dirty() and v.file_name()]
+                for f in self.delfiles:
+                    fullf = os.path.join(root, f)
+                    for v in views:
+                        if v.file_name() == fullf:
+                            v.close()
+        self.do_checkout(branch)
 
     def update_status(self, result):
+        if result.startswith("error: "):
+            sublime.error_message(result[7:])
+            # reopen closed views if failed?
+            return
         global branch
         branch = ""
         for view in self.window.views():
