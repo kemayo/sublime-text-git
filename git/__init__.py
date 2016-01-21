@@ -4,6 +4,7 @@ import os
 import re
 import sublime
 import sublime_plugin
+import sys
 import threading
 import subprocess
 import functools
@@ -188,13 +189,13 @@ class CommandThread(threading.Thread):
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
+            env = os.environ.copy()
+
             shell = False
             if sublime.platform() == 'windows':
                 shell = True
-
-            env = os.environ.copy()
-            if sublime.platform() == 'windows' and 'HOME' not in env:
-                env['HOME'] = env['USERPROFILE']
+                if 'HOME' not in env:
+                    env['HOME'] = env['USERPROFILE']
 
             # universal_newlines seems to break `log` in python3
             proc = subprocess.Popen(self.command,
