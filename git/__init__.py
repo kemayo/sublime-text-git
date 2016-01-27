@@ -1,5 +1,4 @@
-from __future__ import absolute_import, print_function, division
-# unicode_literals causes problems in ST2 on Windows because of subprocess.Popen's env handling
+from __future__ import absolute_import, unicode_literals, print_function, division
 
 import os
 import re
@@ -195,7 +194,7 @@ class CommandThread(threading.Thread):
             if sublime.platform() == 'windows':
                 shell = True
                 if 'HOME' not in env:
-                    env['HOME'] = env['USERPROFILE']
+                    env[str('HOME')] = str(env['USERPROFILE'])
 
             # universal_newlines seems to break `log` in python3
             proc = subprocess.Popen(self.command,
