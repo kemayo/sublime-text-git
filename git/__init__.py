@@ -1,10 +1,10 @@
-from __future__ import absolute_import, unicode_literals, print_function, division
+from __future__ import absolute_import, print_function, division
+# unicode_literals causes problems in ST2 on Windows because of subprocess.Popen's env handling
 
 import os
 import re
 import sublime
 import sublime_plugin
-import sys
 import threading
 import subprocess
 import functools
