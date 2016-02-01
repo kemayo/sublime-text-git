@@ -276,7 +276,7 @@ class GitCommand(object):
 
         view = self.active_view()
         if view and view.settings().get('live_git_annotations'):
-            self.view.run_command('git_annotate')
+            view.run_command('git_annotate')
 
         if not result.strip():
             return
