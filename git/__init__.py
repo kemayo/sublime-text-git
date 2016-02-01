@@ -298,6 +298,7 @@ class GitCommand(object):
         scratch_file.set_scratch(True)
         self._output_to_view(scratch_file, output, **kwargs)
         scratch_file.set_read_only(True)
+        self.record_git_root_to_view(scratch_file)
         scratch_file.settings().set('word_wrap', False)
         if position:
             sublime.set_timeout(lambda: scratch_file.set_viewport_position(position), 0)
@@ -309,10 +310,16 @@ class GitCommand(object):
         self.output_view.set_read_only(False)
         self._output_to_view(self.output_view, output, clear=True, **kwargs)
         self.output_view.set_read_only(True)
+        self.record_git_root_to_view(self.output_view)
         self.get_window().run_command("show_panel", {"panel": "output.git"})
 
     def quick_panel(self, *args, **kwargs):
         self.get_window().show_quick_panel(*args, **kwargs)
+
+    def record_git_root_to_view(self, view):
+        # Store the git root directory in the view so we can resolve relative paths
+        # when the user wants to navigate to the source file.
+        view.settings().set("git_root_dir", git_root(self.get_working_dir()))
 
 
 # A base for all git commands that work with the entire repository

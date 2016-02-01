@@ -26,10 +26,6 @@ class GitDiff (object):
         else:
             view = self.scratch(result, title="Git Diff", syntax=syntax)
 
-        # Store the git root directory in the view so we can resolve relative paths
-        # when the user wants to navigate to the source file.
-        view.settings().set("git_root_dir", git_root(self.get_working_dir()))
-
 
 class GitDiffCommit (object):
     def run(self, edit=None, ignore_whitespace=False):
