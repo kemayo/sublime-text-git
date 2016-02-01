@@ -319,7 +319,11 @@ class GitCommand(object):
     def record_git_root_to_view(self, view):
         # Store the git root directory in the view so we can resolve relative paths
         # when the user wants to navigate to the source file.
-        view.settings().set("git_root_dir", git_root(self.get_working_dir()))
+        if self.get_working_dir():
+            root = git_root(self.get_working_dir())
+        else:
+            root = self.active_view().settings().get("git_root_dir")
+        view.settings().set("git_root_dir", root)
 
 
 # A base for all git commands that work with the entire repository
@@ -359,11 +363,10 @@ class GitWindowCommand(GitCommand, sublime_plugin.WindowCommand):
         file_name = self._active_file_name()
         if file_name:
             return os.path.realpath(os.path.dirname(file_name))
-        else:
-            try:  # handle case with no open folder
-                return self.window.folders()[0]
-            except IndexError:
-                return ''
+        try:  # handle case with no open folder
+            return self.window.folders()[0]
+        except IndexError:
+            return ''
 
     def get_window(self):
         return self.window
@@ -390,7 +393,10 @@ class GitTextCommand(GitCommand, sublime_plugin.TextCommand):
         return file_name.replace('\\', '/')  # windows issues
 
     def get_working_dir(self):
-        return os.path.realpath(os.path.dirname(self.view.file_name()))
+        file_name = self.view.file_name()
+        if file_name:
+            return os.path.realpath(os.path.dirname(file_name))
+        return ''
 
     def get_window(self):
         # Fun discovery: if you switch tabs while a command is working,

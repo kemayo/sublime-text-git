@@ -43,8 +43,6 @@ class GitBlameCommand(GitTextCommand):
     def blame_done(self, result, position=None):
         view = self.scratch(result, title="Git Blame", position=position,
                             syntax=plugin_file("syntax/Git Blame.tmLanguage"))
-        # store working dir to be potentially used by the GitGotoCommit command
-        view.settings().set("git_working_dir", self.get_working_dir())
 
 
 class GitLog(object):
@@ -239,7 +237,7 @@ class GitGotoCommit(GitTextCommand):
         commit = line.split(" ")[0]
         if not commit or commit == "00000000":
             return
-        working_dir = view.settings().get("git_working_dir")
+        working_dir = view.settings().get("git_root_dir")
         self.run_command(['git', 'show', commit], self.show_done, working_dir=working_dir)
 
     def show_done(self, result):
