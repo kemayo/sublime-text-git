@@ -28,7 +28,7 @@ class GitBranchStatusCommand(GitTextCommand):
             self.view.set_status("git-status", "")
 
     def branch_done(self, result):
-        self.view.set_status("git-branch", "git branch: " + result.strip())
+        self.view.set_status("git-branch", "Git branch: " + result.strip())
 
     def status_done(self, result):
         lines = [line for line in result.splitlines() if re.match(r'^[ MADRCU?!]{1,2}\s+.*', line)]
