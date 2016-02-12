@@ -12,6 +12,7 @@ import time
 
 
 git_root_cache = {}
+_has_warned = False
 
 
 # Goal is to get: "Packages/Git", allowing for people who rename things
@@ -155,7 +156,7 @@ GITK = find_binary('gitk')
 class CommandThread(threading.Thread):
     command_lock = threading.Lock()
 
-    def __init__(self, command, on_done, working_dir="", fallback_encoding="", **kwargs):
+    def __init__(self, command, on_done, working_dir="", fallback_encoding="", error_suppresses_output=False, **kwargs):
         threading.Thread.__init__(self)
         self.command = command
         self.on_done = on_done
@@ -169,6 +170,7 @@ class CommandThread(threading.Thread):
         else:
             self.stdout = subprocess.PIPE
         self.fallback_encoding = fallback_encoding
+        self.error_suppresses_output = error_suppresses_output
         self.kwargs = kwargs
 
     def run(self):
@@ -203,11 +205,16 @@ class CommandThread(threading.Thread):
                 shell=shell, universal_newlines=False,
                 env=env)
             output = proc.communicate(self.stdin)[0]
+            if self.error_suppresses_output and proc.returncode is not None and proc.returncode > 0:
+                output = ''
             if not output:
                 output = ''
             output = _make_text_safeish(output, self.fallback_encoding)
         except subprocess.CalledProcessError as e:
-            output = e.returncode
+            if self.error_suppresses_output:
+                output = ''
+            else:
+                output = e.returncode
         except OSError as e:
             callback = sublime.error_message
             if e.errno == 2:

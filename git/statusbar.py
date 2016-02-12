@@ -19,23 +19,30 @@ class GitBranchStatusCommand(GitTextCommand):
     def run(self, view):
         s = sublime.load_settings("Git.sublime-settings")
         if s.get("statusbar_branch"):
-            self.run_command(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], self.branch_done, show_status=False, no_save=True)
+            self.run_command(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], self.branch_done, show_status=False, no_save=True, error_suppresses_output=True)
         else:
-            self.view.set_status("git-branch", "")
+            self.branch_done(False)
         if (s.get("statusbar_status")):
-            self.run_command(['git', 'status', '--porcelain'], self.status_done, show_status=False, no_save=True)
+            self.run_command(['git', 'status', '--porcelain'], self.status_done, show_status=False, no_save=True, error_suppresses_output=True)
         else:
-            self.view.set_status("git-status", "")
+            self.status_done(False)
 
     def branch_done(self, result):
-        self.view.set_status("git-branch", "Git branch: " + result.strip())
+        if not result:
+            self.view.set_status("git-branch", "")
+        else:
+            self.view.set_status("git-branch", "Git branch: " + result.strip())
 
     def status_done(self, result):
-        lines = [line for line in result.splitlines() if re.match(r'^[ MADRCU?!]{1,2}\s+.*', line)]
-        index = [line[0] for line in lines if not line[0].isspace()]
-        working = [line[1] for line in lines if not line[1].isspace()]
-        self.view.set_status("git-status-index", "index: " + self.status_string(index))
-        self.view.set_status("git-status-working", "working: " + self.status_string(working))
+        if not result:
+            self.view.set_status("git-status-index", "")
+            self.view.set_status("git-status-working", "")
+        else:
+            lines = [line for line in result.splitlines() if re.match(r'^[ MADRCU?!]{1,2}\s+.*', line)]
+            index = [line[0] for line in lines if not line[0].isspace()]
+            working = [line[1] for line in lines if not line[1].isspace()]
+            self.view.set_status("git-status-index", "index: " + self.status_string(index))
+            self.view.set_status("git-status-working", "working: " + self.status_string(working))
 
     def status_string(self, statuses):
         s = sublime.load_settings("Git.sublime-settings")
