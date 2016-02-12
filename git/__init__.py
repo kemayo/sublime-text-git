@@ -206,7 +206,7 @@ class CommandThread(threading.Thread):
                 env=env)
             output = proc.communicate(self.stdin)[0]
             if self.error_suppresses_output and proc.returncode is not None and proc.returncode > 0:
-                output = ''
+                output = False
             if not output:
                 output = ''
             output = _make_text_safeish(output, self.fallback_encoding)
