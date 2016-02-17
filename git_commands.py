@@ -53,29 +53,29 @@ if reloaded:
 # Now actually import all the commands so they'll be visible to Sublime
 try:
     # Python 3
-    from .git.core import *
+    from .git.core import *  # noqa
 
-    from .git.add import *
-    from .git.annotate import *
-    from .git.commit import *
-    from .git.diff import *
-    from .git.flow import *
-    from .git.history import *
-    from .git.repo import *
-    from .git.stash import *
-    from .git.status import *
-    from .git.statusbar import *
+    from .git.add import *  # noqa
+    from .git.annotate import *  # noqa
+    from .git.commit import *  # noqa
+    from .git.diff import *  # noqa
+    from .git.flow import *  # noqa
+    from .git.history import *  # noqa
+    from .git.repo import *  # noqa
+    from .git.stash import *  # noqa
+    from .git.status import *  # noqa
+    from .git.statusbar import *  # noqa
 except (ImportError, ValueError):
     # Python 2
-    from git.core import *
+    from git.core import *  # noqa
 
-    from git.add import *
-    from git.annotate import *
-    from git.commit import *
-    from git.diff import *
-    from git.flow import *
-    from git.history import *
-    from git.repo import *
-    from git.stash import *
-    from git.status import *
-    from git.statusbar import *
+    from git.add import *  # noqa
+    from git.annotate import *  # noqa
+    from git.commit import *  # noqa
+    from git.diff import *  # noqa
+    from git.flow import *  # noqa
+    from git.history import *  # noqa
+    from git.repo import *  # noqa
+    from git.stash import *  # noqa
+    from git.status import *  # noqa
+    from git.statusbar import *  # noqa
