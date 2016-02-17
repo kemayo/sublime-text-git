@@ -298,7 +298,7 @@ class GitCommand(object):
         }
         output_file.run_command('git_scratch_output', args)
 
-    def scratch(self, output, title=False, position=None, **kwargs):
+    def scratch(self, output, title=False, focused_line=1, **kwargs):
         scratch_file = self.get_window().new_file()
         if title:
             scratch_file.set_name(title)
@@ -307,8 +307,7 @@ class GitCommand(object):
         scratch_file.set_read_only(True)
         self.record_git_root_to_view(scratch_file)
         scratch_file.settings().set('word_wrap', False)
-        if position:
-            sublime.set_timeout(lambda: scratch_file.set_viewport_position(position), 0)
+        scratch_file.run_command('goto_line', {'line': focused_line})
         return scratch_file
 
     def panel(self, output, **kwargs):
