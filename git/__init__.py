@@ -101,7 +101,10 @@ def _make_text_safeish(text, fallback_encoding, method='decode'):
     try:
         unitext = getattr(text, method)('utf-8')
     except (UnicodeEncodeError, UnicodeDecodeError):
-        unitext = getattr(text, method)(fallback_encoding)
+        try:
+            unitext = getattr(text, method)(fallback_encoding)
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            unitext = str(text)
     except AttributeError:
         # strongly implies we're already unicode, but just in case let's cast
         # to string
