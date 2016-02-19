@@ -3,3 +3,4 @@
 *.tmPreferences.cache
 .DS_Store
 package-metadata.json
+*.sublime-project
