@@ -143,6 +143,8 @@ class GitDiffBranch (GitWindowCommand):
     ignore_whitespace = False
     branches = []
     files = []
+    command = []
+    picked_file = ''
 
     def run(self, edit = None, ignore_whitespace = False):
         self.ignore_whitespace = ignore_whitespace;
@@ -181,9 +183,21 @@ class GitDiffBranch (GitWindowCommand):
         command = ['git', 'diff', '--cached', '--no-color', self.picked_branch]
         if self.ignore_whitespace:
             command += ['--ignore-all-space', '--ignore-blank-lines']
-        if picked > 0:
-            command += ['--', self.files[picked][0]]
         
+        if picked == 0:
+            self.run_command(command, self.diff_contents_done)
+        else:
+            self.picked_file = self.files[picked][0]
+            self.command = command
+            self.run_command(['git', 'rev-parse', '--show-toplevel'], self.show_toplevel_done)
+
+    def show_toplevel_done(self, result):
+        result = result.strip()
+        if not result:
+            sublime.status_message("Can't retrieve git toplevel")
+            return
+        command = self.command + ['--', result.rstrip('/') + '/' + self.picked_file.lstrip('/')]
+        print(command, result, result.rstrip('/'), self.picked_file.lstrip('/'))
         self.run_command(command, self.diff_contents_done)
 
     def diff_contents_done(self, result):
