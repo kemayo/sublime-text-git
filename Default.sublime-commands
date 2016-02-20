@@ -59,6 +59,21 @@
         "command": "git_diff_commit"
     }
     ,{
+        "caption": "Git: Diff Current File (Words)",
+        "command": "git_diff",
+        "args": { "word_diff": true }
+    }
+    ,{
+        "caption": "Git: Diff All Files (Words)",
+        "command": "git_diff_all",
+        "args": { "word_diff": true }
+    }
+    ,{
+        "caption": "Git: Diff Staged Files (Words)",
+        "command": "git_diff_commit",
+        "args": { "word_diff": true }
+    }
+    ,{
         "caption": "Git: Diff Current File (Ignore Whitespace)",
         "command": "git_diff",
         "args": { "ignore_whitespace": true }

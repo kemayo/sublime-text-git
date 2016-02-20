@@ -8,10 +8,12 @@ from . import git_root, GitTextCommand, GitWindowCommand, do_when, goto_xy
 
 
 class GitDiff (object):
-    def run(self, edit=None, ignore_whitespace=False):
+    def run(self, edit=None, ignore_whitespace=False, word_diff=False):
         command = ['git', 'diff', '--no-color']
         if ignore_whitespace:
             command.extend(('--ignore-all-space', '--ignore-blank-lines'))
+        if word_diff:
+            command.append('--word-diff')
         command.extend(('--', self.get_file_name()))
         self.run_command(command, self.diff_done)
 
@@ -28,10 +30,12 @@ class GitDiff (object):
 
 
 class GitDiffCommit (object):
-    def run(self, edit=None, ignore_whitespace=False):
+    def run(self, edit=None, ignore_whitespace=False, word_diff=False):
         command = ['git', 'diff', '--cached', '--no-color']
         if ignore_whitespace:
             command.extend(('--ignore-all-space', '--ignore-blank-lines'))
+        if word_diff:
+            command.append('--word-diff')
         self.run_command(command, self.diff_done)
 
     def diff_done(self, result):
