@@ -40,7 +40,7 @@
 	,"statusbar_status_symbols" : {"modified": "≠", "added": "+", "deleted": "×", "untracked": "?", "conflicts": "‼", "renamed":"R", "copied":"C", "clean": "✓", "separator": " "}
 
 	// e.g. "Packages/Git/syntax/Git Commit Message.tmLanguage"
-	,"diff_syntax": "Packages/Diff/Diff.tmLanguage"
+	,"diff_syntax": "Packages/Git/syntax/Git Diff.sublime-syntax"
 
 	// Rulers for commit view
 	,"commit_rulers": [70]

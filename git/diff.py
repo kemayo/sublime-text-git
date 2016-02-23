@@ -4,7 +4,7 @@ import sublime
 import sublime_plugin
 import os
 import re
-from . import git_root, GitTextCommand, GitWindowCommand, do_when, goto_xy, plugin_file
+from . import git_root, GitTextCommand, GitWindowCommand, do_when, goto_xy
 
 
 class GitDiff (object):
@@ -22,7 +22,7 @@ class GitDiff (object):
             self.panel("No output")
             return
         s = sublime.load_settings("Git.sublime-settings")
-        syntax = plugin_file("syntax/Git Diff.sublime-syntax")
+        syntax = s.get("diff_syntax", "Packages/Git/syntax/Git Diff.sublime-syntax")
         if s.get('diff_panel'):
             view = self.panel(result, syntax=syntax)
         else:
@@ -43,7 +43,7 @@ class GitDiffCommit (object):
             self.panel("No output")
             return
         s = sublime.load_settings("Git.sublime-settings")
-        syntax = plugin_file("syntax/Git Diff.sublime-syntax")
+        syntax = s.get("diff_syntax", "Packages/Git/syntax/Git Diff.sublime-syntax")
         self.scratch(result, title="Git Diff", syntax=syntax)
 
 
