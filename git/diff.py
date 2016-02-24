@@ -24,7 +24,7 @@ class GitDiff (object):
         if s.get('diff_panel'):
             view = self.panel(result, syntax=syntax)
         else:
-            view = self.scratch(result, title="Git Diff", syntax=syntax)
+            view = self.scratch(result, title="Git Diff", syntax=syntax, line_numbers=False)
 
         # Store the git root directory in the view so we can resolve relative paths
         # when the user wants to navigate to the source file.
@@ -44,7 +44,7 @@ class GitDiffCommit (object):
             return
         s = sublime.load_settings("Git.sublime-settings")
         syntax = s.get("diff_syntax", "Packages/Diff/Diff.tmLanguage")
-        self.scratch(result, title="Git Diff", syntax=syntax)
+        self.scratch(result, title="Git Diff", syntax=syntax, line_numbers=False)
 
 
 class GitDiffCommand(GitDiff, GitTextCommand):
@@ -206,4 +206,4 @@ class GitDiffBranch (GitWindowCommand):
             return
         s = sublime.load_settings("Git.sublime-settings")
         syntax = s.get("diff_syntax", "Packages/Diff/Diff.tmLanguage")
-        self.scratch(result, title="Git Diff", syntax=syntax)
+        self.scratch(result, title="Git Diff", syntax=syntax, line_numbers=False)
