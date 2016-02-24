@@ -24,7 +24,7 @@ class GitDiff (object):
         if s.get('diff_panel'):
             view = self.panel(result, syntax=syntax)
         else:
-            view = self.scratch(result, title="Git Diff", syntax=syntax, line_numbers=False)
+            view = self.scratch(result, title="Git Diff", syntax=syntax)
 
         # Store the git root directory in the view so we can resolve relative paths
         # when the user wants to navigate to the source file.
@@ -42,9 +42,8 @@ class GitDiffCommit (object):
         if not result.strip():
             self.panel("No output")
             return
-        s = sublime.load_settings("Git.sublime-settings")
         syntax = s.get("diff_syntax", "Packages/Diff/Diff.tmLanguage")
-        self.scratch(result, title="Git Diff", syntax=syntax, line_numbers=False)
+        self.scratch(result, title="Git Diff", syntax=syntax)
 
 
 class GitDiffCommand(GitDiff, GitTextCommand):
@@ -139,7 +138,7 @@ class GitGotoDiff(sublime_plugin.TextCommand):
                 lambda: goto_xy(new_view, self.goto_line, self.column))
 
 
-class GitDiffBranch (GitWindowCommand):
+class GitDiffBranch (GitDiffAllCommand):
     ignore_whitespace = False
     branches = []
     files = []
@@ -185,7 +184,7 @@ class GitDiffBranch (GitWindowCommand):
             command += ['--ignore-all-space', '--ignore-blank-lines']
         
         if picked == 0:
-            self.run_command(command, self.diff_contents_done)
+            self.run_command(command, self.diff_done)
         else:
             self.picked_file = self.files[picked][0]
             self.command = command
@@ -198,12 +197,4 @@ class GitDiffBranch (GitWindowCommand):
             return
         command = self.command + ['--', result.rstrip('/') + '/' + self.picked_file.lstrip('/')]
         print(command, result, result.rstrip('/'), self.picked_file.lstrip('/'))
-        self.run_command(command, self.diff_contents_done)
-
-    def diff_contents_done(self, result):
-        if not result.strip():
-            self.panel("No output")
-            return
-        s = sublime.load_settings("Git.sublime-settings")
-        syntax = s.get("diff_syntax", "Packages/Diff/Diff.tmLanguage")
-        self.scratch(result, title="Git Diff", syntax=syntax, line_numbers=False)
+        self.run_command(command, self.diff_done)
