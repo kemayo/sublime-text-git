@@ -21,6 +21,9 @@
                             ,{ "caption": "Add", "command": "git_raw", "args": { "command": "git add", "append_current_file": true } }
                             ,{ "caption": "Add Selected Hunk", "command": "git_add_selected_hunk" }
                             ,{ "caption": "-" }
+                            ,{ "caption": "Move/Rename...", "command": "git_mv"}
+                            ,{ "caption": "Remove/Delete", "command": "git_raw", "args": { "command": "git rm", "append_current_file": true } }
+                            ,{ "caption": "-" }
                             ,{ "caption": "Reset", "command": "git_raw", "args": { "command": "git reset HEAD", "append_current_file": true, "show_in": "suppress" } }
                             ,{ "caption": "Checkout (Discard Changes)", "command": "git_raw", "args": { "command": "git checkout", "append_current_file": true } }
                             ,{ "caption": "-" }
@@ -54,8 +57,6 @@
                             ,{ "caption": "Amend Last Commit", "command": "git_commit_amend" }
                             ,{ "caption": "-" }
                             ,{ "caption": "Open...", "command": "git_open_file" }
-                            ,{ "caption": "Open Config", "command": "git_open_config_file" }
-                            ,{ "caption": "Open Url", "command": "git_open_config_url", "args": { "url_param": "remote.origin.url" } }
                         ]
                     }
                     ,{
@@ -66,7 +67,6 @@
                             ,{ "caption": "Pop", "command": "git_raw", "args": { "command": "git stash pop", "may_change_files": true } }
                             ,{ "caption": "Apply", "command": "git_stash_apply" }
                             ,{ "caption": "Drop", "command": "git_stash_drop" }
-                            ,{ "caption": "List", "command": "git_stash_list" }
                         ]
                     }
                     ,{ "caption": "-" }

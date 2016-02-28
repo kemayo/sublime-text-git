@@ -82,14 +82,6 @@
         "command": "git_raw", "args": { "command": "git difftool", "may_change_files": false }
     }
     ,{
-        "caption": "Git: Diff Tool Current File Staged",
-        "command": "git_diff_tool_commit"
-    }
-    ,{
-        "caption": "Git: Diff Tool Staged",
-        "command": "git_diff_tool_commit_all"
-    }
-    ,{
         "caption": "Git: Commit",
         "command": "git_commit"
     }
@@ -118,10 +110,6 @@
         "command": "git_branch"
     }
     ,{
-        "caption": "Git: Track Remote Branch",
-        "command": "git_track_remote_branch"
-    }
-    ,{
         "caption": "Git: Merge Branch",
         "command": "git_merge"
     }
@@ -144,10 +132,6 @@
     ,{
         "caption": "Git: Stash Drop",
         "command": "git_stash_drop"
-    }
-    ,{
-        "caption": "Git: Stash List",
-        "command": "git_stash_list"
     }
     ,{
         "caption": "Git: Add Current File",
@@ -178,10 +162,6 @@
         "command": "git_raw", "args": { "command": "git pull --rebase" }
     }
     ,{
-        "caption": "Git: Pull Using Rebase",
-        "command": "git_pull_rebase"
-    }
-    ,{
         "caption": "Git: Pull Current Branch",
         "command": "git_pull_current_branch"
     }
@@ -206,7 +186,7 @@
         "command": "git_custom"
     }
     ,{
-        "caption": "Git Flow: Feature Start",
+        "caption": "Git Flow: Feature Start", 
         "command": "git_flow_feature_start"
     }
     ,{
@@ -258,16 +238,8 @@
         "command": "git_gui"
     }
     ,{
-        "caption": "Git: Gitk This File",
-        "command": "git_gitk_this_file"
-    }
-    ,{
         "caption": "Git: Gitk",
         "command": "git_gitk"
-    }
-    ,{
-        "caption": "Git: Gitk All",
-        "command": "git_gitk_all"
     }
     ,{
         "caption": "Git: Commit history",
@@ -276,5 +248,17 @@
     ,{
         "caption": "Git: Update Project Ignored Files",
         "command": "git_update_ignore"
+    }
+    ,{
+        "caption": "Git: Move Current File",
+        "command": "git_mv"
+    }
+    ,{
+        "caption": "Git: Rename/Move Current File",
+        "command": "git_mv", "args": { "rename": true }
+    }
+    ,{
+        "caption": "Git: Remove/Delete Current File",
+        "command": "git_raw", "args": { "command": "git rm", "append_current_file": true }
     }
 ]
