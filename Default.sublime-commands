@@ -98,8 +98,12 @@
         "command": "git_commit_amend"
     }
     ,{
-        "caption": "Git: Quick Commit",
+        "caption": "Git: Quick Commit (current file)",
         "command": "git_quick_commit"
+    }
+    ,{
+        "caption": "Git: Quick Commit (repo)",
+        "command": "git_quick_commit", "args": { "target": "." }
     }
     ,{
         "caption": "Git: Status",

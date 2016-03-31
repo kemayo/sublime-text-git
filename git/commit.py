@@ -14,15 +14,17 @@ history = []
 
 
 class GitQuickCommitCommand(GitTextCommand):
-    def run(self, edit):
+    def run(self, edit, target=None):
+        if not target:
+            target = self.get_file_name()
         self.get_window().show_input_panel("Message", "",
-            self.on_input, None, None)
+            functools.partial(self.on_input, target), None, None)
 
-    def on_input(self, message):
+    def on_input(self, target, message):
         if message.strip() == "":
             self.panel("No commit message provided")
             return
-        self.run_command(['git', 'add', self.get_file_name()],
+        self.run_command(['git', 'add', target],
             functools.partial(self.add_done, message))
 
     def add_done(self, message, result):
