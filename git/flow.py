@@ -10,6 +10,12 @@ class GitFlowCommand(GitWindowCommand):
         if s.get('flow'):
             return True
         return False
+    
+    def is_notag(self):
+        s = sublime.load_settings("Git.sublime-settings")
+        if s.get('flow-notag'):
+            return True
+        return False
 
 
 class GitFlowFeatureStartCommand(GitFlowCommand):
@@ -63,7 +69,14 @@ class GitFlowReleaseFinishCommand(GitFlowCommand):
         if picked_release.startswith("*"):
             picked_release = picked_release.strip("*")
         picked_release = picked_release.strip()
-        self.run_command(['git', 'flow', 'release', 'finish', picked_release])
+        if self.is_notag():
+            self.run_command(['git', 'flow', 'release', 'finish', '-n', picked_release])
+        else:
+            self.picked_release = picked_release
+            self.get_window().show_input_panel('Enter Tag message:', '', self.tag_message_done, None, None)
+    
+    def tag_message_done(self, tag_message):
+        self.run_command(['git', 'flow', 'release', 'finish', '-m', tag_message, self.picked_release])
 
 
 class GitFlowHotfixStartCommand(GitFlowCommand):
@@ -90,4 +103,11 @@ class GitFlowHotfixFinishCommand(GitFlowCommand):
         if picked_hotfix.startswith("*"):
             picked_hotfix = picked_hotfix.strip("*")
         picked_hotfix = picked_hotfix.strip()
-        self.run_command(['git', 'flow', 'hotfix', 'finish', picked_hotfix])
+        if self.is_notag():
+            self.run_command(['git', 'flow', 'hotfix', 'finish', '-n', picked_hotfix])
+        else:
+            self.picked_hotfix = picked_hotfix
+            self.get_window().show_input_panel('Enter Tag message:', '', self.tag_message_done, None, None)
+
+    def tag_message_done(self, tag_message):
+        self.run_command(['git', 'flow', 'hotfix', 'finish', '-m', tag_message, self.picked_hotfix])
