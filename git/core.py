@@ -89,35 +89,6 @@ class GitGitkCommand(GitTextCommand):
         self.run_command(command)
 
 
-class GitUpdateIgnoreCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
-        data = self.view.window().project_data()
-        project_file_name = self.view.window().project_file_name()
-        for folder in data['folders']:
-            path = folder['path']
-            if project_file_name:
-                path = os.path.join(os.path.dirname(project_file_name), path)
-            gitignore = os.path.join(path, ".gitignore")
-            print("gitignore path", gitignore)
-            if (os.path.exists(gitignore)):
-                with open(gitignore) as gitignore_file:
-                    if "folder_exclude_patterns" not in folder:
-                        folder["folder_exclude_patterns"] = []
-                    if "file_exclude_patterns" not in folder:
-                        folder["file_exclude_patterns"] = []
-                    for pattern in gitignore_file:
-                        pattern = pattern.strip()
-                        if len(pattern) == 0 or pattern[0] == '#':
-                            continue
-                        elif os.path.isdir(os.path.join(path, pattern)):
-                            if pattern not in folder["folder_exclude_patterns"]:
-                                folder["folder_exclude_patterns"].append(pattern)
-                        else:
-                            if pattern not in folder["file_exclude_patterns"]:
-                                folder["file_exclude_patterns"].append(pattern)
-        self.view.window().set_project_data(data)
-
-
 # called by GitWindowCommand
 class GitScratchOutputCommand(sublime_plugin.TextCommand):
     def run(self, edit, output='', output_file=None, clear=False):
