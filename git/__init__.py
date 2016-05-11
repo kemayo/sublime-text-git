@@ -182,8 +182,9 @@ class CommandThread(threading.Thread):
         output = ''
         callback = self.on_done
         try:
+            cwd = None
             if self.working_dir != "":
-                os.chdir(self.working_dir)
+                cwd = self.working_dir
             # Windows needs startupinfo in order to start process in background
             startupinfo = None
             if os.name == 'nt':
@@ -203,7 +204,7 @@ class CommandThread(threading.Thread):
                 stdout=self.stdout, stderr=subprocess.STDOUT,
                 stdin=subprocess.PIPE, startupinfo=startupinfo,
                 shell=shell, universal_newlines=False,
-                env=env)
+                env=env, cwd=cwd)
             output = proc.communicate(self.stdin)[0]
             if self.error_suppresses_output and proc.returncode is not None and proc.returncode > 0:
                 output = False
