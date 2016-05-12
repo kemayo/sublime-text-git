@@ -182,10 +182,6 @@
         "command": "git_raw", "args": { "command": "git pull --rebase" }
     }
     ,{
-        "caption": "Git: Pull Using Rebase",
-        "command": "git_pull_rebase"
-    }
-    ,{
         "caption": "Git: Pull Current Branch",
         "command": "git_pull_current_branch"
     }

@@ -150,11 +150,6 @@ class GitCheckoutTagCommand(GitWindowCommand):
         self.run_command(['git', 'checkout', "tags/%s" % picked_tag])
 
 
-class GitPullRebaseCommand(GitWindowCommand):
-    def run(self):
-        self.run_command(['git', 'pull', '--rebase'], callback=self.panel)
-
-
 class GitPullCurrentBranchCommand(GitWindowCommand):
     command_to_run_after_describe = 'pull'
 
