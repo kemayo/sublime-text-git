@@ -103,7 +103,7 @@
     }
     ,{
         "caption": "Git: Quick Commit (repo)",
-        "command": "git_quick_commit", "args": { "target": "." }
+        "command": "git_quick_commit", "args": { "target": "*" }
     }
     ,{
         "caption": "Git: Status",

@@ -24,7 +24,12 @@ class GitQuickCommitCommand(GitTextCommand):
         if message.strip() == "":
             self.panel("No commit message provided")
             return
-        self.run_command(['git', 'add', target],
+        command = ['git', 'add']
+        if target == '*':
+            command.append('--all')
+        else:
+            command.extend(('--', target))
+        self.run_command(command,
             functools.partial(self.add_done, message))
 
     def add_done(self, message, result):
