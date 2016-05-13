@@ -37,7 +37,8 @@ class GitUpdateIgnoreCommand(GitTextCommand):
                 ['git', 'clean', '-ndX'],
                 callback=callback,
                 working_dir=path,
-                error_suppresses_output=True
+                error_suppresses_output=True,
+                show_status=False
             )
 
     def ignored_files_found(self, result, folder_index):
@@ -56,7 +57,7 @@ class GitUpdateIgnoreCommand(GitTextCommand):
         paths = [line.replace('Would remove ', '') for line in result.strip().split('\n')]
         for path in paths:
             if os.path.isdir(os.path.join(folder['path'], path)):
-                exclude_folders.add(path)
+                exclude_folders.add(path.rstrip('\\/'))
             else:
                 exclude_files.add(path)
 
