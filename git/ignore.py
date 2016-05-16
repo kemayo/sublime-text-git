@@ -24,13 +24,16 @@ class GitIgnoreEventListener(sublime_plugin.EventListener):
 
 
 class GitUpdateIgnoreCommand(GitTextCommand):
+    def path(self, folderpath):
+        project_file_name = self.view.window().project_file_name()
+        if project_file_name:
+            return os.path.join(os.path.dirname(project_file_name), folderpath)
+        return folderpath
+
     def run(self, edit):
         data = self.view.window().project_data()
-        project_file_name = self.view.window().project_file_name()
         for index, folder in enumerate(data['folders']):
-            path = folder['path']
-            if project_file_name:
-                path = os.path.join(os.path.dirname(project_file_name), path)
+            path = self.path(folder['path'])
 
             callback = functools.partial(self.ignored_files_found, folder_index=index)
             self.run_command(
@@ -51,12 +54,14 @@ class GitUpdateIgnoreCommand(GitTextCommand):
         if not folder:
             return
 
+        root = self.path(folder['path'])
+
         exclude_folders = set()
         exclude_files = set()
 
         paths = [line.replace('Would remove ', '') for line in result.strip().split('\n')]
         for path in paths:
-            if os.path.isdir(os.path.join(folder['path'], path)):
+            if os.path.isdir(os.path.join(root, path)):
                 exclude_folders.add(path.rstrip('\\/'))
             else:
                 exclude_files.add(path)
