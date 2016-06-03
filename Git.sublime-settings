@@ -46,5 +46,5 @@
 	,"commit_rulers": [70]
 
 	// Watch for gitignore changes?
-	,"gitignore_sync": true
+	,"gitignore_sync": false
 }
