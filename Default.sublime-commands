@@ -277,4 +277,8 @@
         "caption": "Git: Update Project Ignored Files",
         "command": "git_update_ignore"
     }
+    ,{
+        "caption": "Git: Assume Unchanged",
+        "command": "git_update_index_assume_unchanged"
+    }
 ]
