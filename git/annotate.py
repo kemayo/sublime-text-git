@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals, print_function, divisi
 import tempfile
 import re
 import os
+import codecs
 
 import sublime
 import sublime_plugin
@@ -66,7 +67,7 @@ class GitAnnotateCommand(GitTextCommand):
         root = git_root(self.get_working_dir())
         repo_file = os.path.relpath(self.view.file_name(), root).replace('\\', '/')  # always unix
         self.run_command(['git', 'show', 'HEAD:{0}'.format(repo_file)], show_status=False, no_save=True, callback=self.compare_tmp)
- 
+
     def compare_tmp(self, result, stdout=None):
         with open(self.buffer_tmp, 'wb') as f:
             contents = self.get_view_contents()
