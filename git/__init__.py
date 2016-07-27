@@ -153,6 +153,11 @@ GIT = find_binary('git')
 GITK = find_binary('gitk')
 
 
+def output_error_message(output, *args, **kwargs):
+    # print('error', output, args, kwargs)
+    sublime.error_message(output)
+
+
 class CommandThread(threading.Thread):
     command_lock = threading.Lock()
 
@@ -217,7 +222,7 @@ class CommandThread(threading.Thread):
             else:
                 output = e.returncode
         except OSError as e:
-            callback = sublime.error_message
+            callback = output_error_message
             if e.errno == 2:
                 global _has_warned
                 if not _has_warned:
