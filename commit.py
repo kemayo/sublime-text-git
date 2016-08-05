@@ -1,6 +1,10 @@
 import functools
 import tempfile
 import os
+try:
+  import urllib.request as urllib2
+except:
+  import urllib2
 
 import sublime
 import sublime_plugin
@@ -17,8 +21,15 @@ class GitQuickCommitCommand(GitTextCommand):
 
     def on_input(self, message):
         if message.strip() == "":
-            self.panel("No commit message provided")
-            return
+            s = sublime.load_settings("Git.sublime-settings")
+            if  s.get("fill_empty_commits"):
+                req = urllib2.Request('http://whatthecommit.com/index.txt',
+                headers={'User-Agent': 'Sublime Text 2 - Random Message'})
+                res = urllib2.urlopen(req, timeout=5)
+                message =  res.read().strip()
+            else:
+                self.panel("No commit message provided")
+                return
         self.run_command(['git', 'add', self.get_file_name()],
             functools.partial(self.add_done, message))
 
