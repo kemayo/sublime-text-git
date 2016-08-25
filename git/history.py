@@ -238,9 +238,17 @@ class GitDocumentCommand(GitBlameCommand):
 class GitGotoCommit(GitTextCommand):
     def run(self, edit):
         view = self.view
-        line = view.substr(view.line(view.sel()[0].a))
-        commit = line.split(" ")[0]
-        if not commit or commit == "00000000":
+        selection = view.sel()[0]
+        if self.view.score_selector(selection.a, "text.git-blame") == 0:
+            return
+        line = view.line(view.sel()[0].a)
+        hashes = self.view.find_by_selector("string.sha.git-blame")
+        commit = False
+        for region in hashes:
+            if line.contains(region):
+                commit = view.substr(region)
+                break
+        if not commit or commit.strip("0") == "":
             return
         working_dir = view.settings().get("git_root_dir")
         self.run_command(['git', 'show', commit], self.show_done, working_dir=working_dir)
