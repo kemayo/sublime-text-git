@@ -139,6 +139,23 @@ class GitShowAllCommand(GitShow, GitWindowCommand):
     pass
 
 
+class GitShowCommitCommand(GitWindowCommand):
+    def run(self, edit=None):
+        self.window.show_input_panel("Commit to show:", "", self.input_done, None, None)
+
+    def input_done(self, commit):
+        commit = commit.strip()
+
+        self.run_command(['git', 'show', commit, '--'], self.show_done, commit=commit)
+
+    def show_done(self, result, commit):
+        if result.startswith('fatal:'):
+            self.panel(result)
+            return
+        self.scratch(result, title="Git Commit: %s" % commit,
+                     syntax=plugin_file("syntax/Git Commit View.tmLanguage"))
+
+
 class GitGraph(object):
     def run(self, edit=None):
         filename = self.get_file_name()

@@ -194,8 +194,12 @@
         "command": "git_push_current_branch"
     }
     ,{
-        "caption": "Git: Show Current File",
+        "caption": "Git: Show Previous Version of Current File",
         "command": "git_show"
+    }
+    ,{
+        "caption": "Git: Show Commit By Hash",
+        "command": "git_show_commit"
     }
     ,{
         "caption": "Git: Toggle Annotations",
