@@ -122,7 +122,7 @@ class GitShow(object):
         # the commit hash is the last thing on the first line, in brackets
         ref = item[0].split(' ')[-1].strip('()')
         self.run_command(
-            ['git', 'show', '%s:%s' % (ref, self.get_relative_file_name())],
+            ['git', 'show', '%s:%s' % (ref, self.get_relative_file_path())],
             self.details_done,
             ref=ref)
 

@@ -217,11 +217,13 @@ class CommandThread(threading.Thread):
                 output = ''
             output = _make_text_safeish(output, self.fallback_encoding)
         except subprocess.CalledProcessError as e:
+            print("CalledProcessError", e)
             if self.error_suppresses_output:
                 output = ''
             else:
                 output = e.returncode
         except OSError as e:
+            print("OSError", e)
             callback = output_error_message
             if e.errno == 2:
                 global _has_warned
@@ -337,16 +339,27 @@ class GitCommand(object):
             root = self.active_view().settings().get("git_root_dir")
         view.settings().set("git_root_dir", root)
 
+    def active_file_path(self):
+        view = self.active_view()
+        if view and view.file_name() and len(view.file_name()) > 0:
+            return view.file_name()
+
+    def active_file_name(self):
+        path = self.active_file_path()
+        if path:
+            return os.path.basename(path)
+
+    def relative_active_file_path(self):
+        working_dir = self.get_working_dir()
+        file_path = working_dir.replace(git_root(working_dir), '')[1:]
+        file_name = os.path.join(file_path, self.active_file_name())
+        return file_name.replace('\\', '/')  # windows issues
+
 
 # A base for all git commands that work with the entire repository
 class GitWindowCommand(GitCommand, sublime_plugin.WindowCommand):
     def active_view(self):
         return self.window.active_view()
-
-    def _active_file_name(self):
-        view = self.active_view()
-        if view and view.file_name() and len(view.file_name()) > 0:
-            return view.file_name()
 
     @property
     def fallback_encoding(self):
@@ -358,21 +371,21 @@ class GitWindowCommand(GitCommand, sublime_plugin.WindowCommand):
     # that the user intends Git commands to run against when there's only
     # only one.
     def is_enabled(self):
-        if self._active_file_name() or len(self.window.folders()) == 1:
+        if self.active_file_path() or len(self.window.folders()) == 1:
             return bool(git_root(self.get_working_dir()))
         return False
 
     def get_file_name(self):
         return ''
 
-    def get_relative_file_name(self):
+    def get_relative_file_path(self):
         return ''
 
     # If there is a file in the active view use that file's directory to
     # search for the Git root.  Otherwise, use the only folder that is
     # open.
     def get_working_dir(self):
-        file_name = self._active_file_name()
+        file_name = self.active_file_path()
         if file_name:
             return os.path.realpath(os.path.dirname(file_name))
         try:  # handle case with no open folder
@@ -396,13 +409,10 @@ class GitTextCommand(GitCommand, sublime_plugin.TextCommand):
         return False
 
     def get_file_name(self):
-        return os.path.basename(self.view.file_name())
+        return self.active_file_name()
 
-    def get_relative_file_name(self):
-        working_dir = self.get_working_dir()
-        file_path = working_dir.replace(git_root(working_dir), '')[1:]
-        file_name = os.path.join(file_path, self.get_file_name())
-        return file_name.replace('\\', '/')  # windows issues
+    def get_relative_file_path(self):
+        return self.relative_active_file_path()
 
     def get_working_dir(self):
         file_name = self.view.file_name()
