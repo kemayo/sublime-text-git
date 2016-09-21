@@ -6,7 +6,7 @@ import re
 import sublime
 import sublime_plugin
 from . import GitTextCommand, GitWindowCommand, plugin_file
-
+MAX_LINES_LOG = 10
 
 class GitBlameCommand(GitTextCommand):
     def run(self, edit):
@@ -59,11 +59,16 @@ class GitLog(object):
         # the ASCII bell (\a) is just a convenient character I'm pretty sure
         # won't ever come up in the subject of the commit (and if it does then
         # you positively deserve broken output...)
-        # 9000 is a pretty arbitrarily chosen limit; picked entirely because
-        # it's about the size of the largest repo I've tested this on... and
-        # there's a definite hiccup when it's loading that
         command = ['git', 'log', '--no-color', '--pretty=%s (%h)\a%an <%aE>\a%ad (%ar)',
-            '--date=local', '--max-count=9000', '--follow' if follow else None]
+            '--date=local', '--max-count={}'.format(MAX_LINES_LOG), '--follow' if follow else None]
+        command.extend(args)
+        self.run_command(
+            command,
+            self.log_done)
+
+    def continue_log(self, from_hash,  follow, *args):
+        command = ['git', 'log', from_hash, '--no-color', '--pretty=%s (%h)\a%an <%aE>\a%ad (%ar)',
+            '--date=local', '--max-count=10', '--follow' if follow else None]
         command.extend(args)
         self.run_command(
             command,
@@ -71,6 +76,10 @@ class GitLog(object):
 
     def log_done(self, result):
         self.results = [r.split('\a', 2) for r in result.strip().split('\n')]
+        if len(self.results) == MAX_LINES_LOG:
+            item = self.results[MAX_LINES_LOG - 1]
+            ref = item[0].split(' ')[-1].strip('()')
+            self.results.append( ["Continue from ({})".format(ref),"",""])
         self.quick_panel(self.results, self.log_panel_done)
 
     def log_panel_done(self, picked):
@@ -79,7 +88,11 @@ class GitLog(object):
         item = self.results[picked]
         # the commit hash is the last thing on the first line, in brackets
         ref = item[0].split(' ')[-1].strip('()')
-        self.log_result(ref)
+        if item[0].split(' ')[0] == "Continue":
+            fn = self.get_file_name()
+            return self.continue_log(ref, fn != '', '--', fn)
+        else:
+            self.log_result(ref)
 
     def log_result(self, ref):
         # I'm not certain I should have the file name here; it restricts the
