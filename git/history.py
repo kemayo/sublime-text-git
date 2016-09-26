@@ -256,10 +256,15 @@ class GitGotoCommit(GitTextCommand):
     def run(self, edit):
         view = self.view
         selection = view.sel()[0]
-        if self.view.score_selector(selection.a, "text.git-blame") == 0:
+        if not (
+            self.view.match_selector(selection.a, "text.git-blame")
+            or self.view.match_selector(selection.a, "text.git-graph")
+        ):
             return
+
+        # Sublime is missing a "find scope in region" API, so we piece one together here:
         line = view.line(view.sel()[0].a)
-        hashes = self.view.find_by_selector("string.sha.git-blame")
+        hashes = self.view.find_by_selector("string.sha")
         commit = False
         for region in hashes:
             if line.contains(region):
