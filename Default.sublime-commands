@@ -39,6 +39,14 @@
         "command": "git_log_all"
     }
     ,{
+        "caption": "Git: View Commits by Hash IDs from Current Selections",
+        "command": "git_log_by_hash_id_from_sels"
+    }
+    ,{
+        "caption": "Git: View Commits by Hash IDs from Current Lines",
+        "command": "git_log_by_hash_id_from_lines"
+    }
+    ,{
         "caption": "Git: Graph Current File",
         "command": "git_graph"
     }

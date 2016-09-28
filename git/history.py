@@ -2,10 +2,12 @@ from __future__ import absolute_import, unicode_literals, print_function, divisi
 
 import functools
 import re
+import os
+import os.path
 
 import sublime
 import sublime_plugin
-from . import GitTextCommand, GitWindowCommand, plugin_file
+from . import GitTextCommand, GitWindowCommand, plugin_file, git_root
 
 
 class GitBlameCommand(GitTextCommand):
@@ -101,6 +103,41 @@ class GitLogCommand(GitLog, GitTextCommand):
 class GitLogAllCommand(GitLog, GitWindowCommand):
     pass
 
+class GitLogMultiCommand(GitLog):
+    def log_results(self, refs):
+        for ref in refs:
+            self.log_result(ref)
+
+class GitLogMultiTextCommand(GitTextCommand):
+    def get_working_dir(self):
+        path = self.view.settings().get("git_log_graph_location")
+        return os.path.realpath(os.path.dirname(path)) if path else None 
+    def get_file_name(self):
+        return os.path.basename(self.view.settings().get("git_log_graph_location"))
+    def is_enabled(self):
+        return bool(git_root(self.get_working_dir()))
+
+class GitLogByHashIdFromSelsCommand(GitLogMultiCommand, GitLogMultiTextCommand):
+    def run(self, edit=None):
+        refs = []
+        view = self.active_view();
+        for s in view.sel():
+            if s.empty():
+                s = view.word(s)
+            refs.append(view.substr(s))
+        return self.log_results(refs)
+
+class GitLogByHashIdFromLinesCommand(GitLogMultiCommand, GitLogMultiTextCommand):
+    def run(self, edit=None):
+        refs = []
+        view = self.active_view();
+        for s in view.sel():
+            s = view.line(s)
+            text = view.substr(s)
+            mm = re.search(r' (\w+) - ', text)
+            if mm:
+                refs.append(mm.group(1))
+        return self.log_results(refs)
 
 class GitShow(object):
     def run(self, edit=None):
@@ -165,7 +202,9 @@ class GitGraph(object):
         )
 
     def log_done(self, result):
-        self.scratch(result, title="Git Log Graph", syntax=plugin_file("syntax/Git Graph.tmLanguage"))
+        location = self.get_working_dir() + "/" + self.get_file_name()
+        view = self.scratch(result, title="Git Log Graph", syntax=plugin_file("syntax/Git Graph.tmLanguage"))
+        view.settings().set("git_log_graph_location", location)
 
 
 class GitGraphCommand(GitGraph, GitTextCommand):
