@@ -90,12 +90,12 @@ class GitGotoDiff(sublime_plugin.TextCommand):
 
             pt = v.line(pt - 1).a
 
-        hunk = re.match(r"^@@ -(\d+),(\d+) \+(\d+),(\d+) @@.*", hunk_line)
+        hunk = re.match(r"^@@ -(\d+)(,(\d+))? \+(\d+)(,(\d+))? @@.*", hunk_line)
         if not hunk:
             sublime.status_message("No hunk info")
             return
 
-        hunk_start_line = hunk.group(3)
+        hunk_start_line = hunk.group(4)
         self.goto_line = int(hunk_start_line) + line_offset - 1
 
         git_root_dir = v.settings().get("git_root_dir")
