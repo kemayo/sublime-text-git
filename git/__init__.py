@@ -307,13 +307,17 @@ class GitCommand(object):
         output_file.run_command('git_scratch_output', args)
 
     def scratch(self, output, title=False, focused_line=1, **kwargs):
+        # backup git root because it is failed to got later
+        # As new_file() will create new view and later active_view() is new view without git root
+        git_root = self.get_git_root()
+
         scratch_file = self.get_window().new_file()
         if title:
             scratch_file.set_name(title)
         scratch_file.set_scratch(True)
         self._output_to_view(scratch_file, output, **kwargs)
         scratch_file.set_read_only(True)
-        self.record_git_root_to_view(scratch_file)
+        self.record_git_root_to_view(scratch_file, git_root)
         scratch_file.settings().set('word_wrap', False)
         scratch_file.run_command('goto_line', {'line': focused_line})
         return scratch_file
@@ -330,14 +334,19 @@ class GitCommand(object):
     def quick_panel(self, *args, **kwargs):
         self.get_window().show_quick_panel(*args, **kwargs)
 
-    def record_git_root_to_view(self, view):
+    def get_git_root(self):
         # Store the git root directory in the view so we can resolve relative paths
         # when the user wants to navigate to the source file.
         if self.get_working_dir():
             root = git_root(self.get_working_dir())
         else:
             root = self.active_view().settings().get("git_root_dir")
-        view.settings().set("git_root_dir", root)
+        return root
+
+    def record_git_root_to_view(self, view, git_root):
+        if not git_root:
+            git_root = get_git_root()
+        view.settings().set("git_root_dir", git_root)
 
     def active_file_path(self):
         view = self.active_view()
