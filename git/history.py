@@ -17,10 +17,11 @@ class GitBlameCommand(GitTextCommand):
         # -M: retain blame when moving lines
         # -C: retain blame when copying lines between files
         command = ['git', 'blame', '-w', '-M', '-C']
+        line_ranges = [ self.get_lines(selection) for selection in self.view.sel() if not selection.empty() ]
 
-        lines = self.get_lines()
-        if lines:
-            command.extend(('-L', str(lines[0]) + ',' + str(lines[1])))
+        if line_ranges:
+            for line_range in line_ranges:
+                command.extend(('-L', str(line_range[0]) + ',' + str(line_range[1])))
             callback = self.blame_done
         else:
             callback = functools.partial(self.blame_done,
@@ -34,8 +35,7 @@ class GitBlameCommand(GitTextCommand):
         # line is 1 based
         return current_line + 1
 
-    def get_lines(self):
-        selection = self.view.sel()[0]  # todo: multi-select support?
+    def get_lines(self, selection):
         if selection.empty():
             return False
         # just the lines we have a selection on
@@ -295,10 +295,15 @@ class GitGotoCommit(GitTextCommand):
     def run(self, edit):
         view = self.view
         selection = view.sel()[0]
-        if self.view.score_selector(selection.a, "text.git-blame") == 0:
+        if not (
+            self.view.match_selector(selection.a, "text.git-blame")
+            or self.view.match_selector(selection.a, "text.git-graph")
+        ):
             return
+
+        # Sublime is missing a "find scope in region" API, so we piece one together here:
         line = view.line(view.sel()[0].a)
-        hashes = self.view.find_by_selector("string.sha.git-blame")
+        hashes = self.view.find_by_selector("string.sha")
         commit = False
         for region in hashes:
             if line.contains(region):
