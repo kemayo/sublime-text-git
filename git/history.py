@@ -255,29 +255,30 @@ class GitDocumentCommand(GitBlameCommand):
 class GitGotoCommit(GitTextCommand):
     def run(self, edit):
         view = self.view
-        selection = view.sel()[0]
-        if not (
-            self.view.match_selector(selection.a, "text.git-blame")
-            or self.view.match_selector(selection.a, "text.git-graph")
-        ):
-            return
 
         # Sublime is missing a "find scope in region" API, so we piece one together here:
-        line = view.line(view.sel()[0].a)
+        lines = [view.line(sel.a) for sel in view.sel()]
         hashes = self.view.find_by_selector("string.sha")
-        commit = False
+        commits = []
         for region in hashes:
-            if line.contains(region):
-                commit = view.substr(region)
-                break
-        if not commit or commit.strip("0") == "":
-            return
+            for line in lines:
+                if line.contains(region):
+                    commit = view.substr(region)
+                    if commit.strip("0"):
+                        commits.append(commit)
+                    break
+
         working_dir = view.settings().get("git_root_dir")
-        self.run_command(['git', 'show', commit], self.show_done, working_dir=working_dir)
+        for commit in commits:
+            self.run_command(['git', 'show', commit], self.show_done, working_dir=working_dir)
 
     def show_done(self, result):
         self.scratch(result, title="Git Commit View",
                      syntax=plugin_file("syntax/Git Commit View.tmLanguage"))
 
     def is_enabled(self):
-        return True
+        selection = self.view.sel()[0]
+        return (
+            self.view.match_selector(selection.a, "text.git-blame")
+            or self.view.match_selector(selection.a, "text.git-graph")
+        )
