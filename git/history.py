@@ -138,31 +138,34 @@ class GitLogByHashIdFromSelsCommand(GitLogMultiCommand, GitLogMultiTextCommand):
             hashes.append(view.substr(s))
         return self.log_results(hashes)
 
-def get_contained_region_in_lines(regions, lines):
-    if len(lines) <= 0:
-        return None
-    whole_lines = lines[0]
-    for line in lines:
-        whole_lines = whole_lines.cover(line)
-    contained_regions = []
-    for region in regions:
-        if not whole_lines.contains(region):
-            continue
-        for line in lines:
-            if line.contains(region):
-                contained_regions.append(region)
-                break
-    return contained_regions
-
 class GitLogByHashIdFromLinesCommand(GitLogMultiCommand, GitLogMultiTextCommand):
+    def get_contained_region_in_lines(self, regions, lines):
+        if len(lines) <= 0:
+            return None
+        whole_lines = lines[0]
+        for line in lines:
+            whole_lines = whole_lines.cover(line)
+        contained_regions = []
+        for region in regions:
+            if not whole_lines.contains(region):
+                continue
+            for line in lines:
+                if line.contains(region):
+                    contained_regions.append(region)
+                    break
+        return contained_regions
+
+    def get_sels(self):
+        return self.active_view().sel()
+
     def run(self, edit=None):
         view = self.active_view();
         regions = view.find_by_selector("string.sha")
         sel_lines = []
-        for sel in view.sel():
+        for sel in self.get_sels():
             sel_lines.append(view.line(sel))
         hashes = []
-        for region in get_contained_region_in_lines(regions, sel_lines):
+        for region in self.get_contained_region_in_lines(regions, sel_lines):
             hashes.append(view.substr(region))
         return self.log_results(hashes)
 
@@ -318,32 +321,6 @@ class GitDocumentCommand(GitBlameCommand):
                      syntax=plugin_file("syntax/Git Commit View.tmLanguage"))
 
 
-class GitGotoCommit(GitTextCommand):
-    def run(self, edit):
-        view = self.view
-        selection = view.sel()[0]
-        if not (
-            self.view.match_selector(selection.a, "text.git-blame")
-            or self.view.match_selector(selection.a, "text.git-graph")
-        ):
-            return
-
-        # Sublime is missing a "find scope in region" API, so we piece one together here:
-        line = view.line(view.sel()[0].a)
-        hashes = self.view.find_by_selector("string.sha")
-        commit = False
-        for region in hashes:
-            if line.contains(region):
-                commit = view.substr(region)
-                break
-        if not commit or commit.strip("0") == "":
-            return
-        working_dir = view.settings().get("git_root_dir")
-        self.run_command(['git', 'show', commit], self.show_done, working_dir=working_dir)
-
-    def show_done(self, result):
-        self.scratch(result, title="Git Commit View",
-                     syntax=plugin_file("syntax/Git Commit View.tmLanguage"))
-
-    def is_enabled(self):
-        return True
+class GitGotoCommit(GitLogByHashIdFromLinesCommand):
+    def get_sels(self):
+        return [self.active_view().sel()[0].a] # only for current single line
