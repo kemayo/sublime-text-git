@@ -110,34 +110,61 @@ class GitLogMultiCommand(GitLog):
 
 class GitLogMultiTextCommand(GitTextCommand):
     def get_working_dir(self):
+        # git_log_graph_location is used to show commit of the only file that lead to "Git: Graph Current File"
+        # git_root_dir is not work for above case
+        # also git_root_dir may be None when "Git: Graph All"
         path = self.view.settings().get("git_log_graph_location")
-        return os.path.realpath(os.path.dirname(path)) if path else None 
+        if path:
+            return os.path.realpath(os.path.dirname(path))
+        return self.view.settings().get("git_root_dir")
     def get_file_name(self):
-        return os.path.basename(self.view.settings().get("git_log_graph_location"))
+        path = self.view.settings().get("git_log_graph_location")
+        return os.path.basename(path) if path else None
     def is_enabled(self):
-        return bool(git_root(self.get_working_dir()))
+        view = self.view
+        selection = view.sel()[0]
+        return bool(
+            view.match_selector(selection.a, "text.git-blame")
+            or view.match_selector(selection.a, "text.git-graph")
+        )
 
 class GitLogByHashIdFromSelsCommand(GitLogMultiCommand, GitLogMultiTextCommand):
     def run(self, edit=None):
-        refs = []
+        hashes = []
         view = self.active_view();
         for s in view.sel():
             if s.empty():
                 s = view.word(s)
-            refs.append(view.substr(s))
-        return self.log_results(refs)
+            hashes.append(view.substr(s))
+        return self.log_results(hashes)
+
+def get_contained_region_in_lines(regions, lines):
+    if len(lines) <= 0:
+        return None
+    whole_lines = lines[0]
+    for line in lines:
+        whole_lines = whole_lines.cover(line)
+    contained_regions = []
+    for region in regions:
+        if not whole_lines.contains(region):
+            continue
+        for line in lines:
+            if line.contains(region):
+                contained_regions.append(region)
+                break
+    return contained_regions
 
 class GitLogByHashIdFromLinesCommand(GitLogMultiCommand, GitLogMultiTextCommand):
     def run(self, edit=None):
-        refs = []
         view = self.active_view();
-        for s in view.sel():
-            s = view.line(s)
-            text = view.substr(s)
-            mm = re.search(r' (\w+) - ', text)
-            if mm:
-                refs.append(mm.group(1))
-        return self.log_results(refs)
+        regions = view.find_by_selector("string.sha")
+        sel_lines = []
+        for sel in view.sel():
+            sel_lines.append(view.line(sel))
+        hashes = []
+        for region in get_contained_region_in_lines(regions, sel_lines):
+            hashes.append(view.substr(region))
+        return self.log_results(hashes)
 
 class GitShow(object):
     def run(self, edit=None):
