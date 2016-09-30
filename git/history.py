@@ -103,10 +103,57 @@ class GitLogCommand(GitLog, GitTextCommand):
 class GitLogAllCommand(GitLog, GitWindowCommand):
     pass
 
-class GitLogMultiCommand(GitLog):
+class GitLogMulti(GitLog):
     def log_results(self, refs):
         for ref in refs:
             self.log_result(ref)
+
+    def get_hash_region(self):
+        return None
+
+    def run(self, edit=None):
+        hashes = []
+        view = self.active_view();
+        for s in self.get_hash_region():
+            hs = view.substr(s);
+            if hs.strip("0"):
+                hashes.append(hs)
+        return self.log_results(hashes)
+
+class GitLogMultiFromSels(GitLogMulti):
+    def get_hash_region(self):
+        view = self.active_view()
+        return [(s if not s.empty else view.word(s)) for s in view.sel()]
+
+class GitLogMultiFromLines(GitLogMulti):
+    def get_contained_region_in_lines(self, regions, lines):
+        if len(lines) <= 0:
+            return None
+        whole_lines = lines[0]
+        for line in lines:
+            whole_lines = whole_lines.cover(line)
+        contained_regions = []
+        for region in regions:
+            if not whole_lines.contains(region):
+                continue
+            for line in lines:
+                if line.contains(region):
+                    contained_regions.append(region)
+                    break
+        return contained_regions
+
+    def get_sels(self):
+        return self.active_view().sel()
+
+    def get_hash_region(self):
+        view = self.active_view();
+        regions = view.find_by_selector("string.sha")
+        lines = [view.line(sel) for sel in self.get_sels()]
+        return self.get_contained_region_in_lines(regions, lines)
+
+class GitGotoCommit(GitLogMultiFromLines):
+    def get_sels(self):
+        return [sel.a for sel in self.active_view().sel()] # for the collections of first line at each selection
 
 class GitLogMultiTextCommand(GitTextCommand):
     def get_working_dir(self):
@@ -128,46 +175,14 @@ class GitLogMultiTextCommand(GitTextCommand):
             or view.match_selector(selection.a, "text.git-graph")
         )
 
-class GitLogByHashIdFromSelsCommand(GitLogMultiCommand, GitLogMultiTextCommand):
-    def run(self, edit=None):
-        hashes = []
-        view = self.active_view();
-        for s in view.sel():
-            if s.empty():
-                s = view.word(s)
-            hashes.append(view.substr(s))
-        return self.log_results(hashes)
+class GitLogMultiFromSelsCommand(GitLogMultiFromSels, GitLogMultiTextCommand):
+    pass
 
-class GitLogByHashIdFromLinesCommand(GitLogMultiCommand, GitLogMultiTextCommand):
-    def get_contained_region_in_lines(self, regions, lines):
-        if len(lines) <= 0:
-            return None
-        whole_lines = lines[0]
-        for line in lines:
-            whole_lines = whole_lines.cover(line)
-        contained_regions = []
-        for region in regions:
-            if not whole_lines.contains(region):
-                continue
-            for line in lines:
-                if line.contains(region):
-                    contained_regions.append(region)
-                    break
-        return contained_regions
+class GitLogMultiFromLinesCommand(GitLogMultiFromLines, GitLogMultiTextCommand):
+    pass
 
-    def get_sels(self):
-        return self.active_view().sel()
-
-    def run(self, edit=None):
-        view = self.active_view();
-        regions = view.find_by_selector("string.sha")
-        sel_lines = []
-        for sel in self.get_sels():
-            sel_lines.append(view.line(sel))
-        hashes = []
-        for region in self.get_contained_region_in_lines(regions, sel_lines):
-            hashes.append(view.substr(region))
-        return self.log_results(hashes)
+class GitGotoCommitCommand(GitGotoCommit, GitLogMultiTextCommand):
+    pass
 
 class GitShow(object):
     def run(self, edit=None):
@@ -320,7 +335,3 @@ class GitDocumentCommand(GitBlameCommand):
         self.scratch('\n\n'.join(commits), title="Git Commit Documentation",
                      syntax=plugin_file("syntax/Git Commit View.tmLanguage"))
 
-
-class GitGotoCommit(GitLogByHashIdFromLinesCommand):
-    def get_sels(self):
-        return [sel.a for sel in self.active_view().sel()] # for the collections of first line at each selection
