@@ -184,6 +184,51 @@ class GitLogMultiFromLinesCommand(GitLogMultiFromLines, GitLogMultiTextCommand):
 class GitGotoCommitCommand(GitGotoCommit, GitLogMultiTextCommand):
     pass
 
+class GitLogAsOneDiff(GitLogMultiFromLines):
+    def log_results(self, refs):
+        n = len(refs)
+        if ( n < 1 ):
+            return
+
+        self.files = set()
+        for ref in refs:
+            self.log_result(ref)
+        self.run_command(
+            ['git', 'diff', refs[n-1]+'~1', refs[0], '--', self.get_file_name()],
+            self.as_one_diff_done)
+
+    def details_done(self, result):
+        for s in result.split('\n'):
+            mm = re.search(r'^[+]{3} b(.*)', s.strip())
+            if ( mm ):
+                self.files.add(mm.group(1))
+
+    def as_one_diff_done(self, result):
+        poslist = []
+        pos = 0
+        diffTag = 'diff --git'
+        while True:
+            pos = result.find(diffTag, pos)
+            if pos < 0:
+                break
+            if (0 == pos) or ('\n' == result[pos-1]) or ('\a' == result[pos-1]):
+                poslist.append(pos)
+            pos += len(diffTag)
+        poslist.append(len(result))
+
+        results = []
+        for i in range(0,len(poslist)-1):
+            for filename in self.files:
+                pos = result.find(filename, poslist[i], poslist[i+1])
+                if 0 <= pos :
+                    results.append(result[poslist[i]:poslist[i+1]])
+                    break
+
+        self.scratch(''.join(results), title="Git One Diff Details", syntax=plugin_file("syntax/Git Commit View.tmLanguage"))
+
+class GitLogAsOneDiffCommand(GitLogAsOneDiff, GitLogMultiTextCommand):
+    pass
+
 class GitShow(object):
     def run(self, edit=None):
         # GitLog Copy-Past

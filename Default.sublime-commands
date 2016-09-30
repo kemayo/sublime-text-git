@@ -51,6 +51,10 @@
         "command": "git_goto_commit"
     }
     ,{
+        "caption": "Git: View Commits as One Diff",
+        "command": "git_log_as_one_diff"
+    }
+    ,{
         "caption": "Git: Graph Current File",
         "command": "git_graph"
     }
