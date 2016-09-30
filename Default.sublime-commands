@@ -55,6 +55,10 @@
         "command": "git_graph_all"
     }
     ,{
+        "caption": "Git: View selected commits",
+        "command": "git_goto_commit"
+    }
+    ,{
         "caption": "Git: Diff Current File",
         "command": "git_diff"
     }

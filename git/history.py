@@ -323,4 +323,4 @@ class GitDocumentCommand(GitBlameCommand):
 
 class GitGotoCommit(GitLogByHashIdFromLinesCommand):
     def get_sels(self):
-        return [self.active_view().sel()[0].a] # only for current single line
+        return [sel.a for sel in self.active_view().sel()] # for the collections of first line at each selection
