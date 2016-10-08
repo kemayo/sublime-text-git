@@ -35,7 +35,8 @@ class GitUpdateIndexNoAssumeUnchangedCommand(GitWindowCommand):
     force_open = False
 
     def run(self):
-        self.run_command(['git', 'ls-files', '-v'], self.status_done)
+        root = git_root(self.get_working_dir())
+        self.run_command(['git', 'ls-files', '-v'], self.status_done, working_dir=root)
 
     def status_done(self, result):
         self.results = list(filter(self.status_filter, result.rstrip().split('\n')))
