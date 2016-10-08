@@ -31,3 +31,39 @@ class GitUpdateIndexAssumeUnchangedCommand(GitStatusCommand):
     def rerun(self, result):
         self.run()
 
+class GitUpdateIndexNoAssumeUnchangedCommand(GitWindowCommand):
+    force_open = False
+
+    def run(self):
+        self.run_command(['git', 'ls-files', '-v'], self.status_done)
+
+    def status_done(self, result):
+        self.results = list(filter(self.status_filter, result.rstrip().split('\n')))
+        if len(self.results):
+            self.show_status_list()
+        else:
+            sublime.status_message("Nothing to show")
+
+    def show_status_list(self):
+        self.quick_panel(self.results, self.panel_done,
+            sublime.MONOSPACE_FONT)
+
+    def status_filter(self, item):
+        # for this class we don't actually care
+        if not re.match(r'^h\s+.*', item):
+            return False
+        return len(item) > 0
+
+    def panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        root = git_root(self.get_working_dir())
+        picked_file = self.results[picked]
+        if isinstance(picked_file, (list, tuple)):
+            picked_file = picked_file[0]
+        # first 1 character ia status code, the second is a space
+        picked_file = picked_file[2:]
+        self.run_command(['git', 'update-index', '--no-assume-unchanged', picked_file.strip('"')],self.rerun, working_dir=root)
+
+    def rerun(self, result):
+        self.run()
