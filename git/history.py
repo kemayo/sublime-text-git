@@ -15,7 +15,7 @@ class GitBlameCommand(GitTextCommand):
         # -M: retain blame when moving lines
         # -C: retain blame when copying lines between files
         command = ['git', 'blame', '-w', '-M', '-C']
-        line_ranges = [ self.get_lines(selection) for selection in self.view.sel() if not selection.empty() ]
+        line_ranges = [self.get_lines(selection) for selection in self.view.sel() if not selection.empty()]
 
         if line_ranges:
             for line_range in line_ranges:
@@ -221,17 +221,6 @@ class GitOpenFileCommand(GitLog, GitWindowCommand):
 
 
 class GitDocumentCommand(GitBlameCommand):
-    def get_lines(self):
-        selection = self.view.sel()[0]  # todo: multi-select support?
-        # just the lines we have a selection on
-        begin_line, begin_column = self.view.rowcol(selection.begin())
-        end_line, end_column = self.view.rowcol(selection.end())
-        # blame will fail if last line is empty and is included in the selection
-        if end_line > begin_line and end_column == 0:
-            end_line -= 1
-        # add one to each, to line up sublime's index with git's
-        return begin_line + 1, end_line + 1
-
     def blame_done(self, result, focused_line=1):
         shas = set((sha for sha in re.findall(r'^[0-9a-f]+', result, re.MULTILINE) if not re.match(r'^0+$', sha)))
         command = ['git', 'show', '-s', '-z', '--no-color', '--date=iso']
