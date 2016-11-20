@@ -22,7 +22,7 @@ def find_plugin_directory():
         match = re.search(r"([^\\/]+)\.sublime-package", __file__)
         if match:
             return "Packages/" + match.group(1)
-    if __file__.startswith('./'):
+    if __file__.startswith('./') or __file__.startswith('.\\'):
         # ST2, we get "./git/__init__.py" which is pretty useless since we want the part above that
         # However, os.getcwd() is the plugin directory!
         full = os.getcwd()
