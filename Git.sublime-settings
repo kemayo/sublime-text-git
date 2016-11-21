@@ -16,6 +16,9 @@
 	// use the panel for diff output, rather than a new scratch window (new tab)
 	,"diff_panel": false
 
+	// show line numbers in output views
+	,"line_numbers": false
+
 	// If you'd rather have your status command open files instead of show you a
 	// diff, set this to true.  You can still do `Git: Status` followed by
 	// 'Git: Diff Current File' to get a file diff

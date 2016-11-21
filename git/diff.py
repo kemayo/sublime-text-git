@@ -38,7 +38,6 @@ class GitDiffCommit (object):
         if not result.strip():
             self.panel("No output")
             return
-        s = sublime.load_settings("Git.sublime-settings")
         syntax = s.get("diff_syntax", "Packages/Diff/Diff.tmLanguage")
         self.scratch(result, title="Git Diff", syntax=syntax)
 
@@ -133,3 +132,65 @@ class GitGotoDiff(sublime_plugin.TextCommand):
         new_view = v.window().open_file(full_path_file_name)
         do_when(lambda: not new_view.is_loading(),
                 lambda: goto_xy(new_view, self.goto_line, self.column))
+
+
+class GitDiffBranch (GitDiffAllCommand):
+    ignore_whitespace = False
+    branches = []
+    files = []
+    command = []
+    picked_file = ''
+
+    def run(self, edit = None, ignore_whitespace = False):
+        self.ignore_whitespace = ignore_whitespace;
+        self.run_command(['git', 'branch', '--no-color'],
+            self.panel_branch)
+
+    def panel_branch(self, result):
+        self.branches = result.rstrip().split('\n')
+        self.branches = [item.strip() for item in self.branches
+            if not (item.startswith('*') or item.strip().find(' ') > -1)]
+        self.quick_panel(self.branches, self.panel_branch_done,
+            sublime.MONOSPACE_FONT)
+
+    def panel_branch_done(self, picked = 0):
+        if 0 > picked < len(self.branches):
+            return
+        self.picked_branch = self.branches[picked]
+        self.run_command(['git', 'diff', '--name-status', self.picked_branch],
+            self.panel_file)
+
+    def panel_file(self, result):
+        self.files = [['All', 'Compare all files']]
+        for item in result.rstrip().split('\n'):
+            item = item.split('\t', 1)[::-1]
+            self.files.append(item)
+        
+        if (len(self.files) == 1):
+            self.panel("No changed files")
+            return
+        
+        self.quick_panel(self.files, self.panel_file_done, sublime.MONOSPACE_FONT)
+
+    def panel_file_done(self, picked = 0):
+        if 0 > picked < len(self.branches):
+            return
+        command = ['git', 'diff', '--cached', '--no-color', self.picked_branch]
+        if self.ignore_whitespace:
+            command += ['--ignore-all-space', '--ignore-blank-lines']
+        
+        if picked == 0:
+            self.run_command(command, self.diff_done)
+        else:
+            self.picked_file = self.files[picked][0]
+            self.command = command
+            self.run_command(['git', 'rev-parse', '--show-toplevel'], self.show_toplevel_done)
+
+    def show_toplevel_done(self, result):
+        result = result.strip()
+        if not result:
+            sublime.status_message("Can't retrieve git toplevel")
+            return
+        command = self.command + ['--', result.rstrip('/') + '/' + self.picked_file.lstrip('/')]
+        print(command, result, result.rstrip('/'), self.picked_file.lstrip('/'))
+        self.run_command(command, self.diff_done)
