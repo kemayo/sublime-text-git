@@ -39,16 +39,28 @@
         "command": "git_log_all"
     }
     ,{
+        "caption": "Git: View Selected Commits",
+        "command": "git_log_multi_from_sels"
+    }
+    ,{
+        "caption": "Git: View Commits from Selected Lines",
+        "command": "git_log_multi_from_lines"
+    }
+    ,{
+        "caption": "Git: View Commits from Current Lines",
+        "command": "git_goto_commit"
+    }
+    ,{
+        "caption": "Git: View Commits as One Diff",
+        "command": "git_log_as_one_diff"
+    }
+    ,{
         "caption": "Git: Graph Current File",
         "command": "git_graph"
     }
     ,{
         "caption": "Git: Graph All",
         "command": "git_graph_all"
-    }
-    ,{
-        "caption": "Git: View selected commits",
-        "command": "git_goto_commit"
     }
     ,{
         "caption": "Git: Diff Current File",

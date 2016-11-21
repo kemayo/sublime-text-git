@@ -2,10 +2,12 @@ from __future__ import absolute_import, unicode_literals, print_function, divisi
 
 import functools
 import re
+import os
+import os.path
 
 import sublime
 import sublime_plugin
-from . import GitTextCommand, GitWindowCommand, plugin_file
+from . import GitTextCommand, GitWindowCommand, plugin_file, git_root
 
 
 class GitBlameCommand(GitTextCommand):
@@ -101,6 +103,131 @@ class GitLogCommand(GitLog, GitTextCommand):
 class GitLogAllCommand(GitLog, GitWindowCommand):
     pass
 
+class GitLogMulti(GitLog):
+    def log_results(self, refs):
+        for ref in refs:
+            self.log_result(ref)
+
+    def get_hash_region(self):
+        return None
+
+    def run(self, edit=None):
+        hashes = []
+        view = self.active_view();
+        for s in self.get_hash_region():
+            hs = view.substr(s);
+            if hs.strip("0"):
+                hashes.append(hs)
+        return self.log_results(hashes)
+
+class GitLogMultiFromSels(GitLogMulti):
+    def get_hash_region(self):
+        view = self.active_view()
+        return [(s if not s.empty else view.word(s)) for s in view.sel()]
+
+class GitLogMultiFromLines(GitLogMulti):
+    def get_contained_region_in_lines(self, regions, lines):
+        if len(lines) <= 0:
+            return None
+        whole_lines = lines[0]
+        for line in lines:
+            whole_lines = whole_lines.cover(line)
+        contained_regions = []
+        for region in regions:
+            if not whole_lines.contains(region):
+                continue
+            for line in lines:
+                if line.contains(region):
+                    contained_regions.append(region)
+                    break
+        return contained_regions
+
+    def get_sels(self):
+        return self.active_view().sel()
+
+    def get_hash_region(self):
+        view = self.active_view();
+        regions = view.find_by_selector("string.sha")
+        lines = [view.line(sel) for sel in self.get_sels()]
+        return self.get_contained_region_in_lines(regions, lines)
+
+class GitGotoCommit(GitLogMultiFromLines):
+    def get_sels(self):
+        return [sel.a for sel in self.active_view().sel()] # for the collections of first line at each selection
+
+class GitLogMultiTextCommand(GitTextCommand):
+    def get_working_dir(self):
+        # git_log_graph_location is used to show commit of the only file that lead to "Git: Graph Current File"
+        # git_root_dir is not work for above case
+        # also git_root_dir may be None when "Git: Graph All"
+        path = self.view.settings().get("git_log_graph_location")
+        if path:
+            return os.path.realpath(os.path.dirname(path))
+        return self.view.settings().get("git_root_dir")
+    def get_file_name(self):
+        path = self.view.settings().get("git_log_graph_location")
+        return os.path.basename(path) if path else None
+    def is_enabled(self):
+        view = self.view
+        selection = view.sel()[0]
+        return bool(
+            view.match_selector(selection.a, "text.git-blame")
+            or view.match_selector(selection.a, "text.git-graph")
+        )
+
+class GitLogMultiFromSelsCommand(GitLogMultiFromSels, GitLogMultiTextCommand):
+    pass
+
+class GitLogMultiFromLinesCommand(GitLogMultiFromLines, GitLogMultiTextCommand):
+    pass
+
+class GitGotoCommitCommand(GitGotoCommit, GitLogMultiTextCommand):
+    pass
+
+class GitLogAsOneDiff(GitLogMultiFromLines):
+    def log_results(self, refs):
+        n = len(refs)
+        if ( n < 1 ):
+            return
+
+        self.files = set()
+        for ref in refs:
+            self.log_result(ref)
+        self.run_command(
+            ['git', 'diff', refs[n-1]+'~1', refs[0], '--', self.get_file_name()],
+            self.as_one_diff_done)
+
+    def details_done(self, result):
+        for s in result.split('\n'):
+            mm = re.search(r'^[+]{3} b(.*)', s.strip())
+            if ( mm ):
+                self.files.add(mm.group(1))
+
+    def as_one_diff_done(self, result):
+        poslist = []
+        pos = 0
+        diffTag = 'diff --git'
+        while True:
+            pos = result.find(diffTag, pos)
+            if pos < 0:
+                break
+            if (0 == pos) or ('\n' == result[pos-1]) or ('\a' == result[pos-1]):
+                poslist.append(pos)
+            pos += len(diffTag)
+        poslist.append(len(result))
+
+        results = []
+        for i in range(0,len(poslist)-1):
+            for filename in self.files:
+                pos = result.find(filename, poslist[i], poslist[i+1])
+                if 0 <= pos :
+                    results.append(result[poslist[i]:poslist[i+1]])
+                    break
+
+        self.scratch(''.join(results), title="Git One Diff Details", syntax=plugin_file("syntax/Git Commit View.tmLanguage"))
+
+class GitLogAsOneDiffCommand(GitLogAsOneDiff, GitLogMultiTextCommand):
+    pass
 
 class GitShow(object):
     def run(self, edit=None):
@@ -165,7 +292,9 @@ class GitGraph(object):
         )
 
     def log_done(self, result):
-        self.scratch(result, title="Git Log Graph", syntax=plugin_file("syntax/Git Graph.tmLanguage"))
+        location = self.get_working_dir() + "/" + self.get_file_name()
+        view = self.scratch(result, title="Git Log Graph", syntax=plugin_file("syntax/Git Graph.tmLanguage"))
+        view.settings().set("git_log_graph_location", location)
 
 
 class GitGraphCommand(GitGraph, GitTextCommand):
@@ -240,34 +369,3 @@ class GitDocumentCommand(GitBlameCommand):
         self.scratch('\n\n'.join(commits), title="Git Commit Documentation",
                      syntax=plugin_file("syntax/Git Commit View.tmLanguage"))
 
-
-class GitGotoCommit(GitTextCommand):
-    def run(self, edit):
-        view = self.view
-
-        # Sublime is missing a "find scope in region" API, so we piece one together here:
-        lines = [view.line(sel.a) for sel in view.sel()]
-        hashes = self.view.find_by_selector("string.sha")
-        commits = []
-        for region in hashes:
-            for line in lines:
-                if line.contains(region):
-                    commit = view.substr(region)
-                    if commit.strip("0"):
-                        commits.append(commit)
-                    break
-
-        working_dir = view.settings().get("git_root_dir")
-        for commit in commits:
-            self.run_command(['git', 'show', commit], self.show_done, working_dir=working_dir)
-
-    def show_done(self, result):
-        self.scratch(result, title="Git Commit View",
-                     syntax=plugin_file("syntax/Git Commit View.tmLanguage"))
-
-    def is_enabled(self):
-        selection = self.view.sel()[0]
-        return (
-            self.view.match_selector(selection.a, "text.git-blame")
-            or self.view.match_selector(selection.a, "text.git-graph")
-        )
