@@ -108,7 +108,10 @@ def _make_text_safeish(text, fallback_encoding, method='decode'):
     try:
         unitext = getattr(text, method)('utf-8')
     except (UnicodeEncodeError, UnicodeDecodeError):
-        unitext = getattr(text, method)(fallback_encoding)
+        try:
+            unitext = getattr(text, method)(fallback_encoding)
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            unitext = str(text)
     except AttributeError:
         # strongly implies we're already unicode, but just in case let's cast
         # to string
@@ -304,6 +307,9 @@ class GitCommand(object):
             'output': output,
             'clear': clear
         }
+        s = sublime.load_settings("Git.sublime-settings")
+        if (s.has('line_numbers')):
+            output_file.settings().set('line_numbers', s.get('line_numbers', False))
         output_file.run_command('git_scratch_output', args)
 
     def scratch(self, output, title=False, focused_line=1, **kwargs):

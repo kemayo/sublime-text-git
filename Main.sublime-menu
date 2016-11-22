@@ -43,6 +43,8 @@
                             ,{ "caption": "Diff (no whitespace)", "command": "git_diff_all", "args": { "ignore_whitespace": true } }
                             ,{ "caption": "Diff Staged", "command": "git_diff_commit" }
                             ,{ "caption": "Diff Staged (no whitespace)", "command": "git_diff_commit", "args": { "ignore_whitespace": true } }
+                            ,{ "caption": "Diff Branch", "command": "git_diff_branch" }
+                            ,{ "caption": "Diff Branch (Ignore Whitespace)", "command": "git_diff_branch", "args": { "ignore_whitespace": true } }
                             ,{ "caption": "Diff Tool", "command": "git_raw", "args": { "command": "git difftool", "may_change_files": false } }
                             ,{ "caption": "Reset Hard", "command": "git_reset_hard_head" }
                             ,{ "caption": "-" }
@@ -88,6 +90,7 @@
                     ,{ "caption": "Init", "command": "git_init"}
                     ,{ "caption": "Status...", "command": "git_status" }
                     ,{ "caption": "Branches...", "command": "git_branch" }
+                    ,{ "caption": "Track Remote Branch", "command": "git_track_remote_branch" }
                     ,{ "caption": "Merge...", "command": "git_merge" }
                     ,{ "caption": "See commit history...", "command": "git_commit_history"}
                 ]
