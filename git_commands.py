@@ -24,6 +24,7 @@ mods_load_order = [
 
     '.status',
     '.add',  # imports status
+    '.index',  # imports status
     '.commit',  # imports add
 
     # no interdependencies below
@@ -57,6 +58,7 @@ try:
     from .git.core import *  # noqa
 
     from .git.add import *  # noqa
+    from .git.index import *  # noqa
     from .git.annotate import *  # noqa
     from .git.commit import *  # noqa
     from .git.diff import *  # noqa
@@ -72,6 +74,7 @@ except (ImportError, ValueError):
     from git.core import *  # noqa
 
     from git.add import *  # noqa
+    from git.index import *  # noqa
     from git.annotate import *  # noqa
     from git.commit import *  # noqa
     from git.diff import *  # noqa
