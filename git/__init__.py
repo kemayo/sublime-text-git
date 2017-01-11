@@ -206,7 +206,7 @@ class CommandThread(threading.Thread):
             if sublime.platform() == 'windows':
                 shell = True
                 if 'HOME' not in env:
-                    env[str('HOME')] = str(env['USERPROFILE'])
+                    env[str('HOME')] = str(env['HOMEDRIVE']) + str(env['HOMEPATH'])
 
             # universal_newlines seems to break `log` in python3
             proc = subprocess.Popen(
