@@ -289,4 +289,12 @@
         "caption": "Git: Update Project Ignored Files",
         "command": "git_update_ignore"
     }
+    ,{
+        "caption": "Git: Assume Unchanged",
+        "command": "git_update_index_assume_unchanged"
+    }
+    ,{
+        "caption": "Git: No Assume Unchanged",
+        "command": "git_update_index_no_assume_unchanged"
+    }
 ]
