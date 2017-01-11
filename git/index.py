@@ -31,6 +31,7 @@ class GitUpdateIndexAssumeUnchangedCommand(GitStatusCommand):
     def rerun(self, result):
         self.run()
 
+
 class GitUpdateIndexNoAssumeUnchangedCommand(GitWindowCommand):
     force_open = False
 
@@ -62,7 +63,7 @@ class GitUpdateIndexNoAssumeUnchangedCommand(GitWindowCommand):
         picked_file = self.results[picked]
         if isinstance(picked_file, (list, tuple)):
             picked_file = picked_file[0]
-        # first 1 character ia status code, the second is a space
+        # first 1 character is a status code, the second is a space
         picked_file = picked_file[2:]
         self.run_command(['git', 'update-index', '--no-assume-unchanged', picked_file.strip('"')],self.rerun, working_dir=root)
 
