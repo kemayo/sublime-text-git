@@ -10,7 +10,7 @@ class GitFlowCommand(GitWindowCommand):
         if s.get('flow'):
             return True
         return False
-    
+
     def is_notag(self):
         s = sublime.load_settings("Git.sublime-settings")
         if s.get('flow-notag'):
@@ -32,8 +32,10 @@ class GitFlowFeatureFinishCommand(GitFlowCommand):
 
     def feature_done(self, result):
         self.results = result.rstrip().split('\n')
-        self.quick_panel(self.results, self.panel_done,
-            sublime.MONOSPACE_FONT)
+        self.quick_panel(
+            self.results, self.panel_done,
+            sublime.MONOSPACE_FONT
+        )
 
     def panel_done(self, picked):
         if 0 > picked < len(self.results):
@@ -59,8 +61,10 @@ class GitFlowReleaseFinishCommand(GitFlowCommand):
 
     def release_done(self, result):
         self.results = result.rstrip().split('\n')
-        self.quick_panel(self.results, self.panel_done,
-            sublime.MONOSPACE_FONT)
+        self.quick_panel(
+            self.results, self.panel_done,
+            sublime.MONOSPACE_FONT
+        )
 
     def panel_done(self, picked):
         if 0 > picked < len(self.results):
@@ -74,7 +78,7 @@ class GitFlowReleaseFinishCommand(GitFlowCommand):
         else:
             self.picked_release = picked_release
             self.get_window().show_input_panel('Enter Tag message:', '', self.tag_message_done, None, None)
-    
+
     def tag_message_done(self, tag_message):
         self.run_command(['git', 'flow', 'release', 'finish', '-m', tag_message, self.picked_release])
 
@@ -93,8 +97,10 @@ class GitFlowHotfixFinishCommand(GitFlowCommand):
 
     def hotfix_done(self, result):
         self.results = result.rstrip().split('\n')
-        self.quick_panel(self.results, self.panel_done,
-            sublime.MONOSPACE_FONT)
+        self.quick_panel(
+            self.results, self.panel_done,
+            sublime.MONOSPACE_FONT
+        )
 
     def panel_done(self, picked):
         if 0 > picked < len(self.results):

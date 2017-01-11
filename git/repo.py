@@ -38,8 +38,10 @@ class GitBranchCommand(GitWindowCommand):
 
     def branch_done(self, result):
         self.results = result.rstrip().split('\n')
-        self.quick_panel(self.results, self.panel_done,
-            sublime.MONOSPACE_FONT)
+        self.quick_panel(
+            self.results, self.panel_done,
+            sublime.MONOSPACE_FONT
+        )
 
     def panel_done(self, picked):
         if 0 > picked < len(self.results):
@@ -69,8 +71,10 @@ class GitDeleteBranchCommand(GitBranchCommand):
 
 class GitNewBranchCommand(GitWindowCommand):
     def run(self):
-        self.get_window().show_input_panel("Branch name", "",
-            self.on_input, None, None)
+        self.get_window().show_input_panel(
+            "Branch name", "",
+            self.on_input, None, None
+        )
 
     def on_input(self, branchname):
         if branchname.strip() == "":
@@ -80,8 +84,8 @@ class GitNewBranchCommand(GitWindowCommand):
 
 
 class GitTrackRemoteBranchCommand(GitBranchCommand):
-	command_to_run_after_branch = ['checkout', '-t']
-	extra_flags = ['-r']
+    command_to_run_after_branch = ['checkout', '-t']
+    extra_flags = ['-r']
 
 
 class GitNewTagCommand(GitWindowCommand):

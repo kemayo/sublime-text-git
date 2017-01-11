@@ -4,7 +4,7 @@ import os
 import re
 
 import sublime
-from . import GitTextCommand, GitWindowCommand, git_root
+from . import GitWindowCommand, git_root
 from .status import GitStatusCommand
 
 
@@ -25,8 +25,10 @@ class GitUpdateIndexAssumeUnchangedCommand(GitStatusCommand):
             command += ['update-index', '--assume-unchanged']
         command += ['--', picked_file]
 
-        self.run_command(command, self.rerun,
-            working_dir=working_dir)
+        self.run_command(
+            command, self.rerun,
+            working_dir=working_dir
+        )
 
     def rerun(self, result):
         self.run()
@@ -47,8 +49,10 @@ class GitUpdateIndexNoAssumeUnchangedCommand(GitWindowCommand):
             sublime.status_message("Nothing to show")
 
     def show_status_list(self):
-        self.quick_panel(self.results, self.panel_done,
-            sublime.MONOSPACE_FONT)
+        self.quick_panel(
+            self.results, self.panel_done,
+            sublime.MONOSPACE_FONT
+        )
 
     def status_filter(self, item):
         # for this class we don't actually care
@@ -65,7 +69,10 @@ class GitUpdateIndexNoAssumeUnchangedCommand(GitWindowCommand):
             picked_file = picked_file[0]
         # first 1 character is a status code, the second is a space
         picked_file = picked_file[2:]
-        self.run_command(['git', 'update-index', '--no-assume-unchanged', picked_file.strip('"')],self.rerun, working_dir=root)
+        self.run_command(
+            ['git', 'update-index', '--no-assume-unchanged', picked_file.strip('"')],
+            self.rerun, working_dir=root
+        )
 
     def rerun(self, result):
         self.run()

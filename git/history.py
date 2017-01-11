@@ -4,7 +4,6 @@ import functools
 import re
 
 import sublime
-import sublime_plugin
 from . import GitTextCommand, GitWindowCommand, plugin_file
 
 
@@ -46,8 +45,10 @@ class GitBlameCommand(GitTextCommand):
         return begin_line + 1, end_line + 1
 
     def blame_done(self, result, focused_line=1):
-        view = self.scratch(result, title="Git Blame", focused_line=focused_line,
-                            syntax=plugin_file("syntax/Git Blame.tmLanguage"))
+        self.scratch(
+            result, title="Git Blame", focused_line=focused_line,
+            syntax=plugin_file("syntax/Git Blame.tmLanguage")
+        )
 
 
 class GitLog(object):
@@ -62,8 +63,11 @@ class GitLog(object):
         # 9000 is a pretty arbitrarily chosen limit; picked entirely because
         # it's about the size of the largest repo I've tested this on... and
         # there's a definite hiccup when it's loading that
-        command = ['git', 'log', '--no-color', '--pretty=%s (%h)\a%an <%aE>\a%ad (%ar)',
-            '--date=local', '--max-count=9000', '--follow' if follow else None]
+        command = [
+            'git', 'log', '--no-color', '--pretty=%s (%h)\a%an <%aE>\a%ad (%ar)',
+            '--date=local', '--max-count=9000',
+            '--follow' if follow else None
+        ]
         command.extend(args)
         self.run_command(
             command,
@@ -107,7 +111,7 @@ class GitShow(object):
         # GitLog Copy-Past
         self.run_command(
             ['git', 'log', '--no-color', '--pretty=%s (%h)\a%an <%aE>\a%ad (%ar)',
-            '--date=local', '--max-count=9000', '--', self.get_file_name()],
+             '--date=local', '--max-count=9000', '--', self.get_file_name()],
             self.show_done)
 
     def show_done(self, result):
@@ -182,8 +186,10 @@ class GitOpenFileCommand(GitLog, GitWindowCommand):
 
     def branch_done(self, result):
         self.results = result.rstrip().split('\n')
-        self.quick_panel(self.results, self.branch_panel_done,
-            sublime.MONOSPACE_FONT)
+        self.quick_panel(
+            self.results, self.branch_panel_done,
+            sublime.MONOSPACE_FONT
+        )
 
     def branch_panel_done(self, picked):
         if 0 > picked < len(self.results):
@@ -268,6 +274,6 @@ class GitGotoCommit(GitTextCommand):
     def is_enabled(self):
         selection = self.view.sel()[0]
         return (
-            self.view.match_selector(selection.a, "text.git-blame")
-            or self.view.match_selector(selection.a, "text.git-graph")
+            self.view.match_selector(selection.a, "text.git-blame") or
+            self.view.match_selector(selection.a, "text.git-graph")
         )

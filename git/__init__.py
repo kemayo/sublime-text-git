@@ -33,6 +33,8 @@ def find_plugin_directory():
         full = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
     dirname = os.path.split(full)[-1]
     return "Packages/" + dirname.replace(".sublime-package", "")
+
+
 PLUGIN_DIRECTORY = find_plugin_directory()
 
 
@@ -149,6 +151,8 @@ def find_binary(cmd):
             )
         path = _test_paths_for_executable(extra_paths, cmd)
     return path
+
+
 GIT = find_binary('git')
 GITK = find_binary('gitk')
 
@@ -205,11 +209,13 @@ class CommandThread(threading.Thread):
                     env[str('HOME')] = str(env['USERPROFILE'])
 
             # universal_newlines seems to break `log` in python3
-            proc = subprocess.Popen(self.command,
+            proc = subprocess.Popen(
+                self.command,
                 stdout=self.stdout, stderr=subprocess.STDOUT,
                 stdin=subprocess.PIPE, startupinfo=startupinfo,
                 shell=shell, universal_newlines=False,
-                env=env, cwd=cwd)
+                env=env, cwd=cwd
+            )
             output = proc.communicate(self.stdin)[0]
             if self.error_suppresses_output and proc.returncode is not None and proc.returncode > 0:
                 output = False
@@ -241,8 +247,7 @@ class CommandThread(threading.Thread):
 class GitCommand(object):
     may_change_files = False
 
-    def run_command(self, command, callback=None, show_status=True,
-            filter_empty_args=True, no_save=False, **kwargs):
+    def run_command(self, command, callback=None, show_status=True, filter_empty_args=True, no_save=False, **kwargs):
         if filter_empty_args:
             command = [arg for arg in command if arg]
         if 'working_dir' not in kwargs:
@@ -297,8 +302,7 @@ class GitCommand(object):
             return
         self.panel(result)
 
-    def _output_to_view(self, output_file, output, clear=False,
-            syntax="Packages/Diff/Diff.tmLanguage", **kwargs):
+    def _output_to_view(self, output_file, output, clear=False, syntax="Packages/Diff/Diff.tmLanguage", **kwargs):
         output_file.set_syntax_file(syntax)
         args = {
             'output': output,
