@@ -38,8 +38,9 @@ class GitRawCommand(GitWindowCommand):
         import shlex
         command_split = shlex.split(self.command)
 
-        if args.get('append_current_file', False) and self._active_file_name():
-            command_split.extend(('--', self._active_file_name()))
+        working_dir = None
+        if args.get('append_current_file', False) and self.active_file_name():
+            command_split.extend(('--', self.active_file_name()))
 
         print(command_split)
 

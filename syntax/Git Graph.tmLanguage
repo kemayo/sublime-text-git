@@ -21,7 +21,7 @@
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>string.git-graph</string>
+					<string>string.sha.git-graph</string>
 				</dict>
 				<key>3</key>
 				<dict>

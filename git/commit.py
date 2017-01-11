@@ -15,7 +15,8 @@ history = []
 
 class GitQuickCommitCommand(GitTextCommand):
     def run(self, edit, target=None):
-        if not target:
+        if target is None:
+            # 'target' might also be False, in which case we just don't provide an add argument
             target = self.get_file_name()
         self.get_window().show_input_panel("Message", "",
             functools.partial(self.on_input, target), None, None)
@@ -24,13 +25,16 @@ class GitQuickCommitCommand(GitTextCommand):
         if message.strip() == "":
             self.panel("No commit message provided")
             return
-        command = ['git', 'add']
-        if target == '*':
-            command.append('--all')
+
+        if target:
+            command = ['git', 'add']
+            if target == '*':
+                command.append('--all')
+            else:
+                command.extend(('--', target))
+            self.run_command(command, functools.partial(self.add_done, message))
         else:
-            command.extend(('--', target))
-        self.run_command(command,
-            functools.partial(self.add_done, message))
+            self.add_done(message, "")
 
     def add_done(self, message, result):
         if result.strip():

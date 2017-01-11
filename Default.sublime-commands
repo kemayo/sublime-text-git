@@ -47,6 +47,10 @@
         "command": "git_graph_all"
     }
     ,{
+        "caption": "Git: View selected commits",
+        "command": "git_goto_commit"
+    }
+    ,{
         "caption": "Git: Diff Current File",
         "command": "git_diff"
     }
@@ -104,6 +108,10 @@
     ,{
         "caption": "Git: Quick Commit (repo)",
         "command": "git_quick_commit", "args": { "target": "*" }
+    }
+    ,{
+        "caption": "Git: Quick Commit (repo, only already added files)",
+        "command": "git_quick_commit", "args": { "target": false }
     }
     ,{
         "caption": "Git: Status",
@@ -194,8 +202,12 @@
         "command": "git_push_current_branch"
     }
     ,{
-        "caption": "Git: Show Current File",
+        "caption": "Git: Show Previous Version of Current File",
         "command": "git_show"
+    }
+    ,{
+        "caption": "Git: Show Commit By Hash",
+        "command": "git_show_commit"
     }
     ,{
         "caption": "Git: Toggle Annotations",

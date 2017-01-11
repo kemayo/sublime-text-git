@@ -3,10 +3,19 @@ from __future__ import absolute_import, unicode_literals, print_function, divisi
 import tempfile
 import re
 import os
+import codecs
 
 import sublime
 import sublime_plugin
 from . import git_root, GitTextCommand
+
+
+def temp_file(view, key):
+    if not view.settings().get('git_annotation_temp_%s' % key, False):
+        fd, filepath = tempfile.mkstemp(prefix='git_annotations_')
+        os.close(fd)
+        view.settings().set('git_annotation_temp_%s' % key, filepath)
+    return view.settings().get('git_annotation_temp_%s' % key)
 
 
 class GitClearAnnotationCommand(GitTextCommand):
@@ -46,25 +55,35 @@ class GitAnnotateCommand(GitTextCommand):
     #    file with the current state of the HEAD is being pulled from git.
     # 2. All consecutive runs will pass the current buffer into diffs stdin.
     #    The resulting output is then parsed and regions are set accordingly.
+    may_change_files = False
+
     def run(self, view):
         # If the annotations are already running, we dont have to create a new
         # tmpfile
-        if hasattr(self, "tmp"):
-            self.compare_tmp(None)
-            return
-        self.tmp = tempfile.NamedTemporaryFile()
+        if not hasattr(self, "git_tmp"):
+            self.git_tmp = temp_file(self.active_view(), 'head')
+            self.buffer_tmp = temp_file(self.active_view(), 'buffer')
         self.active_view().settings().set('live_git_annotations', True)
         root = git_root(self.get_working_dir())
-        repo_file = os.path.relpath(self.view.file_name(), root)
-        self.run_command(['git', 'show', 'HEAD:{0}'.format(repo_file)], show_status=False, no_save=True, callback=self.compare_tmp, stdout=self.tmp)
+        repo_file = os.path.relpath(self.view.file_name(), root).replace('\\', '/')  # always unix
+        self.run_command(['git', 'show', 'HEAD:{0}'.format(repo_file)], show_status=False, no_save=True, callback=self.compare_tmp)
 
     def compare_tmp(self, result, stdout=None):
-        all_text = self.view.substr(sublime.Region(0, self.view.size()))
-        self.run_command(['diff', '-u', self.tmp.name, '-'], stdin=all_text, no_save=True, show_status=False, callback=self.parse_diff)
+        with open(self.buffer_tmp, 'wb') as f:
+            contents = self.get_view_contents()
+            if self.view.encoding() == "UTF-8 with BOM":
+                f.write(codecs.BOM_UTF8)
+            f.write(contents)
+        with open(self.git_tmp, 'wb') as f:
+            f.write(result.encode())
+        self.run_command(['git', 'diff', '-u', '--', self.git_tmp, self.buffer_tmp], no_save=True, show_status=False, callback=self.parse_diff)
 
     # This is where the magic happens. At the moment, only one chunk format is supported. While
     # the unified diff format theoritaclly supports more, I don't think git diff creates them.
     def parse_diff(self, result, stdin=None):
+        if result.startswith('error:'):
+            print('Aborted annotations:', result)
+            return
         lines = result.splitlines()
         matcher = re.compile('^@@ -([0-9]*),([0-9]*) \+([0-9]*),([0-9]*) @@')
         diff = []
@@ -130,3 +149,35 @@ class GitAnnotateCommand(GitTextCommand):
             self.view.add_regions("git.changes.{0}".format(change), typed_diff[change], 'git.changes.{0}'.format(change), 'dot', sublime.HIDDEN)
 
         self.view.add_regions("git.changes.-", typed_diff['-'], 'git.changes.-', 'dot', sublime.DRAW_EMPTY_AS_OVERWRITE)
+
+    def get_view_contents(self):
+        region = sublime.Region(0, self.view.size())
+        try:
+            contents = self.view.substr(region).encode(self._get_view_encoding())
+        except UnicodeError:
+            # Fallback to utf8-encoding
+            contents = self.view.substr(region).encode('utf-8')
+        except LookupError:
+            # May encounter an encoding we don't have a codec for
+            contents = self.view.substr(region).encode('utf-8')
+        return contents
+
+    # Copied from GitGutter
+    def _get_view_encoding(self):
+        # get encoding and clean it for python ex: "Western (ISO 8859-1)"
+        # NOTE(maelnor): are we need regex here?
+        pattern = re.compile(r'.+\((.*)\)')
+        encoding = self.view.encoding()
+        if encoding == "Undefined":
+            encoding = self.view.settings().get('default_encoding')
+        if pattern.match(encoding):
+            encoding = pattern.sub(r'\1', encoding)
+
+        encoding = encoding.replace('with BOM', '')
+        encoding = encoding.replace('Windows', 'cp')
+        encoding = encoding.replace('-', '_')
+        encoding = encoding.replace(' ', '')
+
+        # work around with ConvertToUTF8 plugin
+        origin_encoding = self.view.settings().get('origin_encoding')
+        return origin_encoding or encoding

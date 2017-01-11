@@ -29,6 +29,9 @@
 
 	// Show git flow commands
 	,"flow": false
+	
+	// By default git flow release and hotfix will tag a version. Set to true to disable.
+	,"flow-notag": false
 
 	// Annotations default to being on for all files. Can be slow in some cases.
 	,"annotations": false
