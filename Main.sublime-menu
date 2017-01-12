@@ -21,6 +21,9 @@
                             ,{ "caption": "Add", "command": "git_raw", "args": { "command": "git add", "append_current_file": true } }
                             ,{ "caption": "Add Selected Hunk", "command": "git_add_selected_hunk" }
                             ,{ "caption": "-" }
+                            ,{ "caption": "Move/Rename...", "command": "git_mv"}
+                            ,{ "caption": "Remove/Delete", "command": "git_raw", "args": { "command": "git rm", "append_current_file": true } }
+                            ,{ "caption": "-" }
                             ,{ "caption": "Reset", "command": "git_raw", "args": { "command": "git reset HEAD", "append_current_file": true, "show_in": "suppress" } }
                             ,{ "caption": "Checkout (Discard Changes)", "command": "git_raw", "args": { "command": "git checkout", "append_current_file": true } }
                             ,{ "caption": "-" }
