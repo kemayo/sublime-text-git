@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/kemayo/sublime-text-git.svg?branch=master)](https://travis-ci.org/kemayo/sublime-text-git)
 # Sublime Text plugin: git
 
 Git integration: it's pretty handy. Who knew, right?

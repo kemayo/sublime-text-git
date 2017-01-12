@@ -1,6 +1,5 @@
 from __future__ import absolute_import, unicode_literals, print_function, division
 
-import os
 import sublime
 import sublime_plugin
 
@@ -11,8 +10,10 @@ class GitCustomCommand(GitWindowCommand):
     may_change_files = True
 
     def run(self):
-        self.get_window().show_input_panel("Git command", "",
-            self.on_input, None, None)
+        self.get_window().show_input_panel(
+            "Git command", "",
+            self.on_input, None, None
+        )
 
     def on_input(self, command):
         command = str(command)  # avoiding unicode
@@ -38,7 +39,6 @@ class GitRawCommand(GitWindowCommand):
         import shlex
         command_split = shlex.split(self.command)
 
-        working_dir = None
         if args.get('append_current_file', False) and self.active_file_name():
             command_split.extend(('--', self.active_file_name()))
 
@@ -61,8 +61,10 @@ class GitRawCommand(GitWindowCommand):
     def show_in_quick_panel(self, result):
         self.results = list(result.rstrip().split('\n'))
         if len(self.results):
-            self.quick_panel(self.results,
-                self.do_nothing, sublime.MONOSPACE_FONT)
+            self.quick_panel(
+                self.results,
+                self.do_nothing, sublime.MONOSPACE_FONT
+            )
         else:
             sublime.status_message("Nothing to show")
 
