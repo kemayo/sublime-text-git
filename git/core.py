@@ -1,6 +1,5 @@
 from __future__ import absolute_import, unicode_literals, print_function, division
 
-import os
 import sublime
 import sublime_plugin
 
@@ -11,8 +10,10 @@ class GitCustomCommand(GitWindowCommand):
     may_change_files = True
 
     def run(self):
-        self.get_window().show_input_panel("Git command", "",
-            self.on_input, None, None)
+        self.get_window().show_input_panel(
+            "Git command", "",
+            self.on_input, None, None
+        )
 
     def on_input(self, command):
         command = str(command)  # avoiding unicode
@@ -38,8 +39,8 @@ class GitRawCommand(GitWindowCommand):
         import shlex
         command_split = shlex.split(self.command)
 
-        if args.get('append_current_file', False) and self._active_file_name():
-            command_split.extend(('--', self._active_file_name()))
+        if args.get('append_current_file', False) and self.active_file_name():
+            command_split.extend(('--', self.active_file_name()))
 
         print(command_split)
 
@@ -60,8 +61,10 @@ class GitRawCommand(GitWindowCommand):
     def show_in_quick_panel(self, result):
         self.results = list(result.rstrip().split('\n'))
         if len(self.results):
-            self.quick_panel(self.results,
-                self.do_nothing, sublime.MONOSPACE_FONT)
+            self.quick_panel(
+                self.results,
+                self.do_nothing, sublime.MONOSPACE_FONT
+            )
         else:
             sublime.status_message("Nothing to show")
 
@@ -87,35 +90,6 @@ class GitGitkCommand(GitTextCommand):
     def run(self, edit):
         command = ['gitk']
         self.run_command(command)
-
-
-class GitUpdateIgnoreCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
-        data = self.view.window().project_data()
-        project_file_name = self.view.window().project_file_name()
-        for folder in data['folders']:
-            path = folder['path']
-            if project_file_name:
-                path = os.path.join(os.path.dirname(project_file_name), path)
-            gitignore = os.path.join(path, ".gitignore")
-            print("gitignore path", gitignore)
-            if (os.path.exists(gitignore)):
-                with open(gitignore) as gitignore_file:
-                    if "folder_exclude_patterns" not in folder:
-                        folder["folder_exclude_patterns"] = []
-                    if "file_exclude_patterns" not in folder:
-                        folder["file_exclude_patterns"] = []
-                    for pattern in gitignore_file:
-                        pattern = pattern.strip()
-                        if len(pattern) == 0 or pattern[0] == '#':
-                            continue
-                        elif os.path.isdir(os.path.join(path, pattern)):
-                            if pattern not in folder["folder_exclude_patterns"]:
-                                folder["folder_exclude_patterns"].append(pattern)
-                        else:
-                            if pattern not in folder["file_exclude_patterns"]:
-                                folder["file_exclude_patterns"].append(pattern)
-        self.view.window().set_project_data(data)
 
 
 # called by GitWindowCommand

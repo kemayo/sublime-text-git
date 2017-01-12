@@ -22,7 +22,7 @@ def find_plugin_directory():
         match = re.search(r"([^\\/]+)\.sublime-package", __file__)
         if match:
             return "Packages/" + match.group(1)
-    if __file__.startswith('./'):
+    if __file__.startswith('./') or __file__.startswith('.\\'):
         # ST2, we get "./git/__init__.py" which is pretty useless since we want the part above that
         # However, os.getcwd() is the plugin directory!
         full = os.getcwd()
@@ -33,6 +33,8 @@ def find_plugin_directory():
         full = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
     dirname = os.path.split(full)[-1]
     return "Packages/" + dirname.replace(".sublime-package", "")
+
+
 PLUGIN_DIRECTORY = find_plugin_directory()
 
 
@@ -149,8 +151,15 @@ def find_binary(cmd):
             )
         path = _test_paths_for_executable(extra_paths, cmd)
     return path
+
+
 GIT = find_binary('git')
 GITK = find_binary('gitk')
+
+
+def output_error_message(output, *args, **kwargs):
+    # print('error', output, args, kwargs)
+    sublime.error_message(output)
 
 
 class CommandThread(threading.Thread):
@@ -182,8 +191,9 @@ class CommandThread(threading.Thread):
         output = ''
         callback = self.on_done
         try:
+            cwd = None
             if self.working_dir != "":
-                os.chdir(self.working_dir)
+                cwd = self.working_dir
             # Windows needs startupinfo in order to start process in background
             startupinfo = None
             if os.name == 'nt':
@@ -196,14 +206,16 @@ class CommandThread(threading.Thread):
             if sublime.platform() == 'windows':
                 shell = True
                 if 'HOME' not in env:
-                    env[str('HOME')] = str(env['USERPROFILE'])
+                    env[str('HOME')] = str(env['HOMEDRIVE']) + str(env['HOMEPATH'])
 
             # universal_newlines seems to break `log` in python3
-            proc = subprocess.Popen(self.command,
+            proc = subprocess.Popen(
+                self.command,
                 stdout=self.stdout, stderr=subprocess.STDOUT,
                 stdin=subprocess.PIPE, startupinfo=startupinfo,
                 shell=shell, universal_newlines=False,
-                env=env)
+                env=env, cwd=cwd
+            )
             output = proc.communicate(self.stdin)[0]
             if self.error_suppresses_output and proc.returncode is not None and proc.returncode > 0:
                 output = False
@@ -211,12 +223,14 @@ class CommandThread(threading.Thread):
                 output = ''
             output = _make_text_safeish(output, self.fallback_encoding)
         except subprocess.CalledProcessError as e:
+            print("CalledProcessError", e)
             if self.error_suppresses_output:
                 output = ''
             else:
                 output = e.returncode
         except OSError as e:
-            callback = sublime.error_message
+            print("OSError", e)
+            callback = output_error_message
             if e.errno == 2:
                 global _has_warned
                 if not _has_warned:
@@ -233,8 +247,7 @@ class CommandThread(threading.Thread):
 class GitCommand(object):
     may_change_files = False
 
-    def run_command(self, command, callback=None, show_status=True,
-            filter_empty_args=True, no_save=False, **kwargs):
+    def run_command(self, command, callback=None, show_status=True, filter_empty_args=True, no_save=False, **kwargs):
         if filter_empty_args:
             command = [arg for arg in command if arg]
         if 'working_dir' not in kwargs:
@@ -289,8 +302,7 @@ class GitCommand(object):
             return
         self.panel(result)
 
-    def _output_to_view(self, output_file, output, clear=False,
-            syntax="Packages/Diff/Diff.tmLanguage", **kwargs):
+    def _output_to_view(self, output_file, output, clear=False, syntax="Packages/Diff/Diff.tmLanguage", **kwargs):
         output_file.set_syntax_file(syntax)
         args = {
             'output': output,
@@ -331,16 +343,27 @@ class GitCommand(object):
             root = self.active_view().settings().get("git_root_dir")
         view.settings().set("git_root_dir", root)
 
+    def active_file_path(self):
+        view = self.active_view()
+        if view and view.file_name() and len(view.file_name()) > 0:
+            return view.file_name()
+
+    def active_file_name(self):
+        path = self.active_file_path()
+        if path:
+            return os.path.basename(path)
+
+    def relative_active_file_path(self):
+        working_dir = self.get_working_dir()
+        file_path = working_dir.replace(git_root(working_dir), '')[1:]
+        file_name = os.path.join(file_path, self.active_file_name())
+        return file_name.replace('\\', '/')  # windows issues
+
 
 # A base for all git commands that work with the entire repository
 class GitWindowCommand(GitCommand, sublime_plugin.WindowCommand):
     def active_view(self):
         return self.window.active_view()
-
-    def _active_file_name(self):
-        view = self.active_view()
-        if view and view.file_name() and len(view.file_name()) > 0:
-            return view.file_name()
 
     @property
     def fallback_encoding(self):
@@ -352,21 +375,21 @@ class GitWindowCommand(GitCommand, sublime_plugin.WindowCommand):
     # that the user intends Git commands to run against when there's only
     # only one.
     def is_enabled(self):
-        if self._active_file_name() or len(self.window.folders()) == 1:
+        if self.active_file_path() or len(self.window.folders()) == 1:
             return bool(git_root(self.get_working_dir()))
         return False
 
     def get_file_name(self):
         return ''
 
-    def get_relative_file_name(self):
+    def get_relative_file_path(self):
         return ''
 
     # If there is a file in the active view use that file's directory to
     # search for the Git root.  Otherwise, use the only folder that is
     # open.
     def get_working_dir(self):
-        file_name = self._active_file_name()
+        file_name = self.active_file_path()
         if file_name:
             return os.path.realpath(os.path.dirname(file_name))
         try:  # handle case with no open folder
@@ -390,13 +413,10 @@ class GitTextCommand(GitCommand, sublime_plugin.TextCommand):
         return False
 
     def get_file_name(self):
-        return os.path.basename(self.view.file_name())
+        return self.active_file_name()
 
-    def get_relative_file_name(self):
-        working_dir = self.get_working_dir()
-        file_path = working_dir.replace(git_root(working_dir), '')[1:]
-        file_name = os.path.join(file_path, self.get_file_name())
-        return file_name.replace('\\', '/')  # windows issues
+    def get_relative_file_path(self):
+        return self.relative_active_file_path()
 
     def get_working_dir(self):
         file_name = self.view.file_name()

@@ -4,7 +4,6 @@ import functools
 import re
 
 import sublime
-import sublime_plugin
 from . import GitTextCommand, GitWindowCommand, plugin_file
 
 
@@ -15,10 +14,11 @@ class GitBlameCommand(GitTextCommand):
         # -M: retain blame when moving lines
         # -C: retain blame when copying lines between files
         command = ['git', 'blame', '-w', '-M', '-C']
+        line_ranges = [self.get_lines(selection) for selection in self.view.sel() if not selection.empty()]
 
-        lines = self.get_lines()
-        if lines:
-            command.extend(('-L', str(lines[0]) + ',' + str(lines[1])))
+        if line_ranges:
+            for line_range in line_ranges:
+                command.extend(('-L', str(line_range[0]) + ',' + str(line_range[1])))
             callback = self.blame_done
         else:
             callback = functools.partial(self.blame_done,
@@ -32,8 +32,7 @@ class GitBlameCommand(GitTextCommand):
         # line is 1 based
         return current_line + 1
 
-    def get_lines(self):
-        selection = self.view.sel()[0]  # todo: multi-select support?
+    def get_lines(self, selection):
         if selection.empty():
             return False
         # just the lines we have a selection on
@@ -46,8 +45,10 @@ class GitBlameCommand(GitTextCommand):
         return begin_line + 1, end_line + 1
 
     def blame_done(self, result, focused_line=1):
-        view = self.scratch(result, title="Git Blame", focused_line=focused_line,
-                            syntax=plugin_file("syntax/Git Blame.tmLanguage"))
+        self.scratch(
+            result, title="Git Blame", focused_line=focused_line,
+            syntax=plugin_file("syntax/Git Blame.tmLanguage")
+        )
 
 
 class GitLog(object):
@@ -62,8 +63,11 @@ class GitLog(object):
         # 9000 is a pretty arbitrarily chosen limit; picked entirely because
         # it's about the size of the largest repo I've tested this on... and
         # there's a definite hiccup when it's loading that
-        command = ['git', 'log', '--no-color', '--pretty=%s (%h)\a%an <%aE>\a%ad (%ar)',
-            '--date=local', '--max-count=9000', '--follow' if follow else None]
+        command = [
+            'git', 'log', '--no-color', '--pretty=%s (%h)\a%an <%aE>\a%ad (%ar)',
+            '--date=local', '--max-count=9000',
+            '--follow' if follow else None
+        ]
         command.extend(args)
         self.run_command(
             command,
@@ -107,7 +111,7 @@ class GitShow(object):
         # GitLog Copy-Past
         self.run_command(
             ['git', 'log', '--no-color', '--pretty=%s (%h)\a%an <%aE>\a%ad (%ar)',
-            '--date=local', '--max-count=9000', '--', self.get_file_name()],
+             '--date=local', '--max-count=9000', '--', self.get_file_name()],
             self.show_done)
 
     def show_done(self, result):
@@ -122,7 +126,7 @@ class GitShow(object):
         # the commit hash is the last thing on the first line, in brackets
         ref = item[0].split(' ')[-1].strip('()')
         self.run_command(
-            ['git', 'show', '%s:%s' % (ref, self.get_relative_file_name())],
+            ['git', 'show', '%s:%s' % (ref, self.get_relative_file_path())],
             self.details_done,
             ref=ref)
 
@@ -137,6 +141,23 @@ class GitShowCommand(GitShow, GitTextCommand):
 
 class GitShowAllCommand(GitShow, GitWindowCommand):
     pass
+
+
+class GitShowCommitCommand(GitWindowCommand):
+    def run(self, edit=None):
+        self.window.show_input_panel("Commit to show:", "", self.input_done, None, None)
+
+    def input_done(self, commit):
+        commit = commit.strip()
+
+        self.run_command(['git', 'show', commit, '--'], self.show_done, commit=commit)
+
+    def show_done(self, result, commit):
+        if result.startswith('fatal:'):
+            self.panel(result)
+            return
+        self.scratch(result, title="Git Commit: %s" % commit,
+                     syntax=plugin_file("syntax/Git Commit View.tmLanguage"))
 
 
 class GitGraph(object):
@@ -165,8 +186,10 @@ class GitOpenFileCommand(GitLog, GitWindowCommand):
 
     def branch_done(self, result):
         self.results = result.rstrip().split('\n')
-        self.quick_panel(self.results, self.branch_panel_done,
-            sublime.MONOSPACE_FONT)
+        self.quick_panel(
+            self.results, self.branch_panel_done,
+            sublime.MONOSPACE_FONT
+        )
 
     def branch_panel_done(self, picked):
         if 0 > picked < len(self.results):
@@ -204,17 +227,6 @@ class GitOpenFileCommand(GitLog, GitWindowCommand):
 
 
 class GitDocumentCommand(GitBlameCommand):
-    def get_lines(self):
-        selection = self.view.sel()[0]  # todo: multi-select support?
-        # just the lines we have a selection on
-        begin_line, begin_column = self.view.rowcol(selection.begin())
-        end_line, end_column = self.view.rowcol(selection.end())
-        # blame will fail if last line is empty and is included in the selection
-        if end_line > begin_line and end_column == 0:
-            end_line -= 1
-        # add one to each, to line up sublime's index with git's
-        return begin_line + 1, end_line + 1
-
     def blame_done(self, result, focused_line=1):
         shas = set((sha for sha in re.findall(r'^[0-9a-f]+', result, re.MULTILINE) if not re.match(r'^0+$', sha)))
         command = ['git', 'show', '-s', '-z', '--no-color', '--date=iso']
@@ -238,16 +250,30 @@ class GitDocumentCommand(GitBlameCommand):
 class GitGotoCommit(GitTextCommand):
     def run(self, edit):
         view = self.view
-        line = view.substr(view.line(view.sel()[0].a))
-        commit = line.split(" ")[0]
-        if not commit or commit == "00000000":
-            return
+
+        # Sublime is missing a "find scope in region" API, so we piece one together here:
+        lines = [view.line(sel.a) for sel in view.sel()]
+        hashes = self.view.find_by_selector("string.sha")
+        commits = []
+        for region in hashes:
+            for line in lines:
+                if line.contains(region):
+                    commit = view.substr(region)
+                    if commit.strip("0"):
+                        commits.append(commit)
+                    break
+
         working_dir = view.settings().get("git_root_dir")
-        self.run_command(['git', 'show', commit], self.show_done, working_dir=working_dir)
+        for commit in commits:
+            self.run_command(['git', 'show', commit], self.show_done, working_dir=working_dir)
 
     def show_done(self, result):
         self.scratch(result, title="Git Commit View",
                      syntax=plugin_file("syntax/Git Commit View.tmLanguage"))
 
     def is_enabled(self):
-        return True
+        selection = self.view.sel()[0]
+        return (
+            self.view.match_selector(selection.a, "text.git-blame") or
+            self.view.match_selector(selection.a, "text.git-graph")
+        )

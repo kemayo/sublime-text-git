@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/kemayo/sublime-text-git.svg?branch=master)](https://travis-ci.org/kemayo/sublime-text-git)
 # Sublime Text plugin: git
 
 Git integration: it's pretty handy. Who knew, right?
@@ -20,3 +21,9 @@ Package Control will automatically keep Git up to date with the latest version.
 ### The rest
 
 If you don't want to use Package Control, [check the wiki](https://github.com/kemayo/sublime-text-git/wiki) for other installation methods on various platforms.
+
+## Acknowledgements
+
+This package contains:
+
+* [Sublime Text git Commit Message Syntax](https://github.com/adambullmer/sublime_git_commit_syntax) by [Adam Bullmer](https://github.com/adambullmer).
