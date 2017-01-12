@@ -291,15 +291,16 @@
     }
     ,{
         "caption": "Git: Move Current File",
-        "command": "git_mv"
+        "command": "git_file_move"
     }
     ,{
-        "caption": "Git: Rename/Move Current File",
-        "command": "git_mv", "args": { "rename": true }
+        "caption": "Git: Rename / Move Current File",
+        "command": "git_file_move", "args": { "rename": true }
     }
     ,{
-        "caption": "Git: Remove/Delete Current File",
+        "caption": "Git: Remove / Delete Current File",
         "command": "git_raw", "args": { "command": "git rm", "append_current_file": true }
+    }
     ,{
         "caption": "Git: Assume Unchanged",
         "command": "git_update_index_assume_unchanged"
