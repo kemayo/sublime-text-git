@@ -61,6 +61,7 @@ try:
     from .git.add import *  # noqa
     from .git.index import *  # noqa
     from .git.annotate import *  # noqa
+    from .git.config import *  # noqa
     from .git.commit import *  # noqa
     from .git.diff import *  # noqa
     from .git.flow import *  # noqa
@@ -78,6 +79,7 @@ except (ImportError, ValueError):
     from git.add import *  # noqa
     from git.index import *  # noqa
     from git.annotate import *  # noqa
+    from git.config import *  # noqa
     from git.commit import *  # noqa
     from git.diff import *  # noqa
     from git.flow import *  # noqa

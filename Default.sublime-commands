@@ -309,4 +309,12 @@
         "caption": "Git: No Assume Unchanged",
         "command": "git_update_index_no_assume_unchanged"
     }
+    ,{
+        "caption": "Git: Open Local Config",
+        "command": "git_open_config_file"
+    }
+    ,{
+        "caption": "Git: Open Url",
+        "command": "git_open_config_url", "args": { "url_param": "remote.origin.url" }
+    }
 ]
