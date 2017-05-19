@@ -1,5 +1,5 @@
 [flake8]
-ignore = 
+ignore =
     # E128 continuation line under-indented for visual indent
     # E128,
     # E501 line too long

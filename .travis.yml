@@ -5,7 +5,10 @@ python:
 
 install:
   - pip install flake8
-  - npm install eclint
+  - . $HOME/.nvm/nvm.sh
+  - nvm install stable
+  - nvm use stable
+  - npm install -g eclint
 
 script:
   - flake8 .
