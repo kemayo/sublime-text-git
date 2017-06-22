@@ -4,7 +4,7 @@ import sublime
 import sublime_plugin
 import os
 import re
-from . import GitTextCommand, GitWindowCommand, do_when, goto_xy
+from . import GitTextCommand, GitWindowCommand, do_when, goto_xy, git_root, get_open_folder_from_window
 
 
 class GitDiff (object):
@@ -99,6 +99,10 @@ class GitGotoDiff(sublime_plugin.TextCommand):
         self.goto_line = int(hunk_start_line) + line_offset - 1
 
         git_root_dir = v.settings().get("git_root_dir")
+        # See if we can get the git root directory if we haven't saved it yet
+        if not git_root_dir:
+            working_dir = get_open_folder_from_window(v.window())
+            git_root_dir = git_root(working_dir) if working_dir else None
 
         # Sanity check and see if the file we're going to try to open even
         # exists. If it does not, prompt the user for the correct base directory

@@ -81,6 +81,14 @@ def git_root_exist(directory):
     return git_root(directory)
 
 
+# try to get an open folder from the window
+def get_open_folder_from_window(window):
+    try:  # handle case with no open folder
+        return window.folders()[0]
+    except IndexError:
+        return ''
+
+
 def view_contents(view):
     region = sublime.Region(0, view.size())
     return view.substr(region)
@@ -392,10 +400,7 @@ class GitWindowCommand(GitCommand, sublime_plugin.WindowCommand):
         file_name = self.active_file_path()
         if file_name:
             return os.path.realpath(os.path.dirname(file_name))
-        try:  # handle case with no open folder
-            return self.window.folders()[0]
-        except IndexError:
-            return ''
+        return get_open_folder_from_window(self.window)
 
     def get_window(self):
         return self.window
