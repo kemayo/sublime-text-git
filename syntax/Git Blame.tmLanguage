@@ -21,7 +21,7 @@
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>string.path.git-blame</string>
+					<string>variable.parameter.line-number.git-blame</string>
 				</dict>
 				<key>3</key>
 				<dict>
@@ -32,11 +32,6 @@
 				<dict>
 					<key>name</key>
 					<string>constant.numeric.date.git-blame</string>
-				</dict>
-				<key>5</key>
-				<dict>
-					<key>name</key>
-					<string>variable.parameter.line-number.git-blame</string>
 				</dict>
 			</dict>
 			<key>match</key>
