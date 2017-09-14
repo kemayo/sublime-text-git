@@ -18,6 +18,11 @@ The easiest way to install this is with [Package Control](http://wbond.net/subli
 
 Package Control will automatically keep Git up to date with the latest version.
 
+### Basic Usage
+
+ * Bring up the Command Palette (Command+Shift+p on OS X, Control+Shift+p on Linux/Windows).
+ * Start typing "Git" and select one of the recommended commands.
+
 ### The rest
 
 If you don't want to use Package Control, [check the wiki](https://github.com/kemayo/sublime-text-git/wiki) for other installation methods on various platforms.
