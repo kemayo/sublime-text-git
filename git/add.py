@@ -6,6 +6,8 @@ import re
 import sublime
 from . import GitTextCommand, GitWindowCommand, git_root
 from .status import GitStatusCommand
+from collections import namedtuple
+from .diff import get_GitDiffRootInView
 
 
 class GitAddChoiceCommand(GitStatusCommand):
@@ -45,10 +47,28 @@ class GitAddChoiceCommand(GitStatusCommand):
 
 
 class GitAddSelectedHunkCommand(GitTextCommand):
-    def run(self, edit, edit_patch=False):
-        self.run_command(['git', 'diff', '--no-color', '-U1', self.get_file_name()], lambda result: self.cull_diff(result, edit_patch))
+    def is_gitDiffView(self, view):
+        return view.name() == "Git Diff" and get_GitDiffRootInView(view) is not None
 
-    def cull_diff(self, result, edit_patch=False):
+    def is_enabled(self):
+
+        view = self.active_view()
+        if self.is_gitDiffView(view):
+            return True
+
+        # First, is this actually a file on the file system?
+        return super().is_enabled()
+
+    def run(self, edit, edit_patch=False):
+        if self.is_gitDiffView(self.view):
+            kwargs = {}
+            kwargs['working_dir'] = get_GitDiffRootInView(self.view)
+            full_diff = self.view.substr(sublime.Region(0, self.view.size()))
+            self.cull_diff(full_diff, edit_patch=edit_patch, direct_select=True, **kwargs)
+        else:
+            self.run_command(['git', 'diff', '--no-color', '-U1', self.get_file_name()], lambda result: self.cull_diff(result, edit_patch))
+
+    def cull_diff(self, result, edit_patch=False, direct_select=False, **kwargs):
         selection = []
         for sel in self.view.sel():
             selection.append({
@@ -56,12 +76,17 @@ class GitAddSelectedHunkCommand(GitTextCommand):
                 "end": self.view.rowcol(sel.end())[0] + 1,
             })
 
-        hunks = [{"diff": ""}]
-        i = 0
+        # We devide the diff output into hunk groups. A file header starts a new group.
+        # Each group can contain zero or more hunks.
+        HunkGroup = namedtuple("HunkGroup", ["fileHeader", "hunkList"])
+        section = []
+        hunks = [HunkGroup(section, [])]  # Initial lines before hunks
         matcher = re.compile('^@@ -([0-9]*)(?:,([0-9]*))? \+([0-9]*)(?:,([0-9]*))? @@')
-        for line in result.splitlines(keepends=True):  # if different line endings, patch will not apply
-            if line.startswith('@@'):
-                i += 1
+        for line_num, line in enumerate(result.splitlines(keepends=True)):  # if different line endings, patch will not apply
+            if line.startswith('diff'):  # new file
+                section = []
+                hunks.append(HunkGroup(section, []))
+            elif line.startswith('@@'):  # new hunk
                 match = matcher.match(line)
                 start = int(match.group(3))
                 end = match.group(4)
@@ -69,38 +94,58 @@ class GitAddSelectedHunkCommand(GitTextCommand):
                     end = start + int(end)
                 else:
                     end = start
-                hunks.append({"diff": "", "start": start, "end": end})
-            hunks[i]["diff"] += line
+                section = []
+                hunks[-1].hunkList.append({"diff": section, "start": start, "end": end, "diff_start": line_num + 1, "diff_end": line_num + 1})
+            elif hunks[-1].hunkList:  # new line for file header or hunk
+                hunks[-1].hunkList[-1]["diff_end"] = line_num + 1  # update hunk end
 
-        diffs = hunks[0]["diff"]
+            section.append(line)
+
+        diffs = "".join(hunks[0][0])
         hunks.pop(0)
         selection_is_hunky = False
-        for hunk in hunks:
-            for sel in selection:
-                if sel["end"] < hunk["start"]:
-                    continue
-                if sel["start"] > hunk["end"]:
-                    continue
-                diffs += hunk["diff"]  # + "\n\nEND OF HUNK\n\n"
-                selection_is_hunky = True
+        for file_header, hunkL in hunks:
+            file_header = "".join(file_header)
+            file_header_added = False
+            for hunk in hunkL:
+                for sel in selection:
+                    # In direct mode the selected view lines correspond directly to the lines of the diff file
+                    # In indirect mode the selected view lines correspond to the lines in the "@@" hunk header
+                    if direct_select:
+                        hunk_start = hunk["diff_start"]
+                        hunk_end = hunk["diff_end"]
+                    else:
+                        hunk_start = hunk["start"]
+                        hunk_end = hunk["end"]
+                    if sel["end"] < hunk_start:
+                        continue
+                    if sel["start"] > hunk_end:
+                        continue
+                    # Only print the file header once
+                    if not file_header_added:
+                        file_header_added = True
+                        diffs += file_header
+                    hunk_str = "".join(hunk["diff"])
+                    diffs += hunk_str  # + "\n\nEND OF HUNK\n\n"
+                    selection_is_hunky = True
 
         if selection_is_hunky:
             if edit_patch:  # open an input panel to modify the patch
                 patch_view = self.get_window().show_input_panel(
                     "Message", diffs,
-                    lambda edited_patch: self.on_input(edited_patch), None, None
+                    lambda edited_patch: self.on_input(edited_patch, **kwargs), None, None
                 )
                 s = sublime.load_settings("Git.sublime-settings")
                 syntax = s.get("diff_syntax", "Packages/Diff/Diff.tmLanguage")
                 patch_view.set_syntax_file(syntax)
                 patch_view.settings().set('word_wrap', False)
             else:
-                self.on_input(diffs)
+                self.on_input(diffs, **kwargs)
         else:
             sublime.status_message("No selected hunk")
 
-    def on_input(self, patch):
-        self.run_command(['git', 'apply', '--cached'], stdin=patch)
+    def on_input(self, patch, **kwargs):
+        self.run_command(['git', 'apply', '--cached'], stdin=patch, **kwargs)
 
 # Also, sometimes we want to undo adds
 
