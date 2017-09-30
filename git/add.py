@@ -45,10 +45,10 @@ class GitAddChoiceCommand(GitStatusCommand):
 
 
 class GitAddSelectedHunkCommand(GitTextCommand):
-    def run(self, edit):
-        self.run_command(['git', 'diff', '--no-color', '-U1', self.get_file_name()], self.cull_diff)
+    def run(self, edit, edit_patch=False):
+        self.run_command(['git', 'diff', '--no-color', '-U1', self.get_file_name()], lambda result: self.cull_diff(result, edit_patch))
 
-    def cull_diff(self, result):
+    def cull_diff(self, result, edit_patch=False):
         selection = []
         for sel in self.view.sel():
             selection.append({
@@ -85,10 +85,22 @@ class GitAddSelectedHunkCommand(GitTextCommand):
                 selection_is_hunky = True
 
         if selection_is_hunky:
-            self.run_command(['git', 'apply', '--cached'], stdin=diffs)
+            if edit_patch:  # open an input panel to modify the patch
+                patch_view = self.get_window().show_input_panel(
+                    "Message", diffs,
+                    lambda edited_patch: self.on_input(edited_patch), None, None
+                )
+                s = sublime.load_settings("Git.sublime-settings")
+                syntax = s.get("diff_syntax", "Packages/Diff/Diff.tmLanguage")
+                patch_view.set_syntax_file(syntax)
+                patch_view.settings().set('word_wrap', False)
+            else:
+                self.on_input(diffs)
         else:
             sublime.status_message("No selected hunk")
 
+    def on_input(self, patch):
+        self.run_command(['git', 'apply', '--cached'], stdin=patch)
 
 # Also, sometimes we want to undo adds
 
