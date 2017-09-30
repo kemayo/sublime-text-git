@@ -59,7 +59,7 @@ class GitAddSelectedHunkCommand(GitTextCommand):
         hunks = [{"diff": ""}]
         i = 0
         matcher = re.compile('^@@ -([0-9]*)(?:,([0-9]*))? \+([0-9]*)(?:,([0-9]*))? @@')
-        for line in result.splitlines():
+        for line in result.splitlines(keepends=True):  # if different line endings, patch will not apply
             if line.startswith('@@'):
                 i += 1
                 match = matcher.match(line)
@@ -70,7 +70,7 @@ class GitAddSelectedHunkCommand(GitTextCommand):
                 else:
                     end = start
                 hunks.append({"diff": "", "start": start, "end": end})
-            hunks[i]["diff"] += line + "\n"
+            hunks[i]["diff"] += line
 
         diffs = hunks[0]["diff"]
         hunks.pop(0)
