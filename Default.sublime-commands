@@ -130,8 +130,12 @@
         "command": "git_branch"
     }
     ,{
-        "caption": "Git: Track Remote Branch",
+        "caption": "Git: Checkout Remote Tracking Branch",
         "command": "git_track_remote_branch"
+    }
+    ,{
+        "caption": "Git: Set Upstream Tracking Branch",
+        "command": "git_set_upstream_branch"
     }
     ,{
         "caption": "Git: Merge Branch",
