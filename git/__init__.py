@@ -264,7 +264,13 @@ class GitCommand(object):
             kwargs[str('fallback_encoding')] = str(self.active_view().settings().get('fallback_encoding').rpartition('(')[2].rpartition(')')[0])
 
         s = sublime.load_settings("Git.sublime-settings")
-        if s.get('save_first') and self.active_view() and self.active_view().is_dirty() and not no_save:
+        if (
+            s.get('save_first') and
+            self.active_view() and
+            self.active_view().file_name() and
+            self.active_view().is_dirty() and
+            not no_save
+        ):
             self.active_view().run_command('save')
         if command[0] == 'git':
             us = sublime.load_settings('Preferences.sublime-settings')
