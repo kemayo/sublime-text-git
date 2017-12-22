@@ -27,11 +27,6 @@ class GitBlameCommand(GitTextCommand):
         command.append(self.get_file_name())
         self.run_command(command, callback)
 
-    def get_current_line(self):
-        (current_line, column) = self.view.rowcol(self.view.sel()[0].a)
-        # line is 1 based
-        return current_line + 1
-
     def get_lines(self, selection):
         if selection.empty():
             return False
@@ -54,9 +49,11 @@ class GitBlameCommand(GitTextCommand):
 class GitLog(object):
     def run(self, edit=None):
         fn = self.get_file_name()
-        return self.run_log(fn != '', '--', fn)
+        ln = self.get_current_line()
+        return self.run_log(fn, ln, '--', fn)
 
-    def run_log(self, follow, *args):
+    def run_log(self, fn, ln, *args):
+
         # the ASCII bell (\a) is just a convenient character I'm pretty sure
         # won't ever come up in the subject of the commit (and if it does then
         # you positively deserve broken output...)
@@ -66,12 +63,16 @@ class GitLog(object):
         command = [
             'git', 'log', '--no-color', '--pretty=%s (%h)\a%an <%aE>\a%ad (%ar)',
             '--date=local', '--max-count=9000',
-            '--follow' if follow else None
+            '--follow' if fn != '' and ln == -1 else None,
+            '-L' + str(ln) + ',+1:' + fn if ln != -1 else None,
         ]
-        command.extend(args)
+
+        if(ln == -1):
+            command.extend(args)
+
         self.run_command(
             command,
-            self.log_done)
+            self.log_done if ln == -1 else self.details_done)
 
     def log_done(self, result):
         self.results = [r.split('\a', 2) for r in result.strip().split('\n')]
@@ -99,6 +100,11 @@ class GitLog(object):
 
 
 class GitLogCommand(GitLog, GitTextCommand):
+    def get_current_line(self):
+        return -1
+
+
+class GitLogLineCommand(GitLog, GitTextCommand):
     pass
 
 

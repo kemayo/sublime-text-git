@@ -35,6 +35,10 @@
         "command": "git_log"
     }
     ,{
+        "caption": "Git: Log Current Line",
+        "command": "git_log_line"
+    }
+    ,{
         "caption": "Git: Log All",
         "command": "git_log_all"
     }
