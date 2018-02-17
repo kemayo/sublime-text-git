@@ -50,6 +50,27 @@ class GitBlameCommand(GitTextCommand):
             syntax=plugin_file("syntax/Git Blame.tmLanguage")
         )
 
+class GitWtfCommand(GitBlameCommand):
+    def run(self, edit):
+        command = ['git', 'log']
+        line_ranges = [self.get_lines(selection) for selection in self.view.sel() if not selection.empty()]
+
+        if line_ranges:
+            for line_range in line_ranges:
+                command.extend(
+                    ('-L', str(line_range[0]) + ',' + str(line_range[1]) + ':' + self.get_file_name())
+                )
+        else:
+            command.extend(('--follow', '--'))
+            command.append(self.get_file_name())
+
+        self.run_command(command, self.wtf_done)
+
+    def wtf_done(self, result):
+        self.scratch(
+            result, title="Git WTF",
+            syntax=plugin_file("syntax/Git Commit View.tmLanguage")
+        )
 
 class GitLog(object):
     def run(self, edit=None):
