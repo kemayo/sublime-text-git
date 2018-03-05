@@ -50,6 +50,7 @@ class GitBlameCommand(GitTextCommand):
             syntax=plugin_file("syntax/Git Blame.tmLanguage")
         )
 
+
 class GitWtfCommand(GitBlameCommand):
     def run(self, edit):
         command = ['git', 'log']
@@ -71,6 +72,7 @@ class GitWtfCommand(GitBlameCommand):
             result, title="Git WTF",
             syntax=plugin_file("syntax/Git Commit View.tmLanguage")
         )
+
 
 class GitLog(object):
     def run(self, edit=None):
