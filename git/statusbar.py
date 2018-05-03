@@ -31,7 +31,7 @@ class GitBranchStatusCommand(GitTextCommand):
         if result is False:
             self.view.set_status("git-branch", "")
         else:
-            self.view.set_status("git-branch", "Git branch: " + result.strip())
+            self.view.set_status("git-branch", "⎇ " + result.strip())
 
     def status_done(self, result):
         if result is False:
