@@ -51,4 +51,8 @@
 	// Watch for gitignore changes?
 	// When found, import them. This will hide the ignored files from the sidebar.
 	,"gitignore_sync": false
+
+	// Allows diff to show untracked (new) files as well, instead of omitting
+	// them until staged
+	,"diff_untracked_files": false
 }
