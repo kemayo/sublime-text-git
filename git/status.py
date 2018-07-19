@@ -21,9 +21,16 @@ class GitStatusCommand(GitWindowCommand):
             sublime.status_message("Nothing to show")
 
     def show_status_list(self):
+        # selects the first actual entry on the list of modifications,
+        # instead of the 'all files' one
+        selected_index = 0
+        if len(self.results) > 2:
+            selected_index = 2
+
         self.quick_panel(
             self.results, self.panel_done,
-            sublime.MONOSPACE_FONT
+            sublime.MONOSPACE_FONT,
+            selected_index
         )
 
     def status_filter(self, item):
