@@ -7,6 +7,22 @@ import re
 from . import GitTextCommand, GitWindowCommand, do_when, goto_xy, git_root, get_open_folder_from_window
 
 
+gitDiffRootPrefix = "## git_diff_root: "
+
+
+def get_GitDiffRootInView(view):
+    git_root_prefix = gitDiffRootPrefix
+    line_0 = view.substr(view.line(0))
+    if git_root_prefix == line_0[:len(git_root_prefix)]:
+        git_root = line_0[len(git_root_prefix):].strip("\"")
+        return git_root
+    return None
+
+
+def add_gitDiffRootToDiffOutput(output, gitRoot):
+    return gitDiffRootPrefix + "\"" + gitRoot + "\"\n" + output
+
+
 class GitDiff (object):
     def run(self, edit=None, ignore_whitespace=False):
         command = ['git', 'diff', '--no-color']
@@ -21,6 +37,8 @@ class GitDiff (object):
             return
         s = sublime.load_settings("Git.sublime-settings")
         syntax = s.get("diff_syntax", "Packages/Diff/Diff.tmLanguage")
+        # We add meta-information from which we can infer the git_root after sublime restart
+        result = add_gitDiffRootToDiffOutput(result, git_root(self.get_working_dir()))
         if s.get('diff_panel'):
             self.panel(result, syntax=syntax)
         else:
