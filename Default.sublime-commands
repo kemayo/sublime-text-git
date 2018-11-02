@@ -114,6 +114,14 @@
         "command": "git_merge"
     }
     ,{
+        "caption": "Git: Merge Abort",
+        "command": "git_merge_abort"
+    }
+    ,{
+        "caption": "Git: Merge Tool",
+        "command": "git_merge_tool"
+    }
+    ,{
         "caption": "Git: Delete Branch",
         "command": "git_delete_branch"
     }

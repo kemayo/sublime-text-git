@@ -1,7 +1,7 @@
 import os
 
 import sublime
-from .git import GitWindowCommand, git_root_exist
+from .git import GitWindowCommand, git_root_exist, git_root
 
 
 class GitInit(object):
@@ -58,6 +58,30 @@ class GitBranchCommand(GitWindowCommand):
 class GitMergeCommand(GitBranchCommand):
     command_to_run_after_branch = ['merge']
     extra_flags = ['--no-merge']
+
+    def update_status(self, result):
+        self.panel(result)
+        if sublime.load_settings("Git.sublime-settings").get('mergetool_on_conflicts'):
+            if '\nCONFLICT ' in result:
+                sublime.status_message("Merge conflict: launching mergetool...")
+                self.get_window().run_command("git_raw", {"command": "git mergetool -y"})
+        global branch
+        branch = ""
+        for view in self.window.views():
+            view.run_command("git_branch_status")
+
+class GitMergeToolCommand(GitWindowCommand):
+    def run(self):
+        self.get_window().run_command("git_raw", {"command": "git mergetool -y"})
+
+    def is_enabled(self):
+        root = git_root(self.get_working_dir())
+        return root and os.path.exists(os.path.join(root, ".git/MERGE_HEAD"))
+
+
+class GitMergeAbortCommand(GitMergeToolCommand):
+    def run(self):
+        self.get_window().run_command("git_raw", {"command": "git merge --abort"})
 
 
 class GitDeleteBranchCommand(GitBranchCommand):
