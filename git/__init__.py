@@ -273,19 +273,20 @@ class GitCommand(object):
         ):
             self.active_view().run_command('save')
         if command[0] == 'git':
-            us = sublime.load_settings('Preferences.sublime-settings')
-            if s.get('git_command') or us.get('git_binary'):
-                command[0] = s.get('git_command') or us.get('git_binary')
-            elif GIT:
-                command[0] = GIT
+            if command[1] == 'flow' and s.get('git_flow_command'):
+                command[0] = s.get('git_flow_command')
+                del(command[1])
+            else:
+                us = sublime.load_settings('Preferences.sublime-settings')
+                if s.get('git_command') or us.get('git_binary'):
+                    command[0] = s.get('git_command') or us.get('git_binary')
+                elif GIT:
+                    command[0] = GIT
         if command[0] == 'gitk' and s.get('gitk_command'):
             if s.get('gitk_command'):
                 command[0] = s.get('gitk_command')
             elif GITK:
                 command[0] = GITK
-        if command[0] == 'git' and command[1] == 'flow' and s.get('git_flow_command'):
-            command[0] = s.get('git_flow_command')
-            del(command[1])
         if not callback:
             callback = self.generic_done
 
