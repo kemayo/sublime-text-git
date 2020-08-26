@@ -274,6 +274,6 @@ class GitGotoCommit(GitTextCommand):
     def is_enabled(self):
         selection = self.view.sel()[0]
         return (
-            self.view.match_selector(selection.a, "text.git-blame") or
-            self.view.match_selector(selection.a, "text.git-graph")
+            self.view.match_selector(selection.a, "text.git-blame")
+            or self.view.match_selector(selection.a, "text.git-graph")
         )

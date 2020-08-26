@@ -85,7 +85,7 @@ class GitAnnotateCommand(GitTextCommand):
             print('Aborted annotations:', result)
             return
         lines = result.splitlines()
-        matcher = re.compile('^@@ -([0-9]*),([0-9]*) \+([0-9]*),([0-9]*) @@')
+        matcher = re.compile(r'^@@ -([0-9]*),([0-9]*) \+([0-9]*),([0-9]*) @@')
         diff = []
         for line_index in range(0, len(lines)):
             line = lines[line_index]

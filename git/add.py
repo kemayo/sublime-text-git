@@ -58,7 +58,7 @@ class GitAddSelectedHunkCommand(GitTextCommand):
 
         hunks = [{"diff": ""}]
         i = 0
-        matcher = re.compile('^@@ -([0-9]*)(?:,([0-9]*))? \+([0-9]*)(?:,([0-9]*))? @@')
+        matcher = re.compile(r'^@@ -([0-9]*)(?:,([0-9]*))? \+([0-9]*)(?:,([0-9]*))? @@')
         for line in result.splitlines():
             if line.startswith('@@'):
                 i += 1

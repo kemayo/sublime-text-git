@@ -265,11 +265,11 @@ class GitCommand(object):
 
         s = sublime.load_settings("Git.sublime-settings")
         if (
-            s.get('save_first') and
-            self.active_view() and
-            self.active_view().file_name() and
-            self.active_view().is_dirty() and
-            not no_save
+            s.get('save_first')
+            and self.active_view()
+            and self.active_view().file_name()
+            and self.active_view().is_dirty()
+            and not no_save
         ):
             self.active_view().run_command('save')
         if command[0] == 'git':
