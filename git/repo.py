@@ -69,6 +69,10 @@ class GitDeleteBranchCommand(GitBranchCommand):
     command_to_run_after_branch = ['branch', '-d']
 
 
+class GitForceDeleteBranchCommand(GitDeleteBranchCommand):
+    command_to_run_after_branch = ['branch', '-D']
+
+
 class GitNewBranchCommand(GitWindowCommand):
     def run(self):
         self.get_window().show_input_panel(
