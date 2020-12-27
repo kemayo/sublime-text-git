@@ -9,8 +9,19 @@ from . import GitTextCommand, GitWindowCommand, do_when, goto_xy, git_root, get_
 
 class GitDiff (object):
     def run(self, edit=None, ignore_whitespace=False):
+        self.ignore_whitespace = ignore_whitespace
+        self.edit = edit
+        s = sublime.load_settings("Git.sublime-settings")
+
+        # stage untracked files as empty files so they can be seen on the diff
+        if s.get('diff_untracked_files'):
+            self.stage_untracked_files()
+        else:
+            self.continue_diff(None)
+
+    def continue_diff(self, result):
         command = ['git', 'diff', '--no-color']
-        if ignore_whitespace:
+        if self.ignore_whitespace:
             command.extend(('--ignore-all-space', '--ignore-blank-lines'))
         command.extend(('--', self.get_file_name()))
         self.run_command(command, self.diff_done)
@@ -25,6 +36,29 @@ class GitDiff (object):
             self.panel(result, syntax=syntax)
         else:
             self.scratch(result, title="Git Diff", syntax=syntax)
+
+        self.reset_untracked_files()
+
+    # obtain the modified files list
+    def stage_untracked_files(self):
+        untracked_files_command = ['git', 'status', '-uall', '--porcelain']
+        self.run_command(untracked_files_command, self.stage_untracked_files_result)
+
+    # obtain the untracked files list and stage them
+    def stage_untracked_files_result(self, result):
+        # filter for untracked files
+        lines = result.rstrip().split('\n')
+        self.empty_stages = [x[3:] for x in lines if x.startswith('??')]
+
+        if len(self.empty_stages) > 0:
+            command = ['git', 'add', '.', '-N']
+            self.run_command(command, self.continue_diff, show_status=False)
+
+    # reset the empty staged files to their original untracked status
+    def reset_untracked_files(self):
+        if len(self.empty_stages) > 0:
+            reset_empty_stages_command = ['git', 'reset', '--quiet', '--'] + self.empty_stages
+            self.run_command(reset_empty_stages_command, show_status=False)
 
 
 class GitDiffCommit (object):
