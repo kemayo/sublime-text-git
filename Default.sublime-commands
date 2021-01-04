@@ -161,6 +161,10 @@
         "command": "git_delete_branch"
     }
     ,{
+        "caption": "Git: Delete Branch (Force)",
+        "command": "git_force_delete_branch"
+    }
+    ,{
         "caption": "Git: Stash Changes",
         "command": "git_raw", "args": { "command": "git stash" }
     }
