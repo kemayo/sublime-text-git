@@ -15,6 +15,7 @@
                             ,{ "caption": "Graph", "command": "git_graph" }
                             ,{ "caption": "-" }
                             ,{ "caption": "Diff", "command": "git_diff" }
+                            ,{ "caption": "Diff (word diff)", "command": "git_diff", "args": { "word_diff": true } }
                             ,{ "caption": "Diff (no whitespace)", "command": "git_diff", "args": { "ignore_whitespace": true } }
                             ,{ "caption": "DiffTool", "command": "git_raw", "args": { "command": "git difftool", "append_current_file": true, "may_change_files": false } }
                             ,{ "caption": "-" }
@@ -43,8 +44,10 @@
                             ,{ "caption": "Graph", "command": "git_graph_all" }
                             ,{ "caption": "-" }
                             ,{ "caption": "Diff", "command": "git_diff_all" }
+                            ,{ "caption": "Diff (word diff)", "command": "git_diff_all", "args": { "word_diff": true } }
                             ,{ "caption": "Diff (no whitespace)", "command": "git_diff_all", "args": { "ignore_whitespace": true } }
                             ,{ "caption": "Diff Staged", "command": "git_diff_commit" }
+                            ,{ "caption": "Diff Staged (word diff)", "command": "git_diff_commit", "args": { "word_diff": true } }
                             ,{ "caption": "Diff Staged (no whitespace)", "command": "git_diff_commit", "args": { "ignore_whitespace": true } }
                             ,{ "caption": "Diff Tool", "command": "git_raw", "args": { "command": "git difftool", "may_change_files": false } }
                             ,{ "caption": "Reset Hard", "command": "git_reset_hard_head" }
