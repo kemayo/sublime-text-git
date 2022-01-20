@@ -17,8 +17,9 @@ class GitBlameCommand(GitTextCommand):
         line_ranges = [self.get_lines(selection) for selection in self.view.sel() if not selection.empty()]
 
         if line_ranges:
-            for line_range in line_ranges:
-                command.extend(('-L', str(line_range[0]) + ',' + str(line_range[1])))
+            for (line_range_0, line_range_1, *line_range_len) in line_ranges:
+                command.extend(('-L', str(line_range_0) + ',' + str(line_range_1)))
+            
             callback = self.blame_done
         else:
             callback = functools.partial(self.blame_done,
