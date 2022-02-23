@@ -7,6 +7,10 @@
         "command": "git_blame"
     }
     ,{
+        "caption": "Git: WTF",
+        "command": "git_wtf"
+    }
+    ,{
         "caption": "Git: Document Selection",
         "command": "git_document"
     }
