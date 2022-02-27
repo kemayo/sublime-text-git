@@ -4,6 +4,8 @@
 
 	// if present, use this command instead of plain "git"
 	// e.g. "/Users/kemayo/bin/git" or "C:\bin\git.exe"
+	// the settings for windows 7, use escape caracter "\" see ex:
+	// ,"git_command": "C:\\Program Files (x86)\\Git\\bin\\git.exe"
 	,"git_command": false
 
 	// if present, use this command instead of plain "gitk"
