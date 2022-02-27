@@ -241,6 +241,18 @@
         "command": "git_custom"
     }
     ,{
+        "caption": "Git: Remote Add",
+        "command": "git_remote_add"
+    }
+    ,{
+        "caption": "Git: Remote Remove",
+        "command": "git_remote_remove"
+    }
+    ,{
+        "caption": "Git: Remote Show",
+        "command": "git_remote_show"
+    }
+    ,{
         "caption": "Git Flow: Feature Start",
         "command": "git_flow_feature_start"
     }
