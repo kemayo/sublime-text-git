@@ -107,6 +107,16 @@ class GitLogAllCommand(GitLog, GitWindowCommand):
     pass
 
 
+class GitLogCheckoutCommand(GitLogCommand):
+    """This command is used to check any version of a file."""
+    def log_result(self, ref):
+        self.run_command(
+            ['git', 'checkout', ref, '--', self.get_file_name()])
+
+    def details_done(self, result):
+        pass
+
+
 class GitShow(object):
     def run(self, edit=None):
         # GitLog Copy-Past

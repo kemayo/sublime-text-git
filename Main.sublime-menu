@@ -27,6 +27,7 @@
                             ,{ "caption": "-" }
                             ,{ "caption": "Reset", "command": "git_raw", "args": { "command": "git reset HEAD", "append_current_file": true, "show_in": "suppress" } }
                             ,{ "caption": "Checkout (Discard Changes)", "command": "git_raw", "args": { "command": "git checkout", "append_current_file": true } }
+                            ,{ "caption": "Checkout (Any version)", "command": "git_log_checkout" }
                             ,{ "caption": "-" }
                             ,{ "caption": "Quick Commit Current File", "command": "git_quick_commit" }
                             ,{ "caption": "Commit Selected Hunk", "command": "git_commit_selected_hunk" }
