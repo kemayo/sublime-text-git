@@ -412,6 +412,9 @@ class GitWindowCommand(GitCommand, sublime_plugin.WindowCommand):
     def get_window(self):
         return self.window
 
+    def get_current_line(self):
+        return -1
+
 
 # A base for all git commands that work with the file in the active view
 class GitTextCommand(GitCommand, sublime_plugin.TextCommand):
@@ -447,3 +450,8 @@ class GitTextCommand(GitCommand, sublime_plugin.TextCommand):
         # the case of the quick panel.
         # So, this is not necessarily ideal, but it does work.
         return self.view.window() or sublime.active_window()
+
+    def get_current_line(self):
+        (current_line, column) = self.view.rowcol(self.view.sel()[0].a)
+        # line is 1 based
+        return current_line + 1
